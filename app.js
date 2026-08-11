@@ -401,15 +401,43 @@
     if (expiredMsgs.length) addLogCard('⏳ 暫時效果到期', expiredMsgs.join('<br>'), 'info', '效果結束');
   }
 
+  // 30 種常駐裝備：common(15) / rare(10) / legendary(5)
   const ALL_PROPOSALS = [
-    { id: 'p_01', icon: '🏏', name: '特製楓木打擊重棒', desc: '力量+5', price: 150000, stat: { pow: 5 } },
-    { id: 'p_02', icon: '🧤', name: '加重練習打擊手套', desc: '打擊+4, 選球+3', price: 120000, stat: { con: 4, eye: 3 } },
-    { id: 'p_03', icon: '👟', name: '碳纖維輕量釘鞋', desc: '跑壘+6', price: 140000, stat: { spd: 6 } },
-    { id: 'p_04', icon: '🦺', name: '鈦合金防護面罩', desc: '捕手接捕+8', price: 180000, stat: { cat: 8, fld: 4 } },
-    { id: 'p_05', icon: '⛩️', name: '神社必勝祈願勝守', desc: '能力+3', price: 100000, stat: { con: 3, pow: 3 } },
-    { id: 'p_06', icon: '🧢', name: '家傳幸運縫線球帽', desc: '控球+5', price: 130000, stat: { ctl: 5 } },
-    { id: 'p_07', icon: '💪', name: '高科技肌能護臂', desc: '臂力+6', price: 200000, stat: { arm: 6, vel: 2 } },
-    { id: 'p_08', icon: '💍', name: '總冠軍運勢金戒', desc: '全能力+2', price: 300000, stat: { con: 2, pow: 2, ctl: 2, vel: 2 } }
+    // Common (15)
+    { id: 'p_02', icon: '🧤', name: '加重練習打擊手套', desc: '打擊+4, 選球+3', price: 120000, rarity: 'common', stat: { con: 4, eye: 3 } },
+    { id: 'p_03', icon: '👟', name: '碳纖維輕量釘鞋', desc: '跑壘+6', price: 140000, rarity: 'common', stat: { spd: 6 } },
+    { id: 'p_05', icon: '⛩️', name: '神社必勝祈願勝守', desc: '能力+3', price: 100000, rarity: 'common', stat: { con: 3, pow: 3 } },
+    { id: 'p_06', icon: '🧢', name: '家傳幸運縫線球帽', desc: '控球+5', price: 130000, rarity: 'common', stat: { ctl: 5 } },
+    { id: 'p_09', icon: '🥎', name: '加重訓練球', desc: '體力+4', price: 85000, rarity: 'common', stat: { sta: 4 } },
+    { id: 'p_10', icon: '🎽', name: '透氣機能訓練服', desc: '體力+3, 跑壘+2', price: 90000, rarity: 'common', stat: { sta: 3, spd: 2 } },
+    { id: 'p_11', icon: '🧦', name: '抗疲勞機能襪', desc: '體力+3', price: 70000, rarity: 'common', stat: { sta: 3 } },
+    { id: 'p_12', icon: '🥊', name: '反應速度訓練器', desc: '選球+5', price: 110000, rarity: 'common', stat: { eye: 5 } },
+    { id: 'p_13', icon: '🏐', name: '守備反應錐訓練組', desc: '守備+5', price: 115000, rarity: 'common', stat: { fld: 5 } },
+    { id: 'p_14', icon: '🎿', name: '敏捷梯訓練組', desc: '跑壘+5', price: 100000, rarity: 'common', stat: { spd: 5 } },
+    { id: 'p_15', icon: '🧢', name: '遮陽戰術球帽', desc: '選球+3, 守備+2', price: 95000, rarity: 'common', stat: { eye: 3, fld: 2 } },
+    { id: 'p_16', icon: '🥋', name: '核心肌群訓練帶', desc: '力量+4', price: 105000, rarity: 'common', stat: { pow: 4 } },
+    { id: 'p_17', icon: '🦵', name: '下肢爆發力訓練器', desc: '跑壘+4, 力量+2', price: 125000, rarity: 'common', stat: { spd: 4, pow: 2 } },
+    { id: 'p_18', icon: '🧤', name: '捕手練習接球網', desc: '接球+5', price: 110000, rarity: 'common', stat: { cat: 5 } },
+    { id: 'p_19', icon: '⚾', name: '高級縫線比賽用球組', desc: '打擊+3, 力量+2', price: 120000, rarity: 'common', stat: { con: 3, pow: 2 } },
+
+    // Rare (10)
+    { id: 'p_01', icon: '🏏', name: '特製楓木打擊重棒', desc: '力量+5', price: 150000, rarity: 'rare', stat: { pow: 5 } },
+    { id: 'p_04', icon: '🦺', name: '鈦合金防護面罩', desc: '捕手接捕+8', price: 180000, rarity: 'rare', stat: { cat: 8, fld: 4 } },
+    { id: 'p_07', icon: '💪', name: '高科技肌能護臂', desc: '臂力+6', price: 200000, rarity: 'rare', stat: { arm: 6, vel: 2 } },
+    { id: 'p_20', icon: '🎯', name: '職業級控球訓練機', desc: '控球+7', price: 170000, rarity: 'rare', stat: { ctl: 7 } },
+    { id: 'p_21', icon: '🔥', name: '加壓爆發力護膝', desc: '跑壘+6, 力量+3', price: 190000, rarity: 'rare', stat: { spd: 6, pow: 3 } },
+    { id: 'p_22', icon: '🛡️', name: '全罩式強化護具組', desc: '守備+6, 臂力+4', price: 200000, rarity: 'rare', stat: { fld: 6, arm: 4 } },
+    { id: 'p_23', icon: '💨', name: '高階變化球指叉訓練器', desc: '變化球+7', price: 175000, rarity: 'rare', stat: { brk: 7 } },
+    { id: 'p_24', icon: '🧬', name: '運動科學體能評估', desc: '全能力+1', price: 220000, rarity: 'rare', stat: { con: 1, pow: 1, spd: 1, arm: 1, fld: 1, cat: 1, eye: 1, ctl: 1, brk: 1, sta: 1 } },
+    { id: 'p_25', icon: '🏹', name: '精密打擊軌跡分析儀', desc: '打擊+6, 選球+3', price: 210000, rarity: 'rare', stat: { con: 6, eye: 3 } },
+    { id: 'p_26', icon: '⚡', name: '職業級投球機', desc: '球速+4, 控球+3', price: 230000, rarity: 'rare', stat: { vel: 4, ctl: 3 } },
+
+    // Legendary (5)
+    { id: 'p_08', icon: '💍', name: '總冠軍運勢金戒', desc: '全能力+2', price: 300000, rarity: 'legendary', stat: { con: 2, pow: 2, ctl: 2, vel: 2 } },
+    { id: 'p_27', icon: '👑', name: '傳奇球星簽名球棒', desc: '打擊+6, 力量+6', price: 320000, rarity: 'legendary', stat: { con: 6, pow: 6 } },
+    { id: 'p_28', icon: '🌟', name: '名人堂等級訓練基地會員證', desc: '全能力+3', price: 420000, rarity: 'legendary', stat: { con: 3, pow: 3, spd: 3, arm: 3, fld: 3, cat: 3, eye: 3, ctl: 3, brk: 3, sta: 3 } },
+    { id: 'p_29', icon: '🐉', name: '龍魂附體御守', desc: '打擊+4, 力量+4, 球速+3, 控球+3', price: 380000, rarity: 'legendary', stat: { con: 4, pow: 4, vel: 3, ctl: 3 } },
+    { id: 'p_30', icon: '💎', name: '鑽石級運動經紀合約', desc: '體力+8, 全能力+2', price: 500000, rarity: 'legendary', stat: { con: 2, pow: 2, spd: 2, arm: 2, fld: 2, cat: 2, eye: 2, ctl: 2, brk: 2, sta: 8 } }
   ];
 
   // 40 種一次性消耗道具：回體力、暫時骰子加成、暫時運氣加成 三大類
@@ -804,6 +832,7 @@
       daikichiCount: 0,
 
       money: 100000,
+      pocket: 20000,
       salary: 0,
       contractYears: 3,
       careerSalaryTotal: 0,
@@ -1000,6 +1029,8 @@
       evaluatePromotionOrRelegation(s);
     }
 
+    S.pocket = (S.pocket || 0) + (isPro && S.salary > 0 ? Math.round(S.salary * 0.05) : 15000);
+
     const yearWAR = +((s.batWAR || 0) + (s.pitWAR || 0)).toFixed(1);
     S.careerWAR = +(S.careerWAR + yearWAR).toFixed(1);
     S.stats.push(s);
@@ -1077,6 +1108,7 @@
     document.getElementById('stat-league').textContent = `${S.team} (${LEAGUES[S.leagueKey].n})`;
     document.getElementById('stat-ovr').textContent = calcOVR();
     document.getElementById('stat-money').textContent = `$${(S.money / 10000).toFixed(1)}萬`;
+    document.getElementById('stat-pocket').textContent = `$${(S.pocket / 10000).toFixed(1)}萬`;
 
     document.getElementById('badge-origin').textContent = S.origin === 'JP' ? '🇯🇵 日本出生' : '🇹🇼 台灣出生';
     document.getElementById('badge-team').textContent = S.team;
@@ -1113,10 +1145,10 @@
 
   function renderShop() {
     const permGrid = document.getElementById('shop-permanent-grid');
-    permGrid.innerHTML = S.runShopPool.slice(0, 4).map(item => {
+    permGrid.innerHTML = S.runShopPool.map(item => {
       const owned = S.ownedEquipment.some(e => e.id === item.id);
       return `
-        <div class="item-card">
+        <div class="item-card rarity-${item.rarity}">
           <div class="item-card-header">
             <span class="item-icon">${item.icon}</span>
             <span class="item-name">${item.name}</span>
@@ -1124,7 +1156,7 @@
           <div class="item-desc">${item.desc}</div>
           <div class="item-footer">
             <span class="item-price">$${(item.price / 10000).toFixed(0)}萬</span>
-            <button class="btn-buy" ${owned || S.money < item.price ? 'disabled' : ''} onclick="window.buyPermanent('${item.id}')">
+            <button class="btn-buy" ${owned || S.pocket < item.price ? 'disabled' : ''} onclick="window.buyPermanent('${item.id}')">
               ${owned ? '已擁有' : '購買'}
             </button>
           </div>
@@ -1142,7 +1174,7 @@
         <div class="item-desc">${item.desc}</div>
         <div class="item-footer">
           <span class="item-price">$${(item.price / 10000).toFixed(1)}萬</span>
-          <button class="btn-buy" ${S.money < item.price ? 'disabled' : ''} onclick="window.buyConsumable('${item.id}')">購買</button>
+          <button class="btn-buy" ${S.pocket < item.price ? 'disabled' : ''} onclick="window.buyConsumable('${item.id}')">購買</button>
         </div>
       </div>
     `).join('');
@@ -1170,8 +1202,8 @@
 
   window.buyPermanent = function (id) {
     const item = ALL_PROPOSALS.find(e => e.id === id);
-    if (item && S.money >= item.price) {
-      S.money -= item.price;
+    if (item && S.pocket >= item.price) {
+      S.pocket -= item.price;
       S.ownedEquipment.push(item);
       saveCodex(item.id);
       for (let k in item.stat) S.ab[k] = (S.ab[k] || 0) + item.stat[k];
@@ -1184,8 +1216,8 @@
 
   window.buyConsumable = function (id) {
     const item = CONSUMABLES.find(c => c.id === id);
-    if (item && S.money >= item.price) {
-      S.money -= item.price;
+    if (item && S.pocket >= item.price) {
+      S.pocket -= item.price;
       const existing = S.inventory.find(inv => inv.id === id);
       if (existing) existing.qty += 1;
       else S.inventory.push({ id: item.id, qty: 1 });
