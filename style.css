@@ -674,6 +674,29 @@ body {
 
 .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
 
+.item-card.rarity-rare { border-color: #3b82f6; }
+.item-card.rarity-legendary { border-color: #f4a261; box-shadow: 0 0 12px rgba(244, 162, 97, 0.25); }
+
+/* Inventory / Backpack */
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.inventory-item-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inv-qty { color: var(--accent-gold); font-weight: 800; }
+.btn-use { align-self: flex-start; margin-top: 2px; }
+
 /* Log Feed Stream */
 .narrative-stream-card { margin-top: 16px; }
 .stream-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }

@@ -412,6 +412,55 @@
     { id: 'p_08', icon: '💍', name: '總冠軍運勢金戒', desc: '全能力+2', price: 300000, stat: { con: 2, pow: 2, ctl: 2, vel: 2 } }
   ];
 
+  // 40 種一次性消耗道具：回體力、暫時骰子加成、暫時運氣加成 三大類
+  const CONSUMABLES = [
+    // 💪 回復體力類 (14 種)
+    { id: 'c01', icon: '🥤', name: '運動飲料', desc: '體力 +2', price: 2000, rarity: 'common', effect: { type: 'heal_sta', amount: 2 } },
+    { id: 'c02', icon: '🍫', name: '能量補給棒', desc: '體力 +3', price: 3000, rarity: 'common', effect: { type: 'heal_sta', amount: 3 } },
+    { id: 'c03', icon: '🧊', name: '冰浴恢復包', desc: '體力 +4', price: 4500, rarity: 'common', effect: { type: 'heal_sta', amount: 4 } },
+    { id: 'c04', icon: '💆', name: '專業按摩券', desc: '體力 +5', price: 6000, rarity: 'common', effect: { type: 'heal_sta', amount: 5 } },
+    { id: 'c05', icon: '🧘', name: '瑜珈舒緩課', desc: '體力 +3', price: 3500, rarity: 'common', effect: { type: 'heal_sta', amount: 3 } },
+    { id: 'c06', icon: '🩹', name: '運動貼布組', desc: '體力 +2', price: 2000, rarity: 'common', effect: { type: 'heal_sta', amount: 2 } },
+    { id: 'c07', icon: '🍵', name: '特調中藥茶飲', desc: '體力 +4', price: 5000, rarity: 'common', effect: { type: 'heal_sta', amount: 4 } },
+    { id: 'c08', icon: '🧪', name: '電解質補充液', desc: '體力 +3', price: 3200, rarity: 'common', effect: { type: 'heal_sta', amount: 3 } },
+    { id: 'c09', icon: '🥗', name: '高蛋白餐盒', desc: '體力 +4', price: 4000, rarity: 'common', effect: { type: 'heal_sta', amount: 4 } },
+    { id: 'c10', icon: '🍜', name: '深夜滋補湯品', desc: '體力 +5', price: 5500, rarity: 'rare', effect: { type: 'heal_sta', amount: 5 } },
+    { id: 'c11', icon: '🛁', name: '溫泉恢復之旅', desc: '體力 +7', price: 12000, rarity: 'rare', effect: { type: 'heal_sta', amount: 7 } },
+    { id: 'c12', icon: '🧉', name: '秘傳能量飲', desc: '體力 +8', price: 16000, rarity: 'rare', effect: { type: 'heal_sta', amount: 8 } },
+    { id: 'c13', icon: '🩺', name: '隊醫特別調理', desc: '體力 +10', price: 24000, rarity: 'legendary', effect: { type: 'heal_sta', amount: 10 } },
+    { id: 'c14', icon: '🍡', name: '傳說級體力丸', desc: '體力 +12', price: 32000, rarity: 'legendary', effect: { type: 'heal_sta', amount: 12 } },
+
+    // 🎲 暫時骰子加成類 (13 種)
+    { id: 'c15', icon: '📋', name: '個人訓練菜單', desc: '接下來 1 個階段訓練骰子 +1', price: 8000, rarity: 'common', effect: { type: 'dice_bonus', amount: 1, duration: 1 } },
+    { id: 'c16', icon: '🎯', name: '精準打擊教材', desc: '接下來 1 個階段訓練骰子 +1', price: 9000, rarity: 'common', effect: { type: 'dice_bonus', amount: 1, duration: 1 } },
+    { id: 'c17', icon: '🥇', name: '短期集訓營', desc: '接下來 2 個階段訓練骰子 +1', price: 14000, rarity: 'common', effect: { type: 'dice_bonus', amount: 1, duration: 2 } },
+    { id: 'c18', icon: '📈', name: '數據分析報告', desc: '接下來 2 個階段訓練骰子 +1', price: 15000, rarity: 'common', effect: { type: 'dice_bonus', amount: 1, duration: 2 } },
+    { id: 'c19', icon: '🧠', name: '心智訓練課程', desc: '接下來 1 個階段訓練骰子 +1', price: 8500, rarity: 'common', effect: { type: 'dice_bonus', amount: 1, duration: 1 } },
+    { id: 'c20', icon: '🔬', name: '生物力學檢測', desc: '接下來 2 個階段訓練骰子 +1', price: 16000, rarity: 'rare', effect: { type: 'dice_bonus', amount: 1, duration: 2 } },
+    { id: 'c21', icon: '🕶️', name: '職業球探建議書', desc: '接下來 1 個階段訓練骰子 +2', price: 18000, rarity: 'rare', effect: { type: 'dice_bonus', amount: 2, duration: 1 } },
+    { id: 'c22', icon: '⏱️', name: '高強度間歇特訓', desc: '接下來 1 個階段訓練骰子 +2', price: 19000, rarity: 'rare', effect: { type: 'dice_bonus', amount: 2, duration: 1 } },
+    { id: 'c23', icon: '📔', name: '前輩秘傳筆記', desc: '接下來 2 個階段訓練骰子 +2', price: 26000, rarity: 'rare', effect: { type: 'dice_bonus', amount: 2, duration: 2 } },
+    { id: 'c24', icon: '🎓', name: '名教頭一對一指導', desc: '接下來 2 個階段訓練骰子 +2', price: 28000, rarity: 'legendary', effect: { type: 'dice_bonus', amount: 2, duration: 2 } },
+    { id: 'c25', icon: '🏅', name: '國家隊選訓營邀請', desc: '接下來 1 個階段訓練骰子 +3', price: 30000, rarity: 'legendary', effect: { type: 'dice_bonus', amount: 3, duration: 1 } },
+    { id: 'c26', icon: '🛠️', name: '客製化訓練器材', desc: '接下來 3 個階段訓練骰子 +1', price: 20000, rarity: 'rare', effect: { type: 'dice_bonus', amount: 1, duration: 3 } },
+    { id: 'c27', icon: '📡', name: '即時數據回饋系統', desc: '接下來 3 個階段訓練骰子 +2', price: 34000, rarity: 'legendary', effect: { type: 'dice_bonus', amount: 2, duration: 3 } },
+
+    // 🍀 暫時運氣加成類 (13 種)
+    { id: 'c28', icon: '🍀', name: '幸運四葉草徽章', desc: '接下來 1 個階段事件判定運氣上升', price: 5000, rarity: 'common', effect: { type: 'temp_luck', duration: 1 } },
+    { id: 'c29', icon: '🔮', name: '占卜師的祝福', desc: '接下來 1 個階段事件判定運氣上升', price: 6000, rarity: 'common', effect: { type: 'temp_luck', duration: 1 } },
+    { id: 'c30', icon: '🧿', name: '藍眼護身符', desc: '接下來 2 個階段事件判定運氣上升', price: 10000, rarity: 'common', effect: { type: 'temp_luck', duration: 2 } },
+    { id: 'c31', icon: '💍', name: '幸運訂婚戒仿製品', desc: '接下來 1 個階段事件判定運氣上升', price: 7000, rarity: 'common', effect: { type: 'temp_luck', duration: 1 } },
+    { id: 'c32', icon: '📿', name: '開運念珠手鍊', desc: '接下來 2 個階段事件判定運氣上升', price: 11000, rarity: 'common', effect: { type: 'temp_luck', duration: 2 } },
+    { id: 'c33', icon: '🪬', name: '法蒂瑪之手吊飾', desc: '接下來 2 個階段事件判定運氣上升', price: 12000, rarity: 'rare', effect: { type: 'temp_luck', duration: 2 } },
+    { id: 'c34', icon: '🎋', name: '七夕祈願竹枝', desc: '接下來 1 個階段事件判定運氣上升', price: 6500, rarity: 'common', effect: { type: 'temp_luck', duration: 1 } },
+    { id: 'c35', icon: '🧸', name: '幸運吉祥物娃娃', desc: '接下來 1 個階段事件判定運氣上升', price: 5500, rarity: 'common', effect: { type: 'temp_luck', duration: 1 } },
+    { id: 'c36', icon: '🕯️', name: '必勝祈願蠟燭', desc: '接下來 2 個階段事件判定運氣上升', price: 13000, rarity: 'rare', effect: { type: 'temp_luck', duration: 2 } },
+    { id: 'c37', icon: '🌟', name: '流星許願瓶', desc: '接下來 3 個階段事件判定運氣上升', price: 20000, rarity: 'rare', effect: { type: 'temp_luck', duration: 3 } },
+    { id: 'c38', icon: '🧲', name: '好運磁場手環', desc: '接下來 2 個階段事件判定運氣上升', price: 12500, rarity: 'rare', effect: { type: 'temp_luck', duration: 2 } },
+    { id: 'c39', icon: '🎐', name: '開運風鈴', desc: '接下來 1 個階段事件判定運氣上升', price: 7500, rarity: 'common', effect: { type: 'temp_luck', duration: 1 } },
+    { id: 'c40', icon: '🀄', name: '職業級好手氣加持', desc: '接下來 4 個階段事件判定運氣上升', price: 28000, rarity: 'legendary', effect: { type: 'temp_luck', duration: 4 } }
+  ];
+
   const CARS_LIST = [
     { id: 'car_01', tier: 1, name: '二手國民小轎車', price: 100000, icon: '🚗', desc: '代步小車' },
     { id: 'car_02', tier: 1, name: '國產舒適休旅車', price: 400000, icon: '🚙', desc: '載裝備方便' },
@@ -483,6 +532,8 @@
 
     if (S.ownedEquipment.length >= 5) unlockAchievement('ach_49');
     if (S.ownedEquipment.length >= 12) unlockAchievement('ach_50');
+
+    if (S.inventory && S.inventory.reduce((a, b) => a + b.qty, 0) >= 8) unlockAchievement('ach_70');
 
     if (unlockedCodex.length >= 15) unlockAchievement('ach_79');
     if (S.origin === 'JP' && S.stage.startsWith('HS')) unlockAchievement('ach_72');
@@ -763,6 +814,8 @@
 
       ownedEquipment: [],
       runShopPool: [],
+      runConsumablePool: [],
+      inventory: [],
 
       stats: [], trophies: [], rings: 0,
       careerWAR: 0, careerHits: 0, careerHR: 0, careerWins: 0, careerSO: 0,
@@ -805,7 +858,10 @@
 
   function initRunShopPool() {
     const shuffled = ALL_PROPOSALS.slice().sort(() => R() - 0.5);
-    S.runShopPool = shuffled.slice(0, ri(18, 22));
+    S.runShopPool = shuffled.slice(0, Math.min(ALL_PROPOSALS.length, ri(18, 22)));
+
+    const shuffledCons = CONSUMABLES.slice().sort(() => R() - 0.5);
+    S.runConsumablePool = shuffledCons.slice(0, 12);
   }
 
   function calcOVR() {
@@ -1032,6 +1088,7 @@
 
     renderTraits();
     renderShop();
+    renderInventory();
     renderAssets();
     renderCodex();
     renderAchievements();
@@ -1076,8 +1133,8 @@
     }).join('');
 
     const consGrid = document.getElementById('shop-consumable-grid');
-    consGrid.innerHTML = S.runShopPool.slice(4, 12).map(item => `
-      <div class="item-card">
+    consGrid.innerHTML = S.runConsumablePool.map(item => `
+      <div class="item-card rarity-${item.rarity}">
         <div class="item-card-header">
           <span class="item-icon">${item.icon}</span>
           <span class="item-name">${item.name}</span>
@@ -1089,6 +1146,26 @@
         </div>
       </div>
     `).join('');
+  }
+
+  function renderInventory() {
+    const list = document.getElementById('inventory-list');
+    if (!S.inventory.length) {
+      list.innerHTML = `<span class="text-muted text-sm">背包空空如也。</span>`;
+      return;
+    }
+    list.innerHTML = S.inventory.map(inv => {
+      const item = CONSUMABLES.find(c => c.id === inv.id);
+      if (!item) return '';
+      return `
+        <div class="inventory-item-card">
+          <span class="item-icon">${item.icon}</span>
+          <span class="item-name">${item.name} <span class="inv-qty">x${inv.qty}</span></span>
+          <span class="item-desc">${item.desc}</span>
+          <button class="btn-buy btn-use" onclick="window.useItem('${item.id}')">使用</button>
+        </div>
+      `;
+    }).join('');
   }
 
   window.buyPermanent = function (id) {
@@ -1106,13 +1183,41 @@
   };
 
   window.buyConsumable = function (id) {
-    const item = ALL_PROPOSALS.find(c => c.id === id);
+    const item = CONSUMABLES.find(c => c.id === id);
     if (item && S.money >= item.price) {
       S.money -= item.price;
-      for (let k in item.stat) S.ab[k] = (S.ab[k] || 0) + item.stat[k];
-      addLogCard('🛒 購買補給品', `成功使用【${item.name}】獲得能力增強！`, 'good', '購物成功');
+      const existing = S.inventory.find(inv => inv.id === id);
+      if (existing) existing.qty += 1;
+      else S.inventory.push({ id: item.id, qty: 1 });
+      addLogCard('🛒 購買補給品', `購入【${item.name}】，已收入背包！`, 'good', '購物成功');
+      checkAchievements();
       renderAll();
     }
+  };
+
+  window.useItem = function (id) {
+    const invEntry = S.inventory.find(inv => inv.id === id);
+    const item = CONSUMABLES.find(c => c.id === id);
+    if (!invEntry || !item) return;
+
+    const eff = item.effect;
+    let msg = '';
+    if (eff.type === 'heal_sta') {
+      S.ab.sta = clamp((S.ab.sta || 25) + eff.amount, 10, S.pot.sta || 99);
+      msg = `體力恢復 +${eff.amount}！`;
+    } else if (eff.type === 'dice_bonus') {
+      S.activeBuffs.push({ type: 'dice', amount: eff.amount, remainingPhases: eff.duration });
+      msg = `接下來 ${eff.duration} 個階段，訓練骰子 +${eff.amount} 顆！`;
+    } else if (eff.type === 'temp_luck') {
+      S.activeBuffs.push({ type: 'luck', amount: 1, remainingPhases: eff.duration });
+      msg = `接下來 ${eff.duration} 個階段，事件判定運氣上升！`;
+    }
+
+    invEntry.qty -= 1;
+    if (invEntry.qty <= 0) S.inventory = S.inventory.filter(inv => inv.id !== id);
+
+    addLogCard(`🎒 使用道具 | ${item.icon} ${item.name}`, msg, 'good', '道具使用');
+    renderAll();
   };
 
   function renderAssets() {
