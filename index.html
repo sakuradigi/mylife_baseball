@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b1d3a">
-  <title>我的野球人生 (My Baseball Life) - EA 0.1</title>
+  <title>我的野球人生 (My Baseball Life) - EA 0.2</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +22,7 @@
       <div class="logo-group">
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
-          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.1</span></h1>
+          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.2</span></h1>
         </div>
       </div>
       
@@ -201,17 +201,17 @@
             </div>
 
             <div class="dashboard-tabs">
-              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (正宗擲骰配點)</button>
+              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (長條圖能力與天賦上限)</button>
               <button class="tab-btn" data-tab="tab-shop">🛒 體育商店</button>
               <button class="tab-btn" data-tab="tab-assets">🏠 房產與跑車</button>
               <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽大獎</button>
             </div>
 
-            <!-- TAB 1: Real Roll-First-Then-Assign Dice Allocation -->
+            <!-- TAB 1: Classic Progress Bar Dice Allocation -->
             <div id="tab-dice-alloc" class="tab-content active">
               <div class="glass-panel alloc-panel-full">
-                <div class="alloc-header">
-                  <h3>🏋️ 春訓自主訓練 (先擲骰 ➔ 再手動點選分配)</h3>
+                <div class="alloc-header mb-3">
+                  <h3>🏋️ 春訓自主訓練 (擲骰與長條圖分配)</h3>
                 </div>
 
                 <div class="dice-roll-step text-center mb-3">
@@ -220,23 +220,24 @@
                   </button>
                 </div>
 
-                <!-- Interactive Dice Pool -->
-                <div id="dice-pool-wrapper" class="dice-pool-container hidden">
-                  <span class="text-muted text-sm w-100">點擊下方骰子或點擊屬性加號將點數分配給目標工具：</span>
-                  <div id="dice-blocks-pool" class="d-flex gap-2 flex-wrap"></div>
+                <!-- 🎲 橫向極簡單行骰子列 (Horizontal Dice Bar) -->
+                <div id="dice-pool-wrapper" class="dice-pool-horizontal hidden">
+                  <span class="text-muted text-sm" style="white-space: nowrap;">本季獲得骰子：</span>
+                  <div id="dice-blocks-pool" class="d-flex gap-2 align-items-center"></div>
                 </div>
 
-                <div id="dice-alloc-container" class="dice-alloc-grid mt-3 hidden"></div>
+                <!-- 📊 經典能力值長條圖 (Attribute Progress Bars) -->
+                <div id="dice-alloc-container" class="stat-bar-grid hidden"></div>
 
                 <div id="dice-confirm-box" class="dice-action-box mt-3 text-center hidden">
                   <button id="btn-confirm-dice-alloc" class="btn-tactile btn-tactile-primary btn-lg btn-block">
-                    ✅ 完成訓練，鎖定配點！
+                    ✅ 完成本季春訓，鎖定配點！
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- TAB 2: Shop -->
+            <!-- TAB 2: V1 Compact Shop -->
             <div id="tab-shop" class="tab-content">
               <div class="glass-panel">
                 <div class="shop-header">
@@ -274,7 +275,7 @@
               </div>
             </div>
 
-            <!-- Persistent Career Log Stream (Always Visible on Main Page!) -->
+            <!-- Persistent Career Log Stream (Always Visible) -->
             <div class="narrative-stream-card glass-panel">
               <div class="stream-header">
                 <h3>📜 棒球人生即時日誌 (Career Live Feed)</h3>
@@ -293,55 +294,7 @@
         </div>
       </section>
 
-      <!-- Modal 1: Chance Card Visual Popup -->
-      <div id="modal-chance-card" class="modal-backdrop hidden">
-        <div class="modal-content glass-panel chance-modal-box">
-          <div class="chance-card-icon-big" id="chance-modal-icon">🃏</div>
-          <h2 class="chance-card-name-big" id="chance-modal-name">機會卡名稱</h2>
-          <p class="chance-card-desc-big" id="chance-modal-desc">機會卡效果解說</p>
-          <button id="btn-close-chance-modal" class="btn-tactile btn-tactile-primary btn-block">收入囊中</button>
-        </div>
-      </div>
-
-      <!-- Modal 2: Key Moment Clutch Modal -->
-      <div id="modal-clutch" class="modal-backdrop hidden">
-        <div class="modal-content clutch-modal-box glass-panel">
-          <div class="clutch-header">
-            <span class="badge-alert">🔥 關鍵時刻 (CLUTCH MOMENT)</span>
-            <h2 id="clutch-title">第 9 局下半 滿壘 2出局</h2>
-          </div>
-
-          <div class="scoreboard-widget">
-            <div class="team-score away">
-              <span id="clutch-away-name" class="t-name">客隊</span>
-              <span id="clutch-away-score" class="t-score">3</span>
-            </div>
-            <div class="versus">VS</div>
-            <div class="team-score home">
-              <span id="clutch-home-name" class="t-name">主隊</span>
-              <span id="clutch-home-score" class="t-score">2</span>
-            </div>
-          </div>
-
-          <div class="clutch-situation-box">
-            <div class="bases-diamond">
-              <div id="base-2b" class="base second active"></div>
-              <div id="base-3b" class="base third active"></div>
-              <div id="base-1b" class="base first active"></div>
-            </div>
-            <div class="count-board">
-              <div>壞球 B: <span id="clutch-balls">3</span></div>
-              <div>好球 S: <span id="clutch-strikes">2</span></div>
-              <div>出局 O: <span id="clutch-outs">2</span></div>
-            </div>
-          </div>
-
-          <p id="clutch-narrative" class="clutch-desc-text">決定冠軍歸屬的最終一球！</p>
-          <div id="clutch-tactics-grid" class="tactics-grid"></div>
-        </div>
-      </div>
-
-      <!-- Modal 3: Codex Modal -->
+      <!-- Modal: Codex Modal -->
       <div id="modal-codex" class="modal-backdrop hidden">
         <div class="modal-content glass-panel codex-modal-box">
           <div class="modal-header">
@@ -444,7 +397,7 @@
 
     <!-- Version Badge Floating Corner -->
     <div class="version-floating-corner">
-      <span>BUILD: <strong id="footer-version-tag">EA 0.1</strong></span>
+      <span>BUILD: <strong id="footer-version-tag">EA 0.2</strong></span>
     </div>
   </div>
 

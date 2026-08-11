@@ -1,12 +1,12 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
-   Version: EA 0.1
+   Version: EA 0.2
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const APP_VERSION = 'EA 0.1';
+  const APP_VERSION = 'EA 0.2';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
@@ -157,14 +157,21 @@
   ];
 
   /* ==========================================================================
-     4. 機會卡與資料庫
+     4. 豐富機會卡資料庫 (15+ 多樣化隨機事件)
      ========================================================================== */
   const CHANCE_CARDS = [
-    { name: '天道酬勤', icon: '🏋️', desc: '本季訓練獲得額外 +2 顆骰子加成！', effect: (S) => { S.diceBonus += 2; } },
-    { name: '球探重用', icon: '👁️', desc: '獲得球探熱烈關注，年薪合約大增！', effect: (S) => { S.salary = Math.round((S.salary || 3000000) * 1.2); } },
-    { name: '狀態極佳', icon: '🔥', desc: '打擊與控球感覺極佳，屬性提升+3！', effect: (S) => { S.ab.con += 3; S.ab.ctl += 3; } },
-    { name: '貴人相助', icon: '前', desc: '獲得隊友傳奇前輩親自指點，全屬性+2！', effect: (S) => { for (let k in S.ab) S.ab[k] += 2; } },
-    { name: '贊助加碼', icon: '💰', desc: '接下高檔代言廣告，零用金+30萬！', effect: (S) => { S.money += 300000; } }
+    { name: '天道酬勤', icon: '🏋️', desc: '自主訓練發狂！本季訓練額外 +2 顆骰子加成！', type: 'good', effect: (S) => { S.diceBonus += 2; } },
+    { name: '球探重用', icon: '👁️', desc: '大聯盟高級球探親臨觀戰，年薪合約大增 +20%！', type: 'gold', effect: (S) => { S.salary = Math.round((S.salary || 3000000) * 1.2); } },
+    { name: '狀態極佳', icon: '🔥', desc: '打擊與控球感覺極佳，打擊與控球直升 +4！', type: 'good', effect: (S) => { S.ab.con += 4; S.ab.ctl += 4; } },
+    { name: '前輩指點', icon: '前', desc: '獲得隊友傳奇前輩親自指點，全屬性+2！', type: 'gold', effect: (S) => { for (let k in S.ab) S.ab[k] += 2; } },
+    { name: '代言合約', icon: '💰', desc: '接下高檔體育品牌代言，零用金大增 +$50萬！', type: 'gold', effect: (S) => { S.money += 500000; } },
+    { name: '舊傷復發', icon: '🩹', desc: '輕微拉傷！本季跑壘與體力暫時 -2，幸無大礙。', type: 'bad', effect: (S) => { S.ab.spd = Math.max(10, S.ab.spd - 2); S.ab.sta = Math.max(10, S.ab.sta - 2); } },
+    { name: '神器撿拾', icon: '🎁', desc: '在球場休息室撿到前輩遺留的幸運手套！守備+5！', type: 'good', effect: (S) => { S.ab.fld += 5; } },
+    { name: '特製補給', icon: '🧪', desc: '飲用名醫調配的高效氨基酸，球速+2km/h，選球+3！', type: 'good', effect: (S) => { S.ab.vel += 2; S.ab.eye += 3; } },
+    { name: '宿敵嗆聲', icon: '🔥', desc: '與死敵宿敵在球場對峙激發鬥志！力量上限突破+5！', type: 'gold', effect: (S) => { S.pot.pow += 5; } },
+    { name: '球隊旅遊', icon: '🏖️', desc: '參加球隊沖繩移地訓練，身心大放鬆！體力+6！', type: 'good', effect: (S) => { S.ab.sta += 6; } },
+    { name: '打擊特訓', icon: '🏏', desc: '特訓教練一對一修改打擊姿勢！力量+4，打擊+3！', type: 'good', effect: (S) => { S.ab.pow += 4; S.ab.con += 3; } },
+    { name: '球迷熱情', icon: '❤️', desc: '收到後援會球迷送來的溫暖禮物，心態大幅穩定！', type: 'good', effect: (S) => { S.ab.eye += 4; } }
   ];
 
   const CPBL_TEAMS = ['台中猛瑪', '府城雄獅', '桃園金剛', '新北騎士', '台北恐龍', '高雄神鵰'];
@@ -274,7 +281,7 @@
   }
 
   /* ==========================================================================
-     6. 🎲 正宗先擲骰 ➔ 再手動點選分配引擎
+     6. 📊 經典能力值長條圖 (Progress Bars) 與橫向極簡骰子列
      ========================================================================== */
   function calcDicePool() {
     let count = 3;
@@ -309,31 +316,45 @@
   }
 
   function renderDicePoolAndAlloc() {
+    // 1. 渲染單行橫向極簡骰子列 (Horizontal Dice Bar)
     const poolContainer = document.getElementById('dice-blocks-pool');
     poolContainer.innerHTML = S.currentDicePool.map(d => `
-      <div class="dice-block ${d.assignedTo ? 'used' : ''}" data-id="${d.id}">
+      <div class="dice-badge-sm ${d.assignedTo ? 'used' : ''}" data-id="${d.id}">
         🎲${d.val}
       </div>
     `).join('');
 
+    // 2. 渲染經典能力值長條圖 (Attribute Progress Bars)
     const allocGrid = document.getElementById('dice-alloc-container');
     const config = S.position === 'PITCHER'
-      ? [{ key: 'vel', label: '球速 (km/h)' }, { key: 'ctl', label: '控球' }, { key: 'brk', label: '變化球' }, { key: 'sta', label: '體力' }]
-      : [{ key: 'con', label: '打擊' }, { key: 'pow', label: '力量' }, { key: 'eye', label: '選球' }, { key: 'spd', label: '跑壘' }, { key: 'fld', label: '守備' }];
+      ? [{ key: 'vel', label: '球速 (km/h)', maxVal: 165 }, { key: 'ctl', label: '控球', maxVal: 99 }, { key: 'brk', label: '變化球', maxVal: 99 }, { key: 'sta', label: '體力', maxVal: 99 }]
+      : [{ key: 'con', label: '打擊', maxVal: 99 }, { key: 'pow', label: '力量', maxVal: 99 }, { key: 'eye', label: '選球', maxVal: 99 }, { key: 'spd', label: '跑壘', maxVal: 99 }, { key: 'fld', label: '守備', maxVal: 99 }];
 
     allocGrid.innerHTML = config.map(c => {
       const assignedDice = (S.assignedDiceMap[c.key] || []);
       const totalGain = assignedDice.reduce((a, b) => a + b, 0);
-      const val = S.ab[c.key];
+      const curVal = S.ab[c.key];
       const ceiling = S.pot[c.key] || 99;
+      const maxRange = c.key === 'vel' ? 165 : 99;
+
+      const curWidth = Math.min(100, (curVal / maxRange) * 100);
+      const previewWidth = Math.min(100, ((curVal + totalGain) / maxRange) * 100);
+      const ceilingWidth = Math.min(100, (ceiling / maxRange) * 100);
 
       return `
-        <div class="dice-alloc-row">
-          <div class="dice-row-info">
-            <span class="dice-row-label">${c.label}: <strong>${val}</strong> ${totalGain > 0 ? `<span class="hl-green">(+${totalGain})</span>` : ''} / ${ceiling}</span>
-            <span class="dice-row-sub">已投入: [${assignedDice.join(', ') || '無'}]</span>
+        <div class="stat-bar-row">
+          <div class="stat-bar-info">
+            <span class="stat-name">${c.label}</span>
+            <span class="stat-val-text">${curVal} ${totalGain > 0 ? `<span class="hl-green">(+${totalGain})</span>` : ''} / ${ceiling}</span>
           </div>
-          <div class="dice-controls">
+
+          <div class="stat-bar-track">
+            <div class="stat-bar-fill-current" style="width: ${curWidth}%;"></div>
+            ${totalGain > 0 ? `<div class="stat-bar-fill-preview" style="left: ${curWidth}%; width: ${previewWidth - curWidth}%;"></div>` : ''}
+            <div class="stat-bar-ceiling-line" style="left: ${ceilingWidth}%;" title="天賦上限: ${ceiling}"></div>
+          </div>
+
+          <div class="stat-controls">
             <button class="btn-dice-step btn-minus-dice" data-key="${c.key}">-</button>
             <span class="dice-assigned-count">${assignedDice.length}</span>
             <button class="btn-dice-step btn-plus-dice" data-key="${c.key}">+</button>
@@ -665,14 +686,17 @@
     document.getElementById('traits-list').innerHTML = S.traits.map(t => `<span class="trait-tag trait-good">${t}</span>`).join('');
   }
 
+  /* 🛒 恢復 Version 1 精簡經典商店渲染 */
   function renderShop() {
     const permGrid = document.getElementById('shop-permanent-grid');
     permGrid.innerHTML = S.runShopPool.slice(0, 4).map(item => {
       const owned = S.ownedEquipment.some(e => e.id === item.id);
       return `
         <div class="item-card">
-          <div class="item-icon">${item.icon}</div>
-          <div class="item-name">${item.name}</div>
+          <div class="item-card-header">
+            <span class="item-icon">${item.icon}</span>
+            <span class="item-name">${item.name}</span>
+          </div>
           <div class="item-desc">${item.desc}</div>
           <div class="item-footer">
             <span class="item-price">$${(item.price / 10000).toFixed(0)}萬</span>
@@ -687,8 +711,10 @@
     const consGrid = document.getElementById('shop-consumable-grid');
     consGrid.innerHTML = S.runShopPool.slice(4, 12).map(item => `
       <div class="item-card">
-        <div class="item-icon">${item.icon}</div>
-        <div class="item-name">${item.name}</div>
+        <div class="item-card-header">
+          <span class="item-icon">${item.icon}</span>
+          <span class="item-name">${item.name}</span>
+        </div>
         <div class="item-desc">${item.desc}</div>
         <div class="item-footer">
           <span class="item-price">$${(item.price / 10000).toFixed(1)}萬</span>
@@ -924,6 +950,7 @@
     });
   }
 
+  /* 🃏 機會卡：廢除彈窗！完全內嵌於即時日誌中 (Zero Modals, Direct Log Stream) */
   function drawChanceCard() {
     if (S.chanceCardDrawnThisPhase) {
       alert('本行動階段已抽過機會卡！請前進下個階段後再行抽取！');
@@ -933,12 +960,8 @@
     const card = CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)];
     card.effect(S);
 
-    document.getElementById('chance-modal-icon').textContent = card.icon;
-    document.getElementById('chance-modal-name').textContent = card.name;
-    document.getElementById('chance-modal-desc').textContent = card.desc;
-    document.getElementById('modal-chance-card').classList.remove('hidden');
-
-    addLogCard(`🃏 抽中機會卡【${card.name}】`, card.desc, 'gold', '機會卡');
+    // 直接流暢寫入日誌串流，零彈窗干擾！
+    addLogCard(`🃏 抽中機會卡【${card.icon} ${card.name}】`, card.desc, card.type || 'gold', '機會卡事件');
     renderAll();
   }
 
@@ -1050,9 +1073,6 @@
 
     document.getElementById('btn-next-phase').addEventListener('click', nextPhase);
     document.getElementById('btn-draw-chance-card').addEventListener('click', drawChanceCard);
-    document.getElementById('btn-close-chance-modal').addEventListener('click', () => {
-      document.getElementById('modal-chance-card').classList.add('hidden');
-    });
 
     document.getElementById('btn-open-codex').addEventListener('click', () => {
       renderCodex();

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - Complete Sleek UI & Pure Entertainment CSS
+   「我的野球人生」 (My Baseball Life) - EA 0.2 Sleek UI & Progress Bar CSS
    ========================================================================== */
 
 /* Theme 1: MLB Classic */
@@ -113,7 +113,7 @@ body {
   flex-direction: column;
 }
 
-/* Strict Screen Isolation - Critical Fix */
+/* Strict Screen Isolation */
 .game-screen {
   display: none !important;
 }
@@ -134,7 +134,7 @@ body {
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
-  padding: 20px;
+  padding: 18px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
@@ -187,12 +187,10 @@ body {
 }
 
 .header-actions { display: flex; align-items: center; gap: 10px; }
-
 .select-theme-sm { background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-gold); color: var(--accent-gold); padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer; }
 .seed-badge-container { display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border-glass); font-size: 12px; }
 .seed-label { color: var(--text-muted); }
 .seed-code { font-family: monospace; color: var(--accent-gold); font-weight: 600; }
-
 .btn-icon-sm, .btn-icon-sound { background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 4px; font-size: 16px; }
 
 /* 3D Tactile Buttons */
@@ -254,132 +252,40 @@ body {
 .btn-sm { font-size: 12px; padding: 6px 12px; }
 
 /* Creation Form Styling Overhaul */
-.creation-container {
-  max-width: 680px;
-  margin: 30px auto;
-}
+.creation-container { max-width: 680px; margin: 30px auto; }
+.creation-card { padding: 28px; }
+.creation-header { text-align: center; margin-bottom: 24px; }
+.creation-header h2 { font-size: 24px; font-weight: 700; color: var(--accent-gold); }
 
-.creation-card {
-  padding: 28px;
-}
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+@media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
 
-.creation-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.creation-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--accent-gold);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-@media (max-width: 640px) {
-  .form-grid { grid-template-columns: 1fr; }
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
 .form-group input, .form-group select {
-  width: 100%;
-  height: 42px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid var(--border-glass);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
+  width: 100%; height: 42px; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--border-glass); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s;
 }
+.form-group select option { background: #0f1d36; color: #fff; }
+.form-group input:focus, .form-group select:focus { border-color: var(--accent-blue); box-shadow: 0 0 10px rgba(59, 130, 246, 0.3); }
 
-.form-group select option {
-  background: #0f1d36;
-  color: #fff;
-}
+.archetype-selector { margin-bottom: 24px; }
+.section-label { font-size: 13px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 10px; }
 
-.form-group input:focus, .form-group select:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
-}
+.archetype-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 640px) { .archetype-grid { grid-template-columns: 1fr; } }
 
-.archetype-selector {
-  margin-bottom: 24px;
-}
-
-.section-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 10px;
-}
-
-.archetype-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-@media (max-width: 640px) {
-  .archetype-grid { grid-template-columns: 1fr; }
-}
-
-.archetype-card {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid var(--border-glass);
-  border-radius: 10px;
-  padding: 16px 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.archetype-card:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--accent-blue);
-}
-
-.archetype-card.selected {
-  border-color: var(--accent-gold);
-  background: rgba(245, 209, 48, 0.14);
-  box-shadow: 0 0 14px rgba(245, 209, 48, 0.25);
-}
+.archetype-card { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-glass); border-radius: 10px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
+.archetype-card:hover { background: rgba(255, 255, 255, 0.06); border-color: var(--accent-blue); }
+.archetype-card.selected { border-color: var(--accent-gold); background: rgba(245, 209, 48, 0.14); box-shadow: 0 0 14px rgba(245, 209, 48, 0.25); }
 
 .arch-icon { font-size: 26px; margin-bottom: 6px; }
 .arch-name { font-size: 13px; font-weight: 700; color: #fff; }
 
 /* Dashboard Layout */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 860px) {
-  .dashboard-grid { grid-template-columns: 1fr; }
-}
+.dashboard-grid { display: grid; grid-template-columns: 300px 1fr; gap: 16px; }
+@media (max-width: 860px) { .dashboard-grid { grid-template-columns: 1fr; } }
 
 .col-left { display: flex; flex-direction: column; gap: 14px; }
-
 .profile-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .avatar-box { width: 44px; height: 44px; background: rgba(59, 130, 246, 0.15); border: 2px solid var(--accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 .profile-main h2 { font-size: 17px; font-weight: 700; }
@@ -408,43 +314,128 @@ body {
 .stage-name-label { font-size: 15px; font-weight: 700; color: var(--accent-gold); }
 .action-buttons { display: flex; gap: 8px; }
 
-/* Interactive 3D Dice Pool (Roll First) */
-.dice-pool-container {
+/* 🎲 橫向極簡單行骰子列 (Horizontal Compact Dice Bar) */
+.dice-pool-horizontal {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
-  padding: 14px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px dashed var(--border-gold);
-  border-radius: 10px;
-  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  margin-bottom: 14px;
 }
 
-.dice-block {
-  width: 44px;
-  height: 44px;
+.dice-badge-sm {
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
   color: #0f172a;
-  border-radius: 8px;
-  box-shadow: 0 4px 0 #cbd5e1, 0 6px 12px rgba(0,0,0,0.4);
-  display: flex;
+  border-radius: 6px;
+  box-shadow: 0 3px 0 #cbd5e1, 0 4px 8px rgba(0,0,0,0.3);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 800;
-  cursor: pointer;
   user-select: none;
   transition: all 0.15s ease;
 }
 
-.dice-block:hover { transform: translateY(-2px); }
-.dice-block.used {
+.dice-badge-sm.used {
   opacity: 0.25;
   transform: scale(0.85);
   box-shadow: none;
-  cursor: not-allowed;
 }
+
+/* 📊 經典能力值長條圖 (Attribute Progress Bars) */
+.stat-bar-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+}
+
+.stat-bar-info {
+  width: 140px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stat-name { color: var(--text-main); }
+.stat-val-text { color: var(--accent-gold); }
+
+.stat-bar-track {
+  flex: 1;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stat-bar-fill-current {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  border-radius: 7px 0 0 7px;
+  transition: width 0.2s ease;
+}
+
+.stat-bar-fill-preview {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  background: linear-gradient(90deg, #f59e0b 0%, #f5d130 100%);
+  opacity: 0.85;
+  transition: all 0.2s ease;
+}
+
+.stat-bar-ceiling-line {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: #ef4444;
+  box-shadow: 0 0 4px #ef4444;
+}
+
+.stat-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-dice-step {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--border-glass);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-dice-step:hover { background: var(--accent-blue); }
+.dice-assigned-count { font-size: 12px; font-weight: 700; color: var(--accent-gold); min-width: 14px; text-align: center; }
 
 /* Dashboard Tabs */
 .dashboard-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-glass); padding-bottom: 2px; overflow-x: auto; margin-bottom: 14px; }
@@ -454,12 +445,58 @@ body {
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* Persistent Narrative Stream Card */
-.narrative-stream-card {
-  margin-top: 16px;
+/* 🛒 恢復 Version 1 精簡經典商店 (V1 Compact Shop Grid) */
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
 }
 
-.log-feed { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+.item-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.item-card-header { display: flex; align-items: center; gap: 8px; }
+.item-icon { font-size: 22px; }
+.item-name { font-size: 13px; font-weight: 700; color: #fff; }
+.item-desc { font-size: 11px; color: var(--text-muted); }
+
+.item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.item-price { font-size: 12px; font-weight: 700; color: var(--accent-gold); }
+.btn-buy {
+  background: var(--btn-primary-bg);
+  border: 1px solid var(--btn-primary-border);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Persistent Narrative Stream Card */
+.narrative-stream-card { margin-top: 16px; }
+.stream-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.btn-text-sm { background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; }
+
+.log-feed { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
 .log-card { background: rgba(0, 0, 0, 0.35); border-left: 3px solid var(--accent-blue); padding: 10px 12px; border-radius: 4px; }
 .log-card.good { border-left-color: var(--accent-green); }
 .log-card.gold { border-left-color: var(--accent-gold); }
@@ -467,36 +504,9 @@ body {
 .log-card-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
 .log-card-body { font-size: 12px; color: var(--text-main); }
 
-/* Modals & Chance Card Visual Popup */
+/* Modals */
 .modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 16px; }
 .hidden { display: none !important; }
-
-.chance-modal-box {
-  max-width: 420px;
-  width: 100%;
-  text-align: center;
-  padding: 28px 20px;
-  border: 2px solid var(--accent-gold);
-  box-shadow: 0 0 30px rgba(245, 209, 48, 0.3);
-}
-
-.chance-card-icon-big {
-  font-size: 56px;
-  margin-bottom: 12px;
-}
-
-.chance-card-name-big {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--accent-gold);
-  margin-bottom: 8px;
-}
-
-.chance-card-desc-big {
-  font-size: 14px;
-  color: var(--text-main);
-  margin-bottom: 20px;
-}
 
 .codex-modal-box { max-width: 720px; width: 100%; max-height: 80vh; overflow-y: auto; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
