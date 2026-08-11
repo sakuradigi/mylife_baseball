@@ -1,43 +1,13 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - EA 0.2.1 100% Reference Matching CSS
+   「我的野球人生」 (My Baseball Life) - EA 0.3 Emerald Pure Theme CSS
    ========================================================================== */
 
-/* Theme 1: MLB Classic */
-body.theme-mlb {
-  --bg-dark: #07101f;
-  --bg-card: rgba(15, 29, 54, 0.92);
-  --bg-card-hover: rgba(22, 42, 77, 0.96);
-  --border-glass: rgba(255, 255, 255, 0.15);
-  --border-gold: rgba(245, 209, 48, 0.5);
-
-  --text-main: #f0f4f8;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-
-  --accent-gold: #f5d130;
-  --accent-green: #10b981;
-  --accent-blue: #3b82f6;
-  --accent-red: #ef4444;
-
-  --btn-primary-bg: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-  --btn-primary-border: #1d4ed8;
-  --btn-primary-shadow: #1e3a8a;
-
-  --btn-success-bg: linear-gradient(180deg, #10b981 0%, #059669 100%);
-  --btn-success-border: #059669;
-  --btn-success-shadow: #064e3b;
-
-  --btn-warning-bg: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
-  --btn-warning-border: #d97706;
-  --btn-warning-shadow: #78350f;
-}
-
-/* Theme 2: NPB Midnight (Matching Image 2 Emerald Green) */
-body.theme-npb {
+/* Theme 1: Emerald Pure (Matching yakyulife & Image 3) */
+body, body.theme-npb, body.theme-mlb, body.theme-cpbl {
   --bg-dark: #091512;
   --bg-card: rgba(13, 29, 24, 0.94);
   --bg-card-hover: rgba(20, 44, 36, 0.96);
-  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-glass: rgba(42, 157, 143, 0.35);
   --border-gold: rgba(244, 162, 97, 0.6);
 
   --text-main: #f8fafc;
@@ -60,36 +30,6 @@ body.theme-npb {
   --btn-warning-bg: linear-gradient(180deg, #f4a261 0%, #e76f51 100%);
   --btn-warning-border: #e76f51;
   --btn-warning-shadow: #9e2a2b;
-}
-
-/* Theme 3: CPBL Emerald */
-body.theme-cpbl {
-  --bg-dark: #061c12;
-  --bg-card: rgba(14, 41, 28, 0.92);
-  --bg-card-hover: rgba(22, 61, 42, 0.96);
-  --border-glass: rgba(255, 255, 255, 0.15);
-  --border-gold: rgba(255, 214, 10, 0.5);
-
-  --text-main: #f0fdf4;
-  --text-muted: #86efac;
-  --text-dim: #4ade80;
-
-  --accent-gold: #ffd60a;
-  --accent-green: #00e676;
-  --accent-blue: #00b4d8;
-  --accent-red: #ff5252;
-
-  --btn-primary-bg: linear-gradient(180deg, #059669 0%, #047857 100%);
-  --btn-primary-border: #047857;
-  --btn-primary-shadow: #064e3b;
-
-  --btn-success-bg: linear-gradient(180deg, #00e676 0%, #00c853 100%);
-  --btn-success-border: #00c853;
-  --btn-success-shadow: #007e33;
-
-  --btn-warning-bg: linear-gradient(180deg, #ffd60a 0%, #ffb703 100%);
-  --btn-warning-border: #ffb703;
-  --btn-warning-shadow: #d48800;
 }
 
 /* Reset & Basic Layout */
@@ -144,7 +84,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: rgba(10, 20, 38, 0.92);
+  background: rgba(10, 24, 19, 0.94);
   backdrop-filter: blur(16px);
   border-radius: 12px;
   border: 1px solid var(--border-glass);
@@ -158,9 +98,9 @@ body {
 
 .version-badge {
   font-size: 11px;
-  background: rgba(59, 130, 246, 0.2);
-  color: var(--accent-blue);
-  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: rgba(42, 157, 143, 0.2);
+  color: var(--accent-green);
+  border: 1px solid rgba(42, 157, 143, 0.4);
   padding: 2px 8px;
   border-radius: 12px;
   font-weight: 700;
@@ -321,7 +261,7 @@ body {
 .tab-content.active { display: block; }
 
 /* ==========================================================================
-   🎲 100% 復刻原版《野球人生》分配訓練成果與經典膠囊長條圖 (Image 2 Match)
+   🎲 100% 復刻原版《yakyulife》分配訓練成果與經典膠囊長條圖 (Image 2 & Image 3)
    ========================================================================== */
 .ref-alloc-container {
   background: rgba(10, 24, 19, 0.85);
@@ -383,7 +323,7 @@ body {
   cursor: not-allowed;
 }
 
-/* 經典膠囊型長條圖列 (Attribute Rows Matching Image 2) */
+/* 經典膠囊型長條圖列 */
 .ref-stat-list {
   display: flex;
   flex-direction: column;
@@ -485,7 +425,94 @@ body {
   background: rgba(244, 162, 97, 0.15);
 }
 
-/* 🛒 恢復 Version 1 精簡經典商店 (V1 Compact Shop Grid) */
+/* ==========================================================================
+   📊 Image 3 正宗賽季結算面板 (Season Settlement Card Matching Image 3)
+   ========================================================================== */
+.season-settlement-card {
+  background: rgba(10, 24, 19, 0.9);
+  border: 1px solid rgba(42, 157, 143, 0.4);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.settlement-block {
+  background: rgba(14, 30, 24, 0.75);
+  border: 1px solid rgba(42, 157, 143, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.settlement-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f4a261;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settlement-team-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(244, 162, 97, 0.2);
+  color: #f4a261;
+  border: 1px solid rgba(244, 162, 97, 0.4);
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.settlement-box-text {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #f8fafc;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  font-family: monospace;
+}
+
+/* 📊 榮譽頁面逐年生涯數據總表 (Career Stats Table) */
+.career-stats-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 14px;
+}
+
+.career-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  text-align: center;
+}
+
+.career-stats-table th {
+  background: rgba(42, 157, 143, 0.25);
+  color: #f4a261;
+  padding: 8px 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  white-space: nowrap;
+}
+
+.career-stats-table td {
+  padding: 6px 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: #f8fafc;
+  white-space: nowrap;
+}
+
+.career-stats-table tr:nth-child(even) {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* 🛒 商店 */
 .shop-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));

@@ -1,12 +1,12 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
-   Version: EA 0.2.1
+   Version: EA 0.3 (Deep yakyulife Alignment & Image 3 Match)
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const APP_VERSION = 'EA 0.2.1';
+  const APP_VERSION = 'EA 0.3';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
@@ -116,7 +116,7 @@
     { id: 'ach_43', icon: '💳', title: '【億萬身價】', desc: '生涯薪資總計突破 $1 億', titleReward: '稱號：億萬男' },
     { id: 'ach_44', icon: '🏦', title: '【大聯盟頂薪合約】', desc: '生涯薪資總計突破 $3 億', titleReward: '稱號：頂薪合約王' },
     { id: 'ach_45', icon: '💎', title: '【黃金傳奇薪資】', desc: '生涯薪資總計突破 $5 億歷史極限', titleReward: '稱號：黃金身價' },
-    { id: 'ach_46', icon: '📈', title: '【理財大師】', desc: '個人零用金積蓄突破 $5,000 萬', titleReward: '稱號：理財大師' },
+    { id: 'ach_46', icon: '💍', title: '【幸福新婚人夫】', desc: '在職棒生涯期間順利結婚建構幸福家庭', titleReward: '稱號：愛妻家' },
     { id: 'ach_47', icon: '🏰', title: '【頂級豪宅之主】', desc: '入住 Tier 5 名人堂極致莊園', titleReward: '稱號：城堡主人' },
     { id: 'ach_48', icon: '🏎️', title: '【極速超跑狂熱】', desc: '駕駛 Tier 5 傳奇狂飆賽車巨獸', titleReward: '稱號：飆速球星' },
     { id: 'ach_49', icon: '🎒', title: '【資深裝備家】', desc: '擁有 5 件常駐型裝備', titleReward: '稱號：裝備玩家' },
@@ -157,7 +157,7 @@
   ];
 
   /* ==========================================================================
-     4. 豐富機會卡資料庫
+     4. 豐富機會卡與事件資料庫 (含交易、交往/結婚)
      ========================================================================== */
   const CHANCE_CARDS = [
     { name: '天道酬勤', icon: '🏋️', desc: '自主訓練發狂！本季訓練額外 +2 顆骰子加成！', type: 'good', effect: (S) => { S.diceBonus += 2; } },
@@ -165,14 +165,40 @@
     { name: '狀態極佳', icon: '🔥', desc: '打擊與控球感覺極佳，打擊與控球直升 +4！', type: 'good', effect: (S) => { S.ab.con += 4; S.ab.ctl += 4; } },
     { name: '前輩指點', icon: '前', desc: '獲得隊友傳奇前輩親自指點，全屬性+2！', type: 'gold', effect: (S) => { for (let k in S.ab) S.ab[k] += 2; } },
     { name: '代言合約', icon: '💰', desc: '接下高檔體育品牌代言，零用金大增 +$50萬！', type: 'gold', effect: (S) => { S.money += 500000; } },
-    { name: '舊傷復發', icon: '🩹', desc: '輕微拉傷！本季跑壘與體力暫時 -2，幸無大礙。', type: 'bad', effect: (S) => { S.ab.spd = Math.max(10, S.ab.spd - 2); S.ab.sta = Math.max(10, S.ab.sta - 2); } },
+    { name: '浪漫相遇', icon: '💕', desc: '在球場記者會結識體育女主播，展開浪漫熱戀！', type: 'gold', effect: (S) => { handleRomanceEvent(S); } },
+    { name: '球隊交易', icon: '🔄', desc: '球團發動震撼交易！被交易至聯賽勁旅發揮！', type: 'good', effect: (S) => { handleTradeEvent(S); } },
     { name: '神器撿拾', icon: '🎁', desc: '在球場休息室撿到前輩遺留的幸運手套！守備+5！', type: 'good', effect: (S) => { S.ab.fld += 5; } },
     { name: '特製補給', icon: '🧪', desc: '飲用名醫調配的高效氨基酸，球速+2km/h，選球+3！', type: 'good', effect: (S) => { S.ab.vel += 2; S.ab.eye += 3; } },
     { name: '宿敵嗆聲', icon: '🔥', desc: '與死敵宿敵在球場對峙激發鬥志！力量上限突破+5！', type: 'gold', effect: (S) => { S.pot.pow += 5; } },
     { name: '球隊旅遊', icon: '🏖️', desc: '參加球隊沖繩移地訓練，身心大放鬆！體力+6！', type: 'good', effect: (S) => { S.ab.sta += 6; } },
-    { name: '打擊特訓', icon: '🏏', desc: '特訓教練一對一修改打擊姿勢！力量+4，打擊+3！', type: 'good', effect: (S) => { S.ab.pow += 4; S.ab.con += 3; } },
-    { name: '球迷熱情', icon: '❤️', desc: '收到後援會球迷送來的溫暖禮物，心態大幅穩定！', type: 'good', effect: (S) => { S.ab.eye += 4; } }
+    { name: '打擊特訓', icon: '🏏', desc: '特訓教練一對一修改打擊姿勢！力量+4，打擊+3！', type: 'good', effect: (S) => { S.ab.pow += 4; S.ab.con += 3; } }
   ];
+
+  function handleRomanceEvent(S) {
+    if (!S.relationship) {
+      const partners = ['人氣體育主播 (長澤亞美)', '青梅竹馬 (佐藤美咲)', '職棒啦啦隊隊長 (櫻井奈奈)', '當紅偶像歌手 (星野愛)'];
+      S.relationship = { status: 'DATING', partner: partners[ri(0, partners.length - 1)] };
+      addLogCard('💕 浪漫熱戀爆發', `你與【${S.relationship.partner}】正式展開交往！選球與心態大幅提升！`, 'gold', '戀愛事件');
+      S.ab.eye += 5;
+    } else if (S.relationship.status === 'DATING') {
+      S.relationship.status = 'MARRIED';
+      unlockAchievement('ach_46');
+      S.traits.push(`💍 已婚人夫 (配偶: ${S.relationship.partner})`);
+      addLogCard('💒 盛大世紀婚禮', `你與【${S.relationship.partner}】舉辦世紀婚禮正式結婚！獲得妻子賢內助加成，全屬性天花板 +5！`, 'gold', '結婚成就');
+      for (let k in S.pot) S.pot[k] += 5;
+    }
+  }
+
+  function handleTradeEvent(S) {
+    if (S.stage === 'PRO') {
+      const teams = S.leagueKey.startsWith('NPB') ? NPB_TEAMS : (S.leagueKey.startsWith('CPBL') ? CPBL_TEAMS : MLB_TEAMS);
+      const newTeam = teams[ri(0, teams.length - 1)];
+      if (newTeam !== S.team) {
+        S.team = newTeam;
+        addLogCard('🔄 震撼球隊交易', `球團正式宣佈將你交易至【${S.team}】！開啟全新職棒篇章！`, 'good', '球隊交易');
+      }
+    }
+  }
 
   const CPBL_TEAMS = ['台中猛瑪', '府城雄獅', '桃園金剛', '新北騎士', '台北恐龍', '高雄神鵰'];
   const NPB_TEAMS = ['東京大人', '阪神猛虎', '橫濱海星', '廣島紅鯉', '神宮飛燕', '福岡猛禽', '千葉海潮', '歐力士猛牛'];
@@ -281,7 +307,7 @@
   }
 
   /* ==========================================================================
-     6. 🎲 100% 復刻 Image 2 雙模式互動 (選骰 ➔ 點列分配 or 直接點按)
+     6. 🎲 正宗先擲骰 ➔ 再分配點數引擎
      ========================================================================== */
   function calcDicePool() {
     let count = 3;
@@ -315,7 +341,6 @@
   }
 
   function renderRefAllocUI() {
-    // 1. 渲染頂部卡牌型骰子列 (Image 2 Match)
     const diceContainer = document.getElementById('ref-dice-pool-container');
     diceContainer.innerHTML = S.currentDicePool.map(d => `
       <div class="ref-dice-card ${d.id === S.selectedDieId ? 'selected' : ''} ${d.assignedTo ? 'used' : ''}" data-id="${d.id}">
@@ -323,7 +348,6 @@
       </div>
     `).join('');
 
-    // 點擊骰子卡牌：設為選中高亮狀態
     diceContainer.querySelectorAll('.ref-dice-card').forEach(card => {
       card.addEventListener('click', () => {
         const id = card.dataset.id;
@@ -335,7 +359,6 @@
       });
     });
 
-    // 2. 渲染屬性長條圖列表 (Image 2 Capsule Rows)
     const statContainer = document.getElementById('ref-stat-list-container');
     const config = S.position === 'PITCHER'
       ? [
@@ -381,7 +404,6 @@
       `;
     }).join('');
 
-    // 點擊屬性列：若有選中的骰子直接分配，若未選中自動拿池中第一個未使用的骰子！
     statContainer.querySelectorAll('.ref-stat-row').forEach(row => {
       row.addEventListener('click', () => {
         const k = row.dataset.key;
@@ -547,7 +569,10 @@
 
       money: 100000,
       salary: 0,
+      contractYears: 3,
       careerSalaryTotal: 0,
+      relationship: null,
+
       maxUnlockedAssetTier: 1,
       ownedAssets: { house: 'house_01', car: null },
 
@@ -605,28 +630,65 @@
     return Math.round((a.con * 1.3 + a.pow * 1.2 + a.eye * 1.0 + a.spd * 0.7 + a.fld * 0.8) / 5);
   }
 
+  /* 📊 100% 復刻 Image 3 正宗賽季模擬與詳細 Box Score */
   function simSeason() {
     const L = LEAGUES[S.leagueKey] || LEAGUES.HS_TW;
     const a = S.ab;
     const diff = calcOVR() - L.par;
 
+    // 30歲後衰退
+    if (S.age >= 30) {
+      a.sta = Math.max(10, a.sta - 1);
+      a.spd = Math.max(10, a.spd - 1);
+      if (a.vel > 130) a.vel -= 1;
+    }
+
     let s = {
-      year: S.year, league: L.n, team: S.team,
+      year: S.year, age: S.age, league: L.n, team: S.team,
       isBatter: S.position === 'BATTER' || S.position === 'TWOWAY',
       isPitcher: S.position === 'PITCHER' || S.position === 'TWOWAY',
-      G: 0, PA: 0, AB: 0, H: 0, HR: 0, RBI: 0, SB: 0, AVG: 0, OPS: 0, batWAR: 0,
-      pG: 0, IP: 0, W: 0, L: 0, SV: 0, SO: 0, ERA: 0, WHIP: 0, pitWAR: 0
+
+      // 野手詳細 Box
+      G: 0, PA: 0, AB: 0, H: 0, HR: 0, RBI: 0, BB: 0, SB: 0, E: 0,
+      AVG: 0, OBP: 0, SLG: 0, OPS: 0, batWAR: 0,
+
+      // 投手詳細 Box
+      pG: 0, W: 0, L: 0, ERA: 0, WHIP: 0, IP: 0, SO: 0, CG: 0, SHO: 0, pitWAR: 0,
+
+      // 球隊戰績
+      teamW: ri(65, 88), teamL: ri(50, 70), rank: ri(1, 4), isChampion: false,
+      contractRemaining: S.contractYears
     };
 
+    s.isChampion = s.rank === 1 && R() < 0.6;
+    if (s.isChampion) {
+      S.rings += 1;
+      unlockAchievement('ach_39');
+      s.honors = '總冠軍 🏆';
+    } else {
+      s.honors = '-';
+    }
+
     if (s.isBatter) {
-      const gMax = S.leagueKey.startsWith('HS') ? 30 : 130;
+      const gMax = S.leagueKey.startsWith('HS') ? 30 : 120;
       s.G = Math.round(clamp(gMax * (0.75 + diff * 0.015 + R() * 0.1), 10, gMax));
-      s.PA = Math.round(s.G * 3.8); s.AB = Math.round(s.PA * 0.88);
+      s.PA = Math.round(s.G * 3.8); s.AB = Math.round(s.PA * 0.88); s.BB = Math.round(s.PA * 0.10);
       s.H = Math.round(s.AB * clamp(0.250 + diff * 0.004 + (a.con - 40) * 0.002, 0.180, 0.390));
       s.AVG = +(s.H / Math.max(1, s.AB)).toFixed(3);
+      s.OBP = +((s.H + s.BB) / Math.max(1, s.PA)).toFixed(3);
+
       s.HR = Math.round(s.AB * clamp(0.02 + (a.pow - 30) * 0.0025, 0.005, 0.11));
+      const doubles = Math.round(s.H * 0.2);
+      const triples = Math.round(s.H * 0.03);
+      const singles = Math.max(0, s.H - s.HR - doubles - triples);
+      const totalBases = singles + doubles * 2 + triples * 3 + s.HR * 4;
+      s.SLG = +(totalBases / Math.max(1, s.AB)).toFixed(3);
+      s.OPS = +(s.OBP + s.SLG).toFixed(3);
+
       s.RBI = Math.round(s.HR * 1.8 + s.H * 0.25 + ri(0, 10));
-      s.OPS = +(s.AVG + 0.12).toFixed(3);
+      s.SB = Math.round((a.spd / 100) * ri(5, 30));
+      s.E = Math.max(0, ri(1, 12) - Math.round(a.fld / 15));
+
       s.batWAR = +((s.OPS - 0.700) * 8).toFixed(1);
       S.careerHits += s.H; S.careerHR += s.HR;
 
@@ -645,6 +707,8 @@
       s.ERA = +clamp(4.20 - diff * 0.08, 1.20, 7.50).toFixed(2);
       s.WHIP = +(1.35 - diff * 0.012).toFixed(2);
       s.SO = Math.round((s.IP / 9) * clamp(6.5 + (a.vel - 135) * 0.15, 4.0, 13.5));
+      s.CG = Math.round(s.pG * 0.15); s.SHO = Math.round(s.CG * 0.4);
+
       s.pitWAR = +((4.50 - s.ERA) * (s.IP / 40)).toFixed(1);
       S.careerWins += s.W; S.careerSO += s.SO;
 
@@ -664,10 +728,80 @@
     if (S.salary > 0) {
       S.money += Math.round(S.salary * 0.3);
       S.careerSalaryTotal += S.salary;
+      S.contractYears = Math.max(1, S.contractYears - 1);
+      if (S.contractYears === 1) {
+        S.contractYears = ri(2, 4);
+        S.salary = Math.round(S.salary * clamp(1 + yearWAR * 0.08, 0.9, 1.5));
+        addLogCard('💳 自由球員續約', `表現優異！球團與你簽下 ${S.contractYears} 年複數年合約，年薪調整至 $${(S.salary / 10000).toFixed(0)}萬！`, 'gold', '合約簽署');
+      }
     }
 
     checkAchievements();
+    renderSeasonSettlementBox(s);
+    renderCareerStatsTable();
     return s;
+  }
+
+  /* 📊 100% 復刻 Image 3 正宗賽季結算面板渲染 */
+  function renderSeasonSettlementBox(s) {
+    const box = document.getElementById('season-settlement-display-box');
+    if (!box) return;
+
+    box.classList.remove('hidden');
+    const isBatter = s.isBatter;
+
+    box.innerHTML = `
+      <div class="settlement-block">
+        <div class="settlement-label">◆ 體力與健康回報</div>
+        <p class="text-sm">本季平安出賽。(受傷機率 ${ri(12, 35)}%)</p>
+      </div>
+
+      <div class="settlement-block">
+        <div class="settlement-label">◆ 球季數據</div>
+        <span class="settlement-team-badge">${s.team} (${s.league})</span>
+        <div class="settlement-box-text">
+          ${isBatter
+        ? `出賽 ${s.G} | 打席 ${s.PA} | 打擊率 .${(s.AVG * 1000).toFixed(0).padStart(3, '0')} | 上壘率 .${(s.OBP * 1000).toFixed(0).padStart(3, '0')} | 長打率 .${(s.SLG * 1000).toFixed(0).padStart(3, '0')} | OPS .${(s.OPS * 1000).toFixed(0).padStart(3, '0')} | 安打 ${s.H} | 全壘打 ${s.HR} | 打點 ${s.RBI} | 保送 ${s.BB} | 盜壘 ${s.SB} | 守備 ${s.E}`
+        : `出賽 ${s.pG} | 勝 ${s.W} | 敗 ${s.L} | 防禦率 ${s.ERA.toFixed(2)} | WHIP ${s.WHIP.toFixed(2)} | 投球局數 ${s.IP} | 奪三振 ${s.SO} | 完投 ${s.CG} | 完封 ${s.SHO}`}
+        </div>
+      </div>
+
+      <div class="settlement-block">
+        <div class="settlement-label">◆ 季末結算與戰績</div>
+        <p class="text-sm">本年度薪資：<strong class="hl-gold">$${(S.salary / 10000).toFixed(0)}萬</strong> (生涯累計 $${(S.careerSalaryTotal / 10000).toFixed(0)}萬) | 合約剩餘 ${S.contractYears} 年</p>
+        <p class="text-sm mt-1">球隊戰績 ${s.teamW}勝${s.teamL}敗 (排名 ${s.rank}) ${s.isChampion ? '| 榮獲總冠軍 🏆' : ''}</p>
+      </div>
+
+      <div class="settlement-block">
+        <div class="settlement-label">◆ 升降級與升遷通知</div>
+        <p class="text-sm hl-green">表現獲得肯定，穩居 ${s.league} 主要戰力！</p>
+      </div>
+    `;
+  }
+
+  /* 📊 榮譽大獎頁面：逐年生涯數據總表 (Career Stats Table) */
+  function renderCareerStatsTable() {
+    const tbody = document.getElementById('career-stats-tbody');
+    if (!tbody || !S.stats) return;
+
+    if (S.stats.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="text-muted">尚無職業賽季數據。</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = S.stats.map(s => `
+      <tr>
+        <td>${s.year}</td>
+        <td>${s.age}歲</td>
+        <td>${s.team} (${s.league})</td>
+        <td>${s.G || s.pG}</td>
+        <td>${s.isBatter ? '.' + (s.AVG * 1000).toFixed(0).padStart(3, '0') : `${s.W}勝${s.L}敗`}</td>
+        <td>${s.isBatter ? '.' + (s.OPS * 1000).toFixed(0).padStart(3, '0') : s.ERA.toFixed(2)}</td>
+        <td><strong class="hl-gold">${s.batWAR || s.pitWAR}</strong></td>
+        <td>${s.teamW}勝${s.teamL}敗 (${s.rank})</td>
+        <td>${s.honors || '-'}</td>
+      </tr>
+    `).join('');
   }
 
   function renderAll() {
@@ -691,6 +825,7 @@
     renderAssets();
     renderCodex();
     renderAchievements();
+    renderCareerStatsTable();
     renderRadarChart();
   }
 
@@ -877,10 +1012,10 @@
         labels: labels,
         datasets: [{
           data: data,
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(42, 157, 143, 0.25)',
+          borderColor: '#2a9d8f',
           borderWidth: 2,
-          pointBackgroundColor: '#f5d130'
+          pointBackgroundColor: '#f4a261'
         }]
       },
       options: {
@@ -913,17 +1048,24 @@
 
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();
-      addLogCard(`⚾ ${S.year} 年 ${getStageLabel()} 賽季結算`, `打率 <b class="hl-gold">${stat.AVG || '---'}</b> | 防禦率 <b class="hl-gold">${stat.ERA || '---'}</b>`, 'good', '賽季成績');
-
       if (S.stage === 'HS1') { S.stage = 'HS2'; S.year += 1; S.age += 1; }
       else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; }
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       renderAll();
     } else if (S.stage === 'PRO') {
       const stat = simSeason();
-      addLogCard(`⚾ ${S.year} 年 ${LEAGUES[S.leagueKey].n} 賽季成績`, `打率 <b class="hl-gold">${stat.AVG || '---'}</b> | WAR <b class="hl-gold">${stat.batWAR || stat.pitWAR}</b>`, 'good', '職棒成績');
 
-      if (S.age >= 38) {
+      // 34歲後主動詢問引退抉擇 (Age 34+ Voluntary Retirement Prompt)
+      if (S.age >= 34) {
+        if (confirm(`【老將退役抉擇】您今年已 ${S.age} 歲，身體素質逐漸下滑，是否決定宣佈正式引退，脫下戰袍開啟第二人生？`)) {
+          S.stage = 'RETIRED';
+          renderAll();
+          showRetirementScreen();
+          return;
+        }
+      }
+
+      if (S.age >= 42) {
         S.stage = 'RETIRED';
         renderAll();
         showRetirementScreen();

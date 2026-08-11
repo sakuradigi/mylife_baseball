@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1d3a">
-  <title>我的野球人生 (My Baseball Life) - EA 0.2.1</title>
+  <meta name="theme-color" content="#091512">
+  <title>我的野球人生 (My Baseball Life) - EA 0.3</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,8 +13,8 @@
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Cache Buster v=0.2.1 -->
-  <link rel="stylesheet" href="style.css?v=0.2.1">
+  <!-- Cache Buster v=0.3 -->
+  <link rel="stylesheet" href="style.css?v=0.3">
 </head>
 <body class="theme-npb">
   <div id="app" class="app-container">
@@ -23,13 +23,13 @@
       <div class="logo-group">
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
-          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.2.1</span></h1>
+          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.3</span></h1>
         </div>
       </div>
       
       <div class="header-actions">
         <select id="select-theme-switcher" class="select-theme-sm" title="切換配色風格">
-          <option value="theme-npb">⛩️ NPB 午夜金墨 (正宗綠)</option>
+          <option value="theme-npb">⛩️ NPB 墨綠極簡 (正宗綠)</option>
           <option value="theme-mlb">⚾ MLB 經典藍紅</option>
           <option value="theme-cpbl">🌿 CPBL 翡翠極光</option>
         </select>
@@ -173,7 +173,7 @@
               </div>
 
               <div class="traits-container">
-                <div class="traits-title">能力天賦與常駐裝備</div>
+                <div class="traits-title">能力天賦、常駐裝備與感情狀態</div>
                 <div id="traits-list" class="traits-tags">
                   <span class="trait-tag trait-good">✨ 高中頂尖</span>
                 </div>
@@ -202,15 +202,18 @@
             </div>
 
             <div class="dashboard-tabs">
-              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (100% 正宗配點長條圖)</button>
+              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (正宗長條圖配點)</button>
               <button class="tab-btn" data-tab="tab-shop">🛒 體育商店</button>
               <button class="tab-btn" data-tab="tab-assets">🏠 房產與跑車</button>
-              <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽大獎</button>
+              <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽與生涯數據</button>
             </div>
 
             <!-- TAB 1: 100% Reference Matching Dice Allocation (Image 2) -->
             <div id="tab-dice-alloc" class="tab-content active">
               <div class="glass-panel alloc-panel-full">
+                <!-- 📊 100% 復刻 Image 3 正宗賽季數據結算區塊 (Season Settlement Card) -->
+                <div id="season-settlement-display-box" class="season-settlement-card hidden"></div>
+
                 <div class="dice-roll-step text-center mb-3">
                   <button id="btn-trigger-roll-dice" class="btn-tactile btn-tactile-success btn-lg btn-block">
                     🎲 擲出本季訓練骰子！
@@ -268,11 +271,33 @@
               </div>
             </div>
 
-            <!-- TAB 4: Trophies -->
+            <!-- TAB 4: Trophies & Career Detailed Stats Table -->
             <div id="tab-trophies" class="tab-content">
               <div class="glass-panel trophy-panel-full">
                 <h3>🏆 生涯榮譽與冠軍戒指</h3>
                 <div id="trophy-list-full" class="trophy-grid-full"></div>
+
+                <h3 class="mt-4">📊 逐年生涯完整數據總表 (Career Stats History)</h3>
+                <div class="career-stats-table-wrapper">
+                  <table class="career-stats-table">
+                    <thead>
+                      <tr>
+                        <th>年份</th>
+                        <th>年齡</th>
+                        <th>效力球隊 (層級)</th>
+                        <th>出賽</th>
+                        <th>打擊率 / 勝敗</th>
+                        <th>OPS / 防禦率</th>
+                        <th>WAR</th>
+                        <th>球隊戰績</th>
+                        <th>榮譽</th>
+                      </tr>
+                    </thead>
+                    <tbody id="career-stats-tbody">
+                      <tr><td colspan="9" class="text-muted">尚無職業賽季數據。</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
 
@@ -398,11 +423,11 @@
 
     <!-- Version Badge Floating Corner -->
     <div class="version-floating-corner">
-      <span>BUILD: <strong id="footer-version-tag">EA 0.2.1</strong></span>
+      <span>BUILD: <strong id="footer-version-tag">EA 0.3</strong></span>
     </div>
   </div>
 
-  <!-- Cache Buster v=0.2.1 -->
-  <script src="app.js?v=0.2.1"></script>
+  <!-- Cache Buster v=0.3 -->
+  <script src="app.js?v=0.3"></script>
 </body>
 </html>
