@@ -1,5 +1,5 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - EA 0.3.5 Emerald Pure Theme CSS
+   「我的野球人生」 (My Baseball Life) - EA 0.4 Emerald Pure Theme CSS
    ========================================================================== */
 
 /* Theme 1: Emerald Pure (Matching yakyulife & Image 3) */
@@ -261,7 +261,7 @@ body {
 .tab-content.active { display: block; }
 
 /* ==========================================================================
-   🎴 3D 質感互動抉擇卡片 (Interactive Choice Cards - Fixing Image 4)
+   🃏 100% 復刻 Image 7/8 互動式事件卡 3 應對策略選項 (Risk/Reward Choice Cards)
    ========================================================================== */
 .choices-panel {
   background: rgba(14, 32, 26, 0.96);
@@ -273,7 +273,7 @@ body {
 }
 
 .choices-heading {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: #f4a261;
   margin-bottom: 6px;
@@ -286,16 +286,16 @@ body {
 }
 
 .choices-btn-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .btn-choice {
   background: linear-gradient(180deg, rgba(26, 54, 44, 0.9) 0%, rgba(13, 29, 24, 0.95) 100%);
   border: 1.5px solid rgba(42, 157, 143, 0.5);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 14px 18px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -304,21 +304,42 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.btn-choice:hover {
-  border-color: #f4a261;
-  background: linear-gradient(180deg, rgba(38, 70, 58, 0.95) 0%, rgba(20, 44, 36, 0.98) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(244, 162, 97, 0.25);
+/* 高風險「全力一搏」按鈕 (Image 7/8 Match - 紅邊框) */
+.btn-choice.high-risk {
+  border-color: #e76f51;
+  background: linear-gradient(180deg, rgba(45, 25, 20, 0.95) 0%, rgba(25, 15, 12, 0.98) 100%);
 }
 
-.btn-choice:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+.btn-choice.high-risk:hover {
+  border-color: #ff4d4d;
+  box-shadow: 0 0 16px rgba(231, 111, 81, 0.4);
+}
+
+/* 中風險「照常執行」按鈕 (Image 7/8 Match - 綠邊框) */
+.btn-choice.med-risk {
+  border-color: #2a9d8f;
+  background: linear-gradient(180deg, rgba(20, 48, 38, 0.95) 0%, rgba(10, 26, 20, 0.98) 100%);
+}
+
+.btn-choice.med-risk:hover {
+  border-color: #2ec4b6;
+  box-shadow: 0 0 16px rgba(42, 157, 143, 0.4);
+}
+
+/* 低風險「保守應對」按鈕 (Image 7/8 Match) */
+.btn-choice.low-risk {
+  border-color: #10b981;
+  background: linear-gradient(180deg, rgba(16, 42, 32, 0.95) 0%, rgba(8, 24, 18, 0.98) 100%);
+}
+
+.btn-choice.low-risk:hover {
+  border-color: #34d399;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
 }
 
 .btn-choice-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: #f8fafc;
 }
 
@@ -327,9 +348,7 @@ body {
   color: #94a3b8;
 }
 
-/* ==========================================================================
-   🎲 100% 復刻原版《yakyulife》分配訓練成果與經典膠囊長條圖 (Image 2 & Image 3)
-   ========================================================================== */
+/* Dice Allocation Container */
 .ref-alloc-container {
   background: rgba(10, 24, 19, 0.85);
   border: 1px solid rgba(42, 157, 143, 0.4);
@@ -621,7 +640,7 @@ body {
 
 .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Persistent Log Feed */
+/* Log Feed Stream */
 .narrative-stream-card { margin-top: 16px; }
 .stream-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .btn-text-sm { background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; }

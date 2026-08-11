@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#091512">
-  <title>我的野球人生 (My Baseball Life) - EA 0.3.5</title>
+  <title>我的野球人生 (My Baseball Life) - EA 0.4</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,8 +13,8 @@
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Cache Buster v=0.3.5 -->
-  <link rel="stylesheet" href="style.css?v=0.3.5">
+  <!-- Cache Buster v=0.4 -->
+  <link rel="stylesheet" href="style.css?v=0.4">
 </head>
 <body class="theme-npb">
   <div id="app" class="app-container">
@@ -23,7 +23,7 @@
       <div class="logo-group">
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
-          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.3.5</span></h1>
+          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.4</span></h1>
         </div>
       </div>
       
@@ -196,7 +196,7 @@
                 <span class="stage-name-label" id="current-stage-display">【春訓階段】</span>
               </div>
               <div class="action-buttons">
-                <button id="btn-draw-chance-card" class="btn-tactile btn-tactile-warning btn-sm">🃏 抽取機會卡 (<span id="chance-card-count">1</span>)</button>
+                <button id="btn-draw-chance-card" class="btn-tactile btn-tactile-warning btn-sm">🃏 抽事件卡 (<span id="chance-card-count">1</span>)</button>
                 <button id="btn-next-phase" class="btn-tactile btn-tactile-primary btn-pulse">⏩ 進行下個階段</button>
               </div>
             </div>
@@ -208,7 +208,7 @@
               <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽與生涯數據</button>
             </div>
 
-            <!-- TAB 1: 100% Reference Matching Dice Allocation (Image 2) -->
+            <!-- TAB 1: Dice Allocation -->
             <div id="tab-dice-alloc" class="tab-content active">
               <div class="glass-panel alloc-panel-full">
                 <!-- 📊 100% 復刻 Image 3 正宗賽季數據結算區塊 (Season Settlement Card) -->
@@ -308,7 +308,7 @@
                 <button id="btn-clear-log" class="btn-text-sm">清空紀錄</button>
               </div>
               
-              <!-- 🎴 3D 質感互動抉擇卡片容器 (Image 4 Fix) -->
+              <!-- 🃏 100% 復刻 Image 7/8 互動式事件卡 3 應對選項容器 -->
               <div id="container-choices" class="choices-panel hidden mb-3">
                 <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
                 <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
@@ -424,11 +424,11 @@
 
     <!-- Version Badge Floating Corner -->
     <div class="version-floating-corner">
-      <span>BUILD: <strong id="footer-version-tag">EA 0.3.5</strong></span>
+      <span>BUILD: <strong id="footer-version-tag">EA 0.4</strong></span>
     </div>
   </div>
 
-  <!-- Cache Buster v=0.3.5 -->
-  <script src="app.js?v=0.3.5"></script>
+  <!-- Cache Buster v=0.4 -->
+  <script src="app.js?v=0.4"></script>
 </body>
 </html>

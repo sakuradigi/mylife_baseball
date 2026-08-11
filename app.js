@@ -1,12 +1,12 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
-   Version: EA 0.3.5 (College Pathway, Realistic Stats, Choice Cards UI Fix)
+   Version: EA 0.4 (Multi-Tier Minor Leagues, 30 MLB Teams, 3-Choice Risk/Reward Events)
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const APP_VERSION = 'EA 0.3.5';
+  const APP_VERSION = 'EA 0.4';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
@@ -66,27 +66,49 @@
     } catch (e) { }
   }
 
-  /* 微妙隱晦真實球隊命名 (Homage Team Naming) */
+  /* 🏟️ 30 支大聯盟名門球隊與二三軍小聯盟梯隊 */
   const CPBL_TEAMS = ['台中象勇', '府城飛獅', '桃園狂猿', '味全赤龍', '新北悍將', '高雄鋼鷹'];
   const NPB_TEAMS = ['東京巨人', '關西猛虎', '濱海星光', '廣島赤鯉', '神宮疾燕', '名古屋青龍', '福岡金鷹', '千葉海鷗', '關西狂牛', '東北鷲王', '西武雄獅', '北海鬥士'];
-  const MLB_TEAMS = ['洛城湛藍', '紐約帝國', '波士頓赤襪', '聖地牙哥修士', '舊金山巨龍', '亞特蘭大勇士', '芝加哥幼熊', '安那罕天使'];
+
+  const MLB_30_TEAMS = [
+    // 美聯 (AL)
+    '紐約帝國', '波士頓赤襪', '多倫多藍鳥', '坦帕灣光芒', '巴爾的摩金鶯',
+    '芝加哥白襪', '克里夫蘭守護者', '底特律老虎', '堪薩斯皇家', '明尼蘇達雙城',
+    '洛城銀河', '休士頓太空王', '西雅圖水手', '奧克蘭運動家', '德州遊騎兵',
+    // 國聯 (NL)
+    '亞特蘭大勇士', '邁阿密馬林魚', '紐約大都會', '費城費城人', '華盛頓國民',
+    '芝加哥幼熊', '辛辛那提紅人', '密爾瓦基釀酒人', '匹茲堡海盜', '聖路易紅雀',
+    '洛城湛藍', '聖地牙哥修士', '舊金山巨龍', '亞利桑那響尾蛇', '科羅拉多落磯'
+  ];
 
   const HS_TW_TEAMS = ['平鎮高中', '穀保家商', '高苑工商', '南英商工'];
   const HS_JP_TEAMS = ['大阪桐蔭', '智辯和歌山', '東海大相模', '橫濱高校'];
   const UNI_TW_TEAMS = ['文化大學', '國立體大', '開南大學', '北市大'];
   const UNI_JP_TEAMS = ['明治大學', '早稻田大學', '慶應義塾', '法政大學'];
 
+  /* 多階梯隊定義 (Minor League Ladder) */
   const LEAGUES = {
-    HS_TW: { n: '高中棒球(台灣黑豹旗)', par: 30, min: 20 },
-    HS_JP: { n: '高中棒球(日本甲子園)', par: 34, min: 22 },
-    UNI_TW: { n: '大專棒球聯賽(TW)', par: 38, min: 28 },
-    UNI_JP: { n: '全日本大學選手權(JP)', par: 42, min: 32 },
-    CPBL2: { n: '中職二軍', par: 38, min: 30, org: 'CPBL' },
-    CPBL1: { n: '中職一軍', par: 48, min: 42, org: 'CPBL' },
-    NPB2: { n: '日職二軍', par: 50, min: 44, org: 'NPB' },
-    NPB1: { n: '日職一軍', par: 58, min: 52, org: 'NPB' },
-    MiLB: { n: '美職小聯盟(3A)', par: 56, min: 50, org: 'MLB' },
-    MLB: { n: '大聯盟(MLB)', par: 66, min: 60, org: 'MLB' }
+    HS_TW: { n: '高中棒球(台灣黑豹旗)', par: 30, level: 0 },
+    HS_JP: { n: '高中棒球(日本甲子園)', par: 34, level: 0 },
+    UNI_TW: { n: '大專棒球聯賽(TW)', par: 38, level: 1 },
+    UNI_JP: { n: '全日本大學選手權(JP)', par: 42, level: 1 },
+
+    // CPBL 2階
+    CPBL2: { n: '中職二軍', par: 40, level: 2, next: 'CPBL1', prev: null },
+    CPBL1: { n: '中職一軍', par: 50, level: 3, next: null, prev: 'CPBL2' },
+
+    // NPB 3階 (含育成三軍)
+    NPB_IKUSEI: { n: '日職育成三軍', par: 42, level: 2, next: 'NPB2', prev: null },
+    NPB2: { n: '日職二軍', par: 52, level: 3, next: 'NPB1', prev: 'NPB_IKUSEI' },
+    NPB1: { n: '日職一軍', par: 62, level: 4, next: null, prev: 'NPB2' },
+
+    // MLB 6階小聯盟
+    MiLB_Rook: { n: '美職新人聯盟 (Rook)', par: 44, level: 2, next: 'MiLB_1A', prev: null },
+    MiLB_1A: { n: '美職低階 1A (A)', par: 50, level: 3, next: 'MiLB_A_Plus', prev: 'MiLB_Rook' },
+    MiLB_A_Plus: { n: '美職高階 1A (A+)', par: 55, level: 4, next: 'MiLB_2A', prev: 'MiLB_1A' },
+    MiLB_2A: { n: '美職雙 A (2A)', par: 60, level: 5, next: 'MiLB_3A', prev: 'MiLB_A_Plus' },
+    MiLB_3A: { n: '美職三 A (3A)', par: 65, level: 6, next: 'MLB', prev: 'MiLB_2A' },
+    MLB: { n: '大聯盟 (MLB)', par: 72, level: 7, next: null, prev: 'MiLB_3A' }
   };
 
   /* ==========================================================================
@@ -180,58 +202,92 @@
   ];
 
   /* ==========================================================================
-     4. 豐富機會卡與每季必定觸發事件
+     4. 100% 復刻 Image 7/8 互動式事件卡 3 應對選項系統 (Risk/Reward Choice Cards)
      ========================================================================== */
-  const CHANCE_CARDS = [
-    { name: '天道酬勤', icon: '🏋️', desc: '自主訓練發狂！本季訓練額外 +2 顆骰子加成！', type: 'good', effect: (S) => { S.diceBonus += 2; } },
-    { name: '球探重用', icon: '👁️', desc: '大聯盟高級球探親臨觀戰，年薪合約大增 +20%！', type: 'gold', effect: (S) => { S.salary = Math.round((S.salary || 3000000) * 1.2); } },
-    { name: '狀態極佳', icon: '🔥', desc: '打擊與控球感覺極佳，打擊與控球直升 +4！', type: 'good', effect: (S) => { S.ab.con += 4; S.ab.ctl += 4; } },
-    { name: '前輩指點', icon: '前', desc: '獲得隊友傳奇前輩親自指點，全屬性+2！', type: 'gold', effect: (S) => { for (let k in S.ab) S.ab[k] += 2; } },
-    { name: '代言合約', icon: '💰', desc: '接下高檔體育品牌代言，零用金大增 +$50萬！', type: 'gold', effect: (S) => { S.money += 500000; } },
-    { name: '浪漫相遇', icon: '💕', desc: '在球場記者會結識體育女主播，展開浪漫熱戀！', type: 'gold', effect: (S) => { handleRomanceEvent(S); } },
-    { name: '球隊交易', icon: '🔄', desc: '球團發動震撼交易！被交易至聯賽勁旅發揮！', type: 'good', effect: (S) => { handleTradeEvent(S); } },
-    { name: '神器撿拾', icon: '🎁', desc: '在球場休息室撿到前輩遺留的幸運手套！守備+5！', type: 'good', effect: (S) => { S.ab.fld += 5; } },
-    { name: '特製補給', icon: '🧪', desc: '飲用名醫調配的高效氨基酸，球速+2km/h，選球+3！', type: 'good', effect: (S) => { S.ab.vel += 2; S.ab.eye += 3; } }
-  ];
-
-  /* 100% 每季自動觸發賽季中隨機事件 */
-  function triggerGuaranteedInSeasonEvent(S) {
-    const events = [
-      { t: '📰 媒體獨家專訪', d: '受邀登上體育雜誌封面人物，知名度與選球能力加成 +3！', fn: () => { S.ab.eye += 3; } },
-      { t: '🔥 宿敵投手正面對決', d: '在關鍵賽事遇到同梯宿敵打出關鍵安打，力量屬性突破 +4！', fn: () => { S.ab.pow += 4; } },
-      { t: '💕 戀愛發展約會', d: '與女朋友共進浪漫晚餐，沉澱心態全屬性天花板 +2！', fn: () => { handleRomanceEvent(S); } },
-      { t: '🔄 隊友離隊交易', d: '球隊戰術體系重組，獲得教練更多上場指導！打擊+3！', fn: () => { S.ab.con += 3; } },
-      { t: '🧪 科技肌能防禦特訓', d: '引進最新大聯盟打擊數據分析儀，選球與守備大幅提升！', fn: () => { S.ab.eye += 4; S.ab.fld += 4; } }
-    ];
-    const ev = events[ri(0, events.length - 1)];
-    ev.fn();
-    addLogCard(ev.t, ev.d, 'gold', '球季中事件');
-  }
-
-  function handleRomanceEvent(S) {
-    if (!S.relationship) {
-      const partners = ['人氣體育主播 (長澤亞美)', '青梅竹馬 (佐藤美咲)', '職棒啦啦隊隊長 (櫻井奈奈)', '當紅偶像歌手 (星野愛)'];
-      S.relationship = { status: 'DATING', partner: partners[ri(0, partners.length - 1)] };
-      addLogCard('💕 浪漫熱戀爆發', `你與【${S.relationship.partner}】正式展開交往！選球與心態大幅提升！`, 'gold', '戀愛事件');
-      S.ab.eye += 5;
-    } else if (S.relationship.status === 'DATING') {
-      S.relationship.status = 'MARRIED';
-      unlockAchievement('ach_46');
-      S.traits.push(`💍 已婚人夫 (配偶: ${S.relationship.partner})`);
-      addLogCard('💒 盛大世紀婚禮', `你與【${S.relationship.partner}】舉辦世紀婚禮正式結婚！獲得妻子賢內助加成，全屬性天花板 +5！`, 'gold', '結婚成就');
-      for (let k in S.pot) S.pot[k] += 5;
-    }
-  }
-
-  function handleTradeEvent(S) {
-    if (S.stage === 'PRO') {
-      const teams = S.leagueKey.startsWith('NPB') ? NPB_TEAMS : (S.leagueKey.startsWith('CPBL') ? CPBL_TEAMS : MLB_TEAMS);
-      const newTeam = teams[ri(0, teams.length - 1)];
-      if (newTeam !== S.team) {
-        S.team = newTeam;
-        addLogCard('🔄 震撼球隊交易', `球團正式宣佈將你交易至【${S.team}】！開啟全新職棒篇章！`, 'good', '球隊交易');
+  const INTERACTIVE_EVENTS = [
+    {
+      title: '守備千球練習',
+      desc: '特訓教練在練球後留下你，進行高強度的千球守備特訓！',
+      statKey: 'cat',
+      outcomes: {
+        high: { winP: 0.35, winMsg: '豪賭成功！完成千球特訓，接球大幅提升 +3！', loseMsg: '豪賭失敗... 吃了無數彈跳球信心受挫，接球 -3 | 體力 -2', winStat: 3, loseStat: -3 },
+        med: { winP: 0.50, winMsg: '執行順利！掌握守備步伐，接球提升 +2！', loseMsg: '照常執行受小傷，接球 -2', winStat: 2, loseStat: -2 },
+        low: { winP: 0.70, winMsg: '穩紮穩打完成基礎訓練，接球微升 +1！', loseMsg: '保守執行微調，無損失。', winStat: 1, loseStat: 0 }
+      }
+    },
+    {
+      title: '場外代言邀約',
+      desc: '獲得頂級運動品牌拍攝廣告邀約，行程滿檔考驗體能安排。',
+      statKey: 'sta',
+      outcomes: {
+        high: { winP: 0.35, winMsg: '豪賭成功！兼顧代言與鍛鍊，獲得高額報酬與體力提升 +3！', loseMsg: '豪賭失敗... 行程太滿，訓練量明顯掉了！體力 -3', winStat: 3, loseStat: -3 },
+        med: { winP: 0.50, winMsg: '照常完成代言拍攝，體力 +2！', loseMsg: '略顯疲態，體力 -2', winStat: 2, loseStat: -2 },
+        low: { winP: 0.70, winMsg: '保守調整作息，體力微升 +1！', loseMsg: '順利完成行程。', winStat: 1, loseStat: 0 }
+      }
+    },
+    {
+      title: '季中打擊低潮',
+      desc: '遭遇連續十打席無安打的打擊低潮，你要如何突破困境？',
+      statKey: 'con',
+      outcomes: {
+        high: { winP: 0.35, winMsg: '豪賭成功！徹底修改打擊機制打出再見全壘打！打擊 +3！', loseMsg: '豪賭失敗... 低潮拖了一個月，豪賭失敗！Contact -3 | 體力 -3', winStat: 3, loseStat: -3 },
+        med: { winP: 0.50, winMsg: '照常打擊發揮恢復水準，打擊 +2！', loseMsg: '手感依然受限，Contact -2', winStat: 2, loseStat: -2 },
+        low: { winP: 0.70, winMsg: '保守選球保送上壘，打擊 +1！', loseMsg: '平穩過渡低潮。', winStat: 1, loseStat: 0 }
       }
     }
+  ];
+
+  function drawChanceCard() {
+    if (S.chanceCardDrawnThisPhase) {
+      alert('本行動階段已抽過事件卡！請前進下個階段後再行抽取！');
+      return;
+    }
+
+    S.chanceCardDrawnThisPhase = true;
+    const ev = INTERACTIVE_EVENTS[ri(0, INTERACTIVE_EVENTS.length - 1)];
+
+    // 渲染與 Image 7/8 一致的 3 種應對策略卡片 UI
+    const choicesPanel = document.getElementById('container-choices');
+    choicesPanel.classList.remove('hidden');
+
+    document.getElementById('choices-title').textContent = `◆ 事件卡 | ${ev.title} — 你要怎麼應對？`;
+    document.getElementById('choices-desc').textContent = ev.desc;
+
+    document.getElementById('choices-grid').innerHTML = `
+      <div class="btn-choice high-risk" data-risk="high">
+        <span class="btn-choice-title">🔥 全力一搏</span>
+        <span class="btn-choice-sub">成功率 35% | 加成/減益幅度最大 (±3)</span>
+      </div>
+      <div class="btn-choice med-risk" data-risk="med">
+        <span class="btn-choice-title">⚖️ 照常執行</span>
+        <span class="btn-choice-sub">成功率 50% | 標準幅度 (±2)</span>
+      </div>
+      <div class="btn-choice low-risk" data-risk="low">
+        <span class="btn-choice-title">🛡️ 保守應對</span>
+        <span class="btn-choice-sub">成功率 70% | 加成/減益幅度最小 (±1)</span>
+      </div>
+    `;
+
+    document.querySelectorAll('.btn-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const risk = btn.dataset.risk;
+        choicesPanel.classList.add('hidden');
+
+        const opt = ev.outcomes[risk];
+        const isWin = R() < opt.winP;
+        const statGain = isWin ? opt.winStat : opt.loseStat;
+
+        S.ab[ev.statKey] = clamp((S.ab[ev.statKey] || 25) + statGain, 10, S.pot[ev.statKey] || 99);
+
+        if (isWin) {
+          addLogCard(`◆ 事件卡 | ${ev.title}`, opt.winMsg, 'good', '事件判定成功');
+        } else {
+          addLogCard(`◆ 事件卡 | ${ev.title}`, opt.loseMsg, 'bad', '事件判定失敗');
+        }
+
+        renderAll();
+      });
+    });
   }
 
   const ALL_PROPOSALS = [
@@ -643,7 +699,28 @@
     return Math.round((a.con * 1.3 + a.pow * 1.2 + a.eye * 1.0 + a.spd * 0.7 + a.fld * 0.8) / 5);
   }
 
-  /* 區分高中/大學短期盃賽與職業賽事數據模擬器 (Tournament vs Pro Stats) */
+  /* 🪜 多階梯隊升降演算法 (Promotion / Relegation Engine) */
+  function evaluatePromotionOrRelegation(s) {
+    if (S.stage !== 'PRO') return;
+    const curLeague = LEAGUES[S.leagueKey];
+    if (!curLeague) return;
+
+    const ovr = calcOVR();
+
+    // 晉升判定：評分超出現有層級門檻 6 分以上且 WAR 優秀
+    if (curLeague.next && ovr >= curLeague.par + 5) {
+      const nextLeagueKey = curLeague.next;
+      S.leagueKey = nextLeagueKey;
+      addLogCard('★ 梯隊晉升通知！', `表現極度亮眼！獲得球團肯定，晉升至【${LEAGUES[nextLeagueKey].n}】戰場！`, 'gold', '梯隊升級');
+    }
+    // 降級判定：評分低於現有層級門檻 8 分以上且表現持續沉淪
+    else if (curLeague.prev && ovr < curLeague.par - 8) {
+      const prevLeagueKey = curLeague.prev;
+      S.leagueKey = prevLeagueKey;
+      addLogCard('⚠️ 梯隊下放通知！', `近況低迷，教練團將你下放至【${LEAGUES[prevLeagueKey].n}】調整心態。`, 'bad', '梯隊降級');
+    }
+  }
+
   function simSeason() {
     const L = LEAGUES[S.leagueKey] || LEAGUES.HS_TW;
     const a = S.ab;
@@ -672,7 +749,6 @@
     };
 
     if (!isPro) {
-      /* 高中/大學盃賽短期數據 (8~22場淘汰賽) */
       const totalTourneyGames = isCollege ? ri(14, 22) : ri(6, 14);
       s.teamW = Math.round(totalTourneyGames * 0.65); s.teamL = totalTourneyGames - s.teamW;
       s.isChampion = s.teamL <= 1;
@@ -698,7 +774,6 @@
 
       s.honors = s.isChampion ? (isCollege ? '大專聯賽冠軍 🏆' : '甲子園全國制霸 🏆') : '八強複賽';
     } else {
-      /* 職業聯賽完整長賽季數據 (120~130場) */
       s.teamW = ri(65, 88); s.teamL = ri(50, 70);
       s.isChampion = s.rank === 1 && R() < 0.6;
       if (s.isChampion) {
@@ -749,6 +824,8 @@
           addLogCard('💳 自由球員續約', `表現優異！球團與你簽下 ${S.contractYears} 年複數年合約，年薪調整至 $${(S.salary / 10000).toFixed(0)}萬！`, 'gold', '合約簽署');
         }
       }
+
+      evaluatePromotionOrRelegation(s);
     }
 
     const yearWAR = +((s.batWAR || 0) + (s.pitWAR || 0)).toFixed(1);
@@ -1064,9 +1141,6 @@
     document.getElementById('container-choices').classList.add('hidden');
     S.chanceCardDrawnThisPhase = false;
 
-    // 100% 每季自動觸發 1 個球季中事件
-    triggerGuaranteedInSeasonEvent(S);
-
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();
       if (S.stage === 'HS1') { S.stage = 'HS2'; S.year += 1; S.age += 1; }
@@ -1105,7 +1179,6 @@
     }
   }
 
-  /* 🎴 3D 質感互動抉擇卡片 (Image 4 獨立按鈕卡片修復) */
   function showDraftChoices() {
     const choicesPanel = document.getElementById('container-choices');
     choicesPanel.classList.remove('hidden');
@@ -1120,7 +1193,7 @@
 
     if (S.stage === 'DRAFT' && S.age <= 19) {
       html += `
-        <div class="btn-choice" data-choice="COLLEGE">
+        <div class="btn-choice med-risk" data-choice="COLLEGE">
           <span class="btn-choice-title">🎓 升學大學棒球隊 (${S.origin === 'JP' ? '全日本大學聯賽' : '大專棒球聯賽'})</span>
           <span class="btn-choice-sub">經歷 4 年大學聯賽養成磨練，22 歲以強棒之姿再戰選秀</span>
         </div>
@@ -1129,31 +1202,31 @@
 
     if (S.origin === 'TW') {
       html += `
-        <div class="btn-choice" data-choice="CPBL">
-          <span class="btn-choice-title">🇹🇼 投入中華職棒選秀 (CPBL)</span>
-          <span class="btn-choice-sub">第一輪首選指名，爭奪 CPBL 新人王</span>
+        <div class="btn-choice med-risk" data-choice="CPBL">
+          <span class="btn-choice-title">🇹🇼 投入中華職棒選秀 (CPBL二軍起步)</span>
+          <span class="btn-choice-sub">加盟中職名門球隊，努力升上一軍爭奪新人王</span>
         </div>
       `;
       if (canGoMLB) {
         html += `
-          <div class="btn-choice" data-choice="MLB">
-            <span class="btn-choice-title">🇺🇸 旅美挑戰大聯盟 (MiLB/MLB)</span>
-            <span class="btn-choice-sub">球探強烈推薦！高額簽約金旅美直指世界大賽</span>
+          <div class="btn-choice high-risk" data-choice="MLB">
+            <span class="btn-choice-title">🇺🇸 旅美簽約大聯盟 (小聯盟 1A/2A 起步)</span>
+            <span class="btn-choice-sub">獲得大聯盟球探高度關注！挑戰最高殿堂小聯盟梯隊</span>
           </div>
         `;
       }
     } else {
       html += `
-        <div class="btn-choice" data-choice="NPB">
-          <span class="btn-choice-title">🇯🇵 投入日本職棒選秀 (NPB)</span>
-          <span class="btn-choice-sub">加盟日職名門球隊，挑戰頂尖職業戰場</span>
+        <div class="btn-choice med-risk" data-choice="NPB">
+          <span class="btn-choice-title">🇯🇵 投入日本職棒選秀 (NPB二軍起步)</span>
+          <span class="btn-choice-sub">加盟日職名門球隊，挑戰二軍與日職一軍</span>
         </div>
       `;
       if (canGoMLB) {
         html += `
-          <div class="btn-choice" data-choice="MLB">
-            <span class="btn-choice-title">🇺🇸 旅美挑戰大聯盟 (MLB/MiLB)</span>
-            <span class="btn-choice-sub">球探強烈推薦！大聯盟高額簽約金挑戰最高殿堂</span>
+          <div class="btn-choice high-risk" data-choice="MLB">
+            <span class="btn-choice-title">🇺🇸 旅美簽約大聯盟 (小聯盟 1A/2A 起步)</span>
+            <span class="btn-choice-sub">大聯盟球探高額簽約金邀請！衝擊世界大賽</span>
           </div>
         `;
       }
@@ -1172,32 +1245,19 @@
           S.team = S.origin === 'JP' ? UNI_JP_TEAMS[ri(0, UNI_JP_TEAMS.length - 1)] : UNI_TW_TEAMS[ri(0, UNI_TW_TEAMS.length - 1)];
           addLogCard('🎓 大學升學成功', `考取【${S.team}】！展開 4 年大學棒球聯賽養成！`, 'gold', '大學升學');
         } else if (choice === 'CPBL') {
-          S.leagueKey = 'CPBL1'; S.team = CPBL_TEAMS[ri(0, CPBL_TEAMS.length - 1)]; S.salary = 3600000;
+          S.leagueKey = 'CPBL2'; S.team = CPBL_TEAMS[ri(0, CPBL_TEAMS.length - 1)]; S.salary = 1800000;
           S.stage = 'PRO'; S.year += 1; S.age += 1;
         } else if (choice === 'NPB') {
-          S.leagueKey = 'NPB1'; S.team = NPB_TEAMS[ri(0, NPB_TEAMS.length - 1)]; S.salary = 18000000;
+          S.leagueKey = 'NPB2'; S.team = NPB_TEAMS[ri(0, NPB_TEAMS.length - 1)]; S.salary = 6000000;
           S.stage = 'PRO'; S.year += 1; S.age += 1;
         } else {
-          S.leagueKey = 'MiLB'; S.team = MLB_TEAMS[ri(0, MLB_TEAMS.length - 1)]; S.salary = 6000000;
+          S.leagueKey = 'MiLB_1A'; S.team = MLB_30_TEAMS[ri(0, MLB_30_TEAMS.length - 1)]; S.salary = 3000000;
           S.stage = 'PRO'; S.year += 1; S.age += 1;
         }
 
         renderAll();
       });
     });
-  }
-
-  function drawChanceCard() {
-    if (S.chanceCardDrawnThisPhase) {
-      alert('本行動階段已抽過機會卡！請前進下個階段後再行抽取！');
-      return;
-    }
-    S.chanceCardDrawnThisPhase = true;
-    const card = CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)];
-    card.effect(S);
-
-    addLogCard(`🃏 抽中機會卡【${card.icon} ${card.name}】`, card.desc, card.type || 'gold', '機會卡事件');
-    renderAll();
   }
 
   function showRetirementScreen() {
