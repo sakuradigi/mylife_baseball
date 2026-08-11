@@ -1,12 +1,13 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
-   Version: EA 0.4 (Multi-Tier Minor Leagues, 30 MLB Teams, 3-Choice Risk/Reward Events)
+   Version: EA 0.5 (Dice-Based Event Engine, Consumables, 30 Rarity-Tiered Gear,
+   Dual-Currency Economy, Multi-Generation Legacy System, Regional Qualifiers)
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const APP_VERSION = 'EA 0.4';
+  const APP_VERSION = 'EA 0.5';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
