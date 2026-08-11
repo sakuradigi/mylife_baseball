@@ -202,39 +202,87 @@
   ];
 
   /* ==========================================================================
-     4. 100% 復刻 Image 7/8 互動式事件卡 3 應對選項系統 (Risk/Reward Choice Cards)
+     4. 骰子判定引擎：15 種互動事件卡 (3 應對選項) + 10 種機會卡 (Omikuji Chance Cards)
      ========================================================================== */
-  const INTERACTIVE_EVENTS = [
-    {
-      title: '守備千球練習',
-      desc: '特訓教練在練球後留下你，進行高強度的千球守備特訓！',
-      statKey: 'cat',
-      outcomes: {
-        high: { winP: 0.35, winMsg: '豪賭成功！完成千球特訓，接球大幅提升 +3！', loseMsg: '豪賭失敗... 吃了無數彈跳球信心受挫，接球 -3 | 體力 -2', winStat: 3, loseStat: -3 },
-        med: { winP: 0.50, winMsg: '執行順利！掌握守備步伐，接球提升 +2！', loseMsg: '照常執行受小傷，接球 -2', winStat: 2, loseStat: -2 },
-        low: { winP: 0.70, winMsg: '穩紮穩打完成基礎訓練，接球微升 +1！', loseMsg: '保守執行微調，無損失。', winStat: 1, loseStat: 0 }
-      }
+
+  // 共用風險判定表：3 種應對策略各自對應 1 顆骰子的結果分佈，取代舊版隱形 35/50/70% 機率
+  const RISK_ROLL_TABLE = {
+    high: {
+      label: '🔥 全力一搏', sub: '擲 1 顆骰子 | 高風險高報酬 (最大 ±4)',
+      rolls: [
+        { min: 1, max: 2, success: false, mag: -3, tag: '豪賭慘敗' },
+        { min: 3, max: 3, success: false, mag: -1, tag: '豪賭小失手' },
+        { min: 4, max: 5, success: true, mag: 2, tag: '豪賭成功' },
+        { min: 6, max: 6, success: true, mag: 4, tag: '豪賭大成功！' }
+      ]
     },
-    {
-      title: '場外代言邀約',
-      desc: '獲得頂級運動品牌拍攝廣告邀約，行程滿檔考驗體能安排。',
-      statKey: 'sta',
-      outcomes: {
-        high: { winP: 0.35, winMsg: '豪賭成功！兼顧代言與鍛鍊，獲得高額報酬與體力提升 +3！', loseMsg: '豪賭失敗... 行程太滿，訓練量明顯掉了！體力 -3', winStat: 3, loseStat: -3 },
-        med: { winP: 0.50, winMsg: '照常完成代言拍攝，體力 +2！', loseMsg: '略顯疲態，體力 -2', winStat: 2, loseStat: -2 },
-        low: { winP: 0.70, winMsg: '保守調整作息，體力微升 +1！', loseMsg: '順利完成行程。', winStat: 1, loseStat: 0 }
-      }
+    med: {
+      label: '⚖️ 照常執行', sub: '擲 1 顆骰子 | 標準風險 (±2~3)',
+      rolls: [
+        { min: 1, max: 1, success: false, mag: -2, tag: '執行失常' },
+        { min: 2, max: 5, success: true, mag: 2, tag: '穩定發揮' },
+        { min: 6, max: 6, success: true, mag: 3, tag: '超水準演出' }
+      ]
     },
-    {
-      title: '季中打擊低潮',
-      desc: '遭遇連續十打席無安打的打擊低潮，你要如何突破困境？',
-      statKey: 'con',
-      outcomes: {
-        high: { winP: 0.35, winMsg: '豪賭成功！徹底修改打擊機制打出再見全壘打！打擊 +3！', loseMsg: '豪賭失敗... 低潮拖了一個月，豪賭失敗！Contact -3 | 體力 -3', winStat: 3, loseStat: -3 },
-        med: { winP: 0.50, winMsg: '照常打擊發揮恢復水準，打擊 +2！', loseMsg: '手感依然受限，Contact -2', winStat: 2, loseStat: -2 },
-        low: { winP: 0.70, winMsg: '保守選球保送上壘，打擊 +1！', loseMsg: '平穩過渡低潮。', winStat: 1, loseStat: 0 }
-      }
+    low: {
+      label: '🛡️ 保守應對', sub: '擲 1 顆骰子 | 低風險低報酬 (0~+1)',
+      rolls: [
+        { min: 1, max: 1, success: true, mag: 0, tag: '安全過關' },
+        { min: 2, max: 6, success: true, mag: 1, tag: '穩紮穩打' }
+      ]
     }
+  };
+
+  function rollRiskTier(tier) {
+    let roll = ri(1, 6);
+    if (S.activeBuffs && S.activeBuffs.some(b => b.type === 'luck' && b.remainingPhases > 0)) {
+      roll = clamp(roll + 1, 1, 6);
+    }
+    const table = RISK_ROLL_TABLE[tier].rolls;
+    const found = table.find(r => roll >= r.min && roll <= r.max) || table[table.length - 1];
+    return { roll, success: found.success, mag: found.mag, tag: found.tag };
+  }
+
+  // 15 種互動事件卡，依人生階段/主題分 5 大類，各 3 種，避免同質化重複
+  const INTERACTIVE_EVENTS = [
+    // 甲子園/高校 (限高中階段)
+    { id: 'ev01', title: '守備千球練習', desc: '特訓教練在練球後留下你，進行高強度的千球守備特訓！', statKey: 'cat', stages: ['HS1', 'HS2', 'HS3'], win: '完成千球特訓，接球技巧大幅提升！', lose: '吃了無數彈跳球信心受挫，接球節奏亂了套。' },
+    { id: 'ev02', title: '甲子園熱身賽緊張感', desc: '全國矚目的甲子園熱身賽即將開打，看台座無虛席，你的選球判斷力受到極大考驗。', statKey: 'eye', stages: ['HS1', 'HS2', 'HS3'], win: '頂住壓力冷靜選球，選球眼大幅精進！', lose: '太過緊張頻頻出棒誤判，選球眼略有退步。' },
+    { id: 'ev03', title: '校內打擊對抗賽', desc: '校隊內部舉辦打擊對抗賽，教練在一旁緊盯每個人的打擊機制。', statKey: 'con', stages: ['HS1', 'HS2', 'HS3'], win: '打擊機制修正成功，Contact 明顯進步！', lose: '對抗賽手感不佳，Contact 略微下滑。' },
+
+    // 大學 (限大學階段)
+    { id: 'ev04', title: '大學選手權資格賽', desc: '全國大學選手權資格賽開打，強度直逼職業等級的投手考驗你的長打力。', statKey: 'pow', stages: ['UNI1', 'UNI2', 'UNI3', 'UNI4'], win: '扛起球隊攻擊火力，力量大幅躍進！', lose: '面對高強度投手屢屢揮空，力量略微受挫。' },
+    { id: 'ev05', title: '學長學弟制震撼教育', desc: '學長學弟制文化下的震撼教育與魔鬼特訓考驗著你的體能底線。', statKey: 'sta', stages: ['UNI1', 'UNI2', 'UNI3', 'UNI4'], win: '咬牙撐過震撼教育，體力大幅強化！', lose: '操練過度身體疲憊，體力明顯下滑。' },
+    { id: 'ev06', title: '職業球探校園觀察會', desc: '職業球探悄悄蒞臨校園觀察會，你能否在鎂光燈下秀出最強臂力？', statKey: 'arm', stages: ['UNI1', 'UNI2', 'UNI3', 'UNI4'], win: '一次精準長傳驚豔全場球探，臂力大幅提升！', lose: '緊張之下傳球失準，臂力表現不如預期。' },
+
+    // 選秀/職業 (限選秀與職棒階段)
+    { id: 'ev07', title: '選秀前夕魔鬼體測', desc: '選秀會前的球團魔鬼體測，60碼衝刺成績將直接影響你的順位。', statKey: 'spd', stages: ['DRAFT', 'PRO'], win: '衝刺成績驚豔全場球探，跑壘天賦大爆發！', lose: '體測發揮失常，速度數據不甚理想。' },
+    { id: 'ev08', title: '開幕戰先發大賽', desc: '球團宣布你將擔任開幕戰先發，全隊士氣與你的控球穩定度息息相關。', statKey: 'ctl', stages: ['DRAFT', 'PRO'], win: '開幕戰完美掌控好球帶，控球明顯進步！', lose: '開幕戰壓力爆棚頻頻暴投，控球略微失準。' },
+    { id: 'ev09', title: '交易謠言風暴', desc: '球團高層傳出交易你的謠言，媒體與球迷議論紛紛，考驗你的心理素質。', statKey: 'sta', stages: ['DRAFT', 'PRO'], win: '頂住壓力專注比賽，心志更加堅韌、體力提升！', lose: '心神不寧影響訓練節奏，體力略微下滑。' },
+
+    // 傷病與心理素質 (不限階段)
+    { id: 'ev10', title: '季中打擊低潮', desc: '遭遇連續十打席無安打的打擊低潮，你要如何突破困境？', statKey: 'con', win: '徹底修改打擊機制，Contact 大幅提升！', lose: '低潮拖了一個月，Contact 明顯受挫。' },
+    { id: 'ev11', title: '肩肘傷病警訊', desc: '隊醫檢查發現你的肩肘部位出現輕微發炎警訊，是否要調整訓練強度？', statKey: 'arm', win: '及早妥善治療康復，臂力狀態全面提升！', lose: '勉強硬撐留下後遺症，臂力明顯下滑。' },
+    { id: 'ev12', title: '賽前失眠焦慮症', desc: '重要賽事前夜輾轉難眠，隔天賽場上的判斷力備受考驗。', statKey: 'eye', win: '調適心情穩住陣腳，選球判斷更加銳利！', lose: '精神不濟影響臨場反應，選球眼略微下滑。' },
+
+    // 生活與家庭 (不限階段)
+    { id: 'ev13', title: '場外代言邀約', desc: '獲得頂級運動品牌拍攝廣告邀約，行程滿檔考驗體能安排。', statKey: 'sta', win: '兼顧代言與鍛鍊，體力管理大幅提升！', lose: '行程太滿訓練量掉了，體力明顯下滑。' },
+    { id: 'ev14', title: '家人健康突發狀況', desc: '家人突然傳來健康狀況不佳的消息，你必須在訓練與家庭之間做出取捨。', statKey: 'sta', win: '妥善安排時間兼顧家人與訓練，心境更加成熟、體力提升！', lose: '心力交瘁訓練效率低落，體力明顯下滑。' },
+    { id: 'ev15', title: '追星私生飯騷擾風波', desc: '成名之後私生活備受關注，過度熱情的粉絲行為讓你心神不寧。', statKey: 'eye', win: '妥善處理危機維持專注，選球眼不減反增！', lose: '生活大受干擾影響專注力，選球眼略微下滑。' }
+  ];
+
+  // 10 種機會卡 (神社籤詩)：抽到即自動開獎，強化能力或暫時提升骰子/運氣
+  const CHANCE_CARDS = [
+    { id: 'cc01', icon: '⛩️', title: '大吉籤 · 必勝祈願', desc: '參拜神社抽到大吉籤，運勢爆棚！', effect: { type: 'stat', key: 'con', amount: 3 }, isDaikichi: true },
+    { id: 'cc02', icon: '⛩️', title: '大吉籤 · 金運亨通', desc: '大吉籤上寫著金運亨通，全身充滿自信！', effect: { type: 'stat', key: 'pow', amount: 3 }, isDaikichi: true },
+    { id: 'cc03', icon: '🎋', title: '中吉籤 · 心想事成', desc: '中吉籤帶來一股踏實的安心感。', effect: { type: 'stat', key: 'eye', amount: 2 } },
+    { id: 'cc04', icon: '🎋', title: '中吉籤 · 旅途平安', desc: '中吉籤祝福你接下來的賽季旅途平安。', effect: { type: 'stat', key: 'spd', amount: 2 } },
+    { id: 'cc05', icon: '🍀', title: '幸運四葉草', desc: '在球場邊撿到一株罕見的四葉幸運草！', effect: { type: 'luck', duration: 3 } },
+    { id: 'cc06', icon: '🥇', title: '教練私下開小灶', desc: '教練看好你的潛力，私下多加了幾堂特訓課！', effect: { type: 'dice', amount: 1, duration: 2 } },
+    { id: 'cc07', icon: '🌙', title: '一夜好眠', desc: '難得睡了一個扎實的好覺，隔天精神格外飽滿！', effect: { type: 'stat', key: 'sta', amount: 2 } },
+    { id: 'cc08', icon: '📿', title: '隊友的加油手鍊', desc: '隊友悄悄送你一條手作加油手鍊，暖到心坎裡。', effect: { type: 'luck', duration: 2 } },
+    { id: 'cc09', icon: '🎯', title: '小吉籤 · 平穩安泰', desc: '小吉籤提醒你穩紮穩打最重要。', effect: { type: 'stat', key: 'fld', amount: 1 } },
+    { id: 'cc10', icon: '🌾', title: '末吉籤 · 塞翁失馬', desc: '末吉籤說著塞翁失馬焉知非福，你決定換個心態面對。', effect: { type: 'stat', key: 'ctl', amount: 1 } }
   ];
 
   function drawChanceCard() {
@@ -244,50 +292,113 @@
     }
 
     S.chanceCardDrawnThisPhase = true;
-    const ev = INTERACTIVE_EVENTS[ri(0, INTERACTIVE_EVENTS.length - 1)];
 
-    // 渲染與 Image 7/8 一致的 3 種應對策略卡片 UI
+    if (R() < 0.7) {
+      const pool = INTERACTIVE_EVENTS.filter(e => !e.stages || e.stages.includes(S.stage));
+      const list = pool.length ? pool : INTERACTIVE_EVENTS;
+      showInteractiveEventCard(list[ri(0, list.length - 1)]);
+    } else {
+      resolveChanceCard(CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)]);
+    }
+
+    renderAll();
+  }
+
+  function showInteractiveEventCard(ev) {
     const choicesPanel = document.getElementById('container-choices');
     choicesPanel.classList.remove('hidden');
+
+    const reveal = document.getElementById('dice-roll-reveal');
+    reveal.classList.add('hidden');
+    reveal.innerHTML = '';
 
     document.getElementById('choices-title').textContent = `◆ 事件卡 | ${ev.title} — 你要怎麼應對？`;
     document.getElementById('choices-desc').textContent = ev.desc;
 
-    document.getElementById('choices-grid').innerHTML = `
-      <div class="btn-choice high-risk" data-risk="high">
-        <span class="btn-choice-title">🔥 全力一搏</span>
-        <span class="btn-choice-sub">成功率 35% | 加成/減益幅度最大 (±3)</span>
+    document.getElementById('choices-grid').innerHTML = ['high', 'med', 'low'].map(tier => `
+      <div class="btn-choice ${tier === 'high' ? 'high-risk' : tier === 'med' ? 'med-risk' : 'low-risk'}" data-risk="${tier}">
+        <span class="btn-choice-title">${RISK_ROLL_TABLE[tier].label}</span>
+        <span class="btn-choice-sub">${RISK_ROLL_TABLE[tier].sub}</span>
       </div>
-      <div class="btn-choice med-risk" data-risk="med">
-        <span class="btn-choice-title">⚖️ 照常執行</span>
-        <span class="btn-choice-sub">成功率 50% | 標準幅度 (±2)</span>
-      </div>
-      <div class="btn-choice low-risk" data-risk="low">
-        <span class="btn-choice-title">🛡️ 保守應對</span>
-        <span class="btn-choice-sub">成功率 70% | 加成/減益幅度最小 (±1)</span>
-      </div>
-    `;
+    `).join('');
 
-    document.querySelectorAll('.btn-choice').forEach(btn => {
+    document.querySelectorAll('#choices-grid .btn-choice').forEach(btn => {
       btn.addEventListener('click', () => {
-        const risk = btn.dataset.risk;
-        choicesPanel.classList.add('hidden');
-
-        const opt = ev.outcomes[risk];
-        const isWin = R() < opt.winP;
-        const statGain = isWin ? opt.winStat : opt.loseStat;
-
-        S.ab[ev.statKey] = clamp((S.ab[ev.statKey] || 25) + statGain, 10, S.pot[ev.statKey] || 99);
-
-        if (isWin) {
-          addLogCard(`◆ 事件卡 | ${ev.title}`, opt.winMsg, 'good', '事件判定成功');
-        } else {
-          addLogCard(`◆ 事件卡 | ${ev.title}`, opt.loseMsg, 'bad', '事件判定失敗');
-        }
-
-        renderAll();
+        if (btn.classList.contains('disabled')) return;
+        document.querySelectorAll('#choices-grid .btn-choice').forEach(b => b.classList.add('disabled'));
+        animateDiceRoll(btn.dataset.risk, (result) => applyEventOutcome(ev, result));
       });
     });
+  }
+
+  function animateDiceRoll(tier, callback) {
+    playDiceSound();
+    const reveal = document.getElementById('dice-roll-reveal');
+    reveal.classList.remove('hidden');
+
+    let ticks = 0;
+    const maxTicks = 8;
+    const interval = setInterval(() => {
+      ticks++;
+      reveal.innerHTML = `<div class="ref-dice-card rolling">${ri(1, 6)}</div>`;
+      if (ticks >= maxTicks) {
+        clearInterval(interval);
+        const result = rollRiskTier(tier);
+        reveal.innerHTML = `
+          <div class="ref-dice-card ${result.success ? 'selected' : ''}">${result.roll}</div>
+          <div class="dice-result-tag ${result.success ? 'good' : 'bad'}">${result.tag}</div>
+        `;
+        setTimeout(() => callback(result), 700);
+      }
+    }, 80);
+  }
+
+  function applyEventOutcome(ev, result) {
+    document.getElementById('container-choices').classList.add('hidden');
+
+    S.ab[ev.statKey] = clamp((S.ab[ev.statKey] || 25) + result.mag, 10, S.pot[ev.statKey] || 99);
+
+    const msg = result.success ? ev.win : ev.lose;
+    addLogCard(`◆ 事件卡 | ${ev.title}`, `${msg}（🎲 擲出 ${result.roll} 點・${result.tag}）`, result.success ? 'good' : 'bad', '事件判定');
+
+    renderAll();
+  }
+
+  function resolveChanceCard(card) {
+    let logMsg = card.desc;
+    const eff = card.effect;
+
+    if (eff.type === 'stat') {
+      S.ab[eff.key] = clamp((S.ab[eff.key] || 25) + eff.amount, 10, S.pot[eff.key] || 99);
+      logMsg += ` ${eff.key.toUpperCase()} ${eff.amount > 0 ? '+' : ''}${eff.amount}！`;
+    } else if (eff.type === 'dice') {
+      S.activeBuffs.push({ type: 'dice', amount: eff.amount, remainingPhases: eff.duration });
+      logMsg += ` 接下來 ${eff.duration} 個階段，訓練骰子 +${eff.amount} 顆！`;
+    } else if (eff.type === 'luck') {
+      S.activeBuffs.push({ type: 'luck', amount: 1, remainingPhases: eff.duration });
+      logMsg += ` 接下來 ${eff.duration} 個階段，事件判定運氣上升！`;
+    }
+
+    if (card.isDaikichi) {
+      S.daikichiCount = (S.daikichiCount || 0) + 1;
+      if (S.daikichiCount >= 5) unlockAchievement('ach_69');
+    }
+
+    addLogCard(`🃏 機會卡 | ${card.icon} ${card.title}`, logMsg, 'gold', '機會降臨');
+    checkAchievements();
+  }
+
+  function tickBuffs() {
+    if (!S.activeBuffs || !S.activeBuffs.length) return;
+    const stillActive = [];
+    const expiredMsgs = [];
+    S.activeBuffs.forEach(b => {
+      b.remainingPhases -= 1;
+      if (b.remainingPhases > 0) stillActive.push(b);
+      else expiredMsgs.push(b.type === 'dice' ? `🎲 訓練骰子 +${b.amount} 效果已到期。` : `🍀 幸運加成效果已到期。`);
+    });
+    S.activeBuffs = stillActive;
+    if (expiredMsgs.length) addLogCard('⏳ 暫時效果到期', expiredMsgs.join('<br>'), 'info', '效果結束');
   }
 
   const ALL_PROPOSALS = [
@@ -388,6 +499,9 @@
     else if (S.archetype === 'POWER' || S.archetype === 'SPEED_DEF') count += 1;
 
     if (S.diceBonus) count += S.diceBonus;
+    if (S.activeBuffs) {
+      S.activeBuffs.forEach(b => { if (b.type === 'dice' && b.remainingPhases > 0) count += b.amount; });
+    }
     return clamp(count, 2, 8);
   }
 
@@ -635,6 +749,8 @@
       selectedDieId: null,
       diceBonus: 0,
       chanceCardDrawnThisPhase: false,
+      activeBuffs: [],
+      daikichiCount: 0,
 
       money: 100000,
       salary: 0,
@@ -1140,6 +1256,7 @@
     if (S.stage === 'RETIRED') { showRetirementScreen(); return; }
     document.getElementById('container-choices').classList.add('hidden');
     S.chanceCardDrawnThisPhase = false;
+    tickBuffs();
 
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();

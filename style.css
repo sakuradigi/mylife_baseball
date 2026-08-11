@@ -348,6 +348,40 @@ body {
   color: #94a3b8;
 }
 
+.btn-choice.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.dice-roll-reveal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+}
+
+.ref-dice-card.rolling {
+  animation: dice-shake 0.08s linear infinite;
+  border-color: #ffd60a;
+}
+
+@keyframes dice-shake {
+  0% { transform: rotate(-4deg) scale(1); }
+  50% { transform: rotate(4deg) scale(1.05); }
+  100% { transform: rotate(-4deg) scale(1); }
+}
+
+.dice-result-tag {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.dice-result-tag.good { color: #34d399; }
+.dice-result-tag.bad { color: #f87171; }
+
 /* Dice Allocation Container */
 .ref-alloc-container {
   background: rgba(10, 24, 19, 0.85);
