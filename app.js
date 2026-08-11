@@ -1,5 +1,5 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - Core Logic & 80 Achievements System
+   「我的野球人生」 (My Baseball Life) - Core Logic & Dice Awakenings Engine
    ========================================================================== */
 
 (function () {
@@ -81,10 +81,9 @@
   }
 
   /* ==========================================================================
-     3. 80 種成就與球員稱號資料庫 (80 Achievements Database)
+     3. 80 種成就與球員稱號資料庫
      ========================================================================== */
   const ACHIEVEMENTS_LIST = [
-    // A. 單季神級紀錄
     { id: 'ach_01', icon: '🏆', title: '【打擊王】', desc: '單季打擊率達到 .350 以上', titleReward: '稱號：打擊機器' },
     { id: 'ach_02', icon: '⚡', title: '【四成男神話】', desc: '單季打擊率達到 .400 神蹟', titleReward: '稱號：四成男' },
     { id: 'ach_03', icon: '🏏', title: '【四十轟巨砲】', desc: '單季擊出 40 支全壘打', titleReward: '稱號：四割砲手' },
@@ -105,10 +104,8 @@
     { id: 'ach_18', icon: '👑', title: '【神鬼救援】', desc: '單季獲得 45 次救援成功', titleReward: '稱號：關門守護星' },
     { id: 'ach_19', icon: '🦾', title: '【鐵臂鋼投】', desc: '單季完成 10 完投 5 完封', titleReward: '稱號：鐵臂王牌' },
     { id: 'ach_20', icon: '🚀', title: '【統治級打者】', desc: '單季整體攻擊指數 OPS 突破 1.100', titleReward: '稱號：打擊主宰' },
-
-    // B. 生涯里程碑與殿堂階層
     { id: 'ach_21', icon: '⚾', title: '【千安俱樂部】', desc: '生涯累積擊出 1,000 支安打', titleReward: '稱號：千安打者' },
-    { id: 'ach_22', icon: '🏆', title: '【兩千安名宿】', desc: '生涯累積擊出 2,000 支安打', titleReward: '稱号：兩千安名宿' },
+    { id: 'ach_22', icon: '🏆', title: '【兩千安名宿】', desc: '生涯累積擊出 2,000 支安打', titleReward: '稱號：兩千安名宿' },
     { id: 'ach_23', icon: '👑', title: '【三千安殿堂巨星】', desc: '生涯累積擊出 3,000 支安打', titleReward: '稱號：殿堂巨星' },
     { id: 'ach_24', icon: '🏏', title: '【百轟砲手】', desc: '生涯累積 150 支全壘打', titleReward: '稱號：百轟大砲' },
     { id: 'ach_25', icon: '💥', title: '【三百轟怪力】', desc: '生涯累積 300 支全壘打', titleReward: '稱號：怪力巨砲' },
@@ -128,7 +125,6 @@
     { id: 'ach_39', icon: '💍', title: '【多冠王者】', desc: '生涯累積獲得 3 枚總冠軍戒指', titleReward: '稱號：多冠王者' },
     { id: 'ach_40', icon: '👑', title: '【戒指收集家】', desc: '生涯累積獲得 5 枚總冠軍戒指', titleReward: '稱號：戒指霸主' },
 
-    // C. 累計薪資與財務里程碑
     { id: 'ach_41', icon: '💵', title: '【千萬年薪】', desc: '生涯薪資總計突破 $1,000 萬', titleReward: '稱號：千萬身價' },
     { id: 'ach_42', icon: '💰', title: '【富豪球星】', desc: '生涯薪資總計突破 $5,000 萬', titleReward: '稱號：富豪球星' },
     { id: 'ach_43', icon: '💳', title: '【億萬身價】', desc: '生涯薪資總計突破 $1 億', titleReward: '稱號：億萬男' },
@@ -140,7 +136,6 @@
     { id: 'ach_49', icon: '🎒', title: '【資深裝備家】', desc: '擁有 5 件常駐型裝備', titleReward: '稱號：裝備玩家' },
     { id: 'ach_50', icon: '🛡️', title: '【裝備大師】', desc: '擁有 12 件常駐型裝備', titleReward: '稱號：裝備大師' },
 
-    // D. 雙刀流與特殊榮譽
     { id: 'ach_51', icon: '⚔️', title: '【二刀流開花】', desc: '雙刀流單季 10 轟且獲得 5 勝', titleReward: '稱號：二刀流開花' },
     { id: 'ach_52', icon: '👑', title: '【大谷翔平神蹟】', desc: '雙刀流單季 20 轟且獲得 10 勝神蹟', titleReward: '稱號：大谷二世' },
     { id: 'ach_53', icon: '👑', title: '【打擊三冠王】', desc: '單季包辦打擊率、全壘打、打點王', titleReward: '稱號：三冠至尊' },
@@ -152,7 +147,6 @@
     { id: 'ach_59', icon: '⭐', title: '【明星賽 MVP】', desc: '在職棒明星賽打出 MVP 高光表現', titleReward: '稱號：明星賽MVP' },
     { id: 'ach_60', icon: '💥', title: '【全壘打大賽霸主】', desc: '奪得明星賽全壘打大賽冠軍', titleReward: '稱號：全壘打王' },
 
-    // E. 擲骰運氣與關鍵時刻
     { id: 'ach_61', icon: '✨', title: '【十年一遇】', desc: '創角幸運觸發 8% 隨機「天才降生」', titleReward: '稱號：十年一遇' },
     { id: 'ach_62', icon: '🎲', title: '【幸運大滿貫】', desc: '春訓擲骰單次出現 3 個 6 點歐皇', titleReward: '稱號：歐皇大滿貫' },
     { id: 'ach_63', icon: '🏋️', title: '【完美自主訓練】', desc: '春訓擲骰獲得全部最高經驗加成', titleReward: '稱號：自主訓狂人' },
@@ -164,7 +158,6 @@
     { id: 'ach_69', icon: '🃏', title: '【幸運星眷顧】', desc: '抽中 5 次大吉幸運機會卡', titleReward: '稱號：幸運星' },
     { id: 'ach_70', icon: '🎒', title: '【萬寶囊】', desc: '背包內擁有滿滿道具', titleReward: '稱號：萬寶囊' },
 
-    // F. 降生、聯盟與傳承里程碑
     { id: 'ach_71', icon: '🇹🇼', title: '【黑豹王者】', desc: '台灣出生高中賽事稱霸黑豹旗', titleReward: '稱號：黑豹王者' },
     { id: 'ach_72', icon: '🇯🇵', title: '【甲子園怪物】', desc: '日本出生殺入阪神甲子園大會', titleReward: '稱號：甲子園怪物' },
     { id: 'ach_73', icon: '⛩️', title: '【甲子園全國制霸】', desc: '率領學校勇奪甲子園全國總冠軍', titleReward: '稱號：全國制霸' },
@@ -295,6 +288,115 @@
     if (S.origin === 'TW' && S.stage.startsWith('HS')) unlockAchievement('ach_71');
   }
 
+  /* ==========================================================================
+     6. 🎲 骰子異變與隱藏宿命覺醒邏輯 (Dice Combo Awakenings Engine)
+     ========================================================================== */
+  function addAwakenedTrait(traitName, logMsg) {
+    if (!S.awakenedTraits) S.awakenedTraits = [];
+    if (!S.awakenedTraits.includes(traitName)) {
+      S.awakenedTraits.push(traitName);
+      S.traits.push(traitName);
+      addLogCard(`⚡ 隱藏宿命覺醒！【${traitName}】`, logMsg, 'gold', '天賦覺醒');
+    }
+  }
+
+  function checkDiceComboAwakening(rolls) {
+    if (!S.diceStats) S.diceStats = { ones: 0, fives: 0, sixes: 0, totalCount: 0 };
+    const ds = S.diceStats;
+
+    // 統計本次點數
+    let currentSixes = 0;
+    let currentFives = 0;
+    let currentOnes = 0;
+    let countMap = {};
+
+    rolls.forEach(r => {
+      ds.totalCount++;
+      countMap[r] = (countMap[r] || 0) + 1;
+      if (r === 6) { ds.sixes++; currentSixes++; }
+      if (r === 5) { ds.fives++; currentFives++; }
+      if (r === 1) { ds.ones++; currentOnes++; }
+    });
+
+    // 1. 【歐皇覺醒】(4個6 且 年齡 <= 23)
+    if (currentSixes >= 4 && S.age <= 23) {
+      addAwakenedTrait('👑 天才覺醒', '在23歲前驚天骰出 4 個 6 點！訓練骰子永久 +2，全天花板上限 +10！');
+      S.diceBonus += 2;
+      for (let k in S.pot) S.pot[k] += 10;
+    }
+
+    // 2. 【少年奇才】(20歲前擲出雙六)
+    if (currentSixes >= 2 && S.age <= 20) {
+      addAwakenedTrait('🌟 少年奇才', '少年時期展現驚人閃光！打擊與力量上限提升！');
+      S.ab.con += 4; S.ab.pow += 4;
+    }
+
+    // 3. 【逆境狂獅 / 8個1重生】(累積 8 個 1點)
+    if (ds.ones >= 8) {
+      addAwakenedTrait('🌋 逆境狂獅', '累積磨練 8 個 1 點逆境重生！關鍵時刻戰術能力暴增 +15！');
+    }
+
+    // 4. 【鋼鐵不屈】(累積 15 個 1點)
+    if (ds.ones >= 15) {
+      addAwakenedTrait('🛡️ 鋼鐵不屈', '經歷 15 次低谷淬鍊，獲得鋼鐵不壞之身！');
+    }
+
+    // 5. 【賽道跑車】(累積 20 個 5點)
+    if (ds.fives >= 20) {
+      addAwakenedTrait('🏎️ 賽道跑車', '累積 20 個 5 點，跑壘天賦大爆發！跑壘+10！');
+      S.ab.spd = Math.min(99, S.ab.spd + 10);
+    }
+
+    // 6. 【歐皇之極】(累積 30 個 6點)
+    if (ds.sixes >= 30) {
+      addAwakenedTrait('✨ 神明眷顧', '生涯累積 30 個 6 點，獲得神明眷顧之體質！');
+    }
+
+    // 7. 【七彩怪胎 / 1-2-3-4-5-6 大順子】
+    const sorted = rolls.slice().sort((a, b) => a - b);
+    const isStraight = sorted.length >= 5 && sorted.every((val, i) => i === 0 || val === sorted[i - 1] + 1);
+    if (isStraight) {
+      addAwakenedTrait('🌈 七彩怪胎', '擲出極其罕見的大順子！打爆所有屬性天花板，全能力上限解鎖至 99 滿分！');
+      for (let k in S.pot) S.pot[k] = 99;
+    }
+
+    // 8. 【專注發狂 / 豹子全同號】(3顆以上同號)
+    for (let num in countMap) {
+      if (countMap[num] >= 3) {
+        addAwakenedTrait('🎯 專注發狂', `單次擲出 3 顆以上的 ${num} 點同號豹子！能力大躍進！`);
+        S.ab.con += 3; S.ab.pow += 3;
+        break;
+      }
+    }
+
+    // 9. 【剛速火球狂魔】(3個 4點)
+    if (countMap[4] >= 3) {
+      addAwakenedTrait('🔥 剛速火球狂魔', '擲出三個 4 點，球速直接狂颺 +4km/h！');
+      S.ab.vel += 4;
+    }
+
+    // 10. 【塞翁失馬】(單次雙 1點)
+    if (currentOnes >= 2) {
+      addAwakenedTrait('🩹 越挫越勇', '單次出現雙 1 點，化挫折為力量！體力+8！');
+      S.ab.sta = Math.min(99, S.ab.sta + 8);
+    }
+
+    // 11. 【陰陽雙極 / 對稱鏡像】
+    if (rolls.length >= 3) {
+      const isPalindrome = rolls.join('') === rolls.slice().reverse().join('');
+      if (isPalindrome) {
+        addAwakenedTrait('☯️ 陰陽雙極', '擲出對稱鏡像陣列！選球與控球雙重大增！');
+        S.ab.eye = Math.min(99, S.ab.eye + 6);
+        S.ab.ctl = Math.min(99, S.ab.ctl + 6);
+      }
+    }
+
+    // 12. 【百戰老將】(累積 100 顆骰子)
+    if (ds.totalCount >= 100) {
+      addAwakenedTrait('🧢 棒球老頑童', '生涯投出上百顆骰子，經驗極其老練！');
+    }
+  }
+
   function calcDicePool() {
     let count = 3;
     if (S.age <= 21) count += 3;
@@ -311,7 +413,6 @@
   function resetState(name, origin, position, subpos, archetypeChoice, seed) {
     seedInit(seed || Math.random().toString(36).slice(2, 10));
 
-    // 8% 機率幸運觸發「👑 十年一遇天才」！
     const isGeniusRoll = R() < 0.08;
     const finalArchetype = isGeniusRoll ? 'GENIUS' : archetypeChoice;
 
@@ -335,6 +436,8 @@
       pot: { con: 82, pow: 80, spd: 78, arm: 76, fld: 78, cat: 70, eye: 80, vel: 156, ctl: 80, brk: 82, sta: 85 },
 
       traits: [],
+      awakenedTraits: [],
+      diceStats: { ones: 0, fives: 0, sixes: 0, totalCount: 0 },
       diceBonus: 0,
       assignedDice: {},
       chanceCardDrawnThisPhase: false,
@@ -579,7 +682,8 @@
     playDiceSound();
 
     let logResults = [];
-    let sixCount = 0;
+    let allRolls = [];
+
     for (let k in S.assignedDice) {
       const numDice = S.assignedDice[k];
       if (numDice > 0) {
@@ -587,8 +691,8 @@
         let gainSum = 0;
         for (let d = 0; d < numDice; d++) {
           const r = ri(1, 6);
-          if (r === 6) sixCount++;
           rolls.push(r);
+          allRolls.push(r);
           gainSum += r;
         }
         const ceiling = S.pot[k] || 99;
@@ -597,7 +701,8 @@
       }
     }
 
-    if (sixCount >= 3) unlockAchievement('ach_62');
+    // 觸發 🎲 骰子異變與隱藏宿命覺醒判定
+    checkDiceComboAwakening(allRolls);
 
     initAssignedDice();
     addLogCard('🏋️ 春訓擲骰訓練完成！', logResults.join('<br>'), 'good', '擲骰結果');
