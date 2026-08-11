@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b1d3a">
+  <title>我的野球人生 (My Baseball Life)</title>
+  <meta name="description" content="從高中甲子園/黑豹旗到大聯盟與名人堂！融合主題切換、天賦上限長條圖、季中隨機事件與野球傳承的文字模擬遊戲。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="我的野球人生 (My Baseball Life)">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-mlb">
+  <div id="app" class="app-container">
+    <!-- Header -->
+    <header class="main-header">
+      <div class="logo-group">
+        <div class="logo-icon">⚾</div>
+        <div class="logo-text">
+          <h1>我的野球人生 <span class="badge-v2">PRO</span></h1>
+          <p class="subtitle">My Baseball Life Simulator</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Theme Switcher Button -->
+        <select id="select-theme-switcher" class="select-theme-sm" title="切換配色風格">
+          <option value="theme-mlb">⚾ MLB 經典藍紅</option>
+          <option value="theme-npb">⛩️ NPB 午夜金墨</option>
+          <option value="theme-cpbl">🌿 CPBL 翡翠極光</option>
+        </select>
+
+        <button id="btn-open-codex" class="btn-secondary-sm" title="裝備與成就圖鑑">📖 裝備圖鑑</button>
+        
+        <div class="seed-badge-container">
+          <span class="seed-label">種子:</span>
+          <span id="current-seed-code" class="seed-code">--------</span>
+          <button id="btn-copy-seed" class="btn-icon-sm" title="複製種子碼">📋</button>
+          <button id="btn-new-seed" class="btn-icon-sm" title="更換種子">🎲</button>
+        </div>
+        <button id="btn-toggle-sound" class="btn-icon-sound" title="切換音效">🔊</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- Screen 1: Creation -->
+      <section id="screen-creation" class="game-screen active">
+        <div class="hero-banner">
+          <div class="hero-content">
+            <span class="hero-tag">⚾ 每一顆骰子與選擇，都算數</span>
+            <h2>刻劃屬於你的野球人生</h2>
+            <p>從高中木棒/甲子園到職棒選秀與大聯盟殿堂。體驗隨機事件、屬性天花板成長與跨世代傳承！</p>
+          </div>
+        </div>
+
+        <div class="creation-card glass-panel">
+          <!-- Inheritance Legacy Banner -->
+          <div id="inherited-legacy-banner" class="inherited-banner hidden">
+            <span class="banner-icon">🎁</span>
+            <div class="banner-text">
+              <strong id="inherited-item-name">繼承物品：前輩的加重打擊手套</strong>
+              <p id="inherited-story-snippet">「這是我在大聯盟打拼時留下的手套，現在交給年輕的你了...」</p>
+            </div>
+          </div>
+
+          <h3 class="panel-title"><span>👤</span> 創建角色檔案</h3>
+          
+          <form id="form-creation" onsubmit="return false;">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="input-name">選手姓名</label>
+                <input type="text" id="input-name" placeholder="例如：佐藤大樹 / 廖強棒" maxlength="10" required>
+              </div>
+
+              <div class="form-group">
+                <label for="select-origin">降生出生地 (Birthplace)</label>
+                <select id="select-origin">
+                  <option value="TW">🇹🇼 台灣出生 (黑豹旗 / 木棒聯賽 / CPBL選秀)</option>
+                  <option value="JP">🇯🇵 日本出生 (地區預選 / 阪神甲子園 / NPB選秀)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="select-position">主要定位</label>
+                <select id="select-position">
+                  <option value="BATTER">野手 (強棒 / 游擊手 / 外野手)</option>
+                  <option value="PITCHER">投手 (王牌先發 / 終結者)</option>
+                  <option value="TWOWAY">雙刀流 (投打雙修 / 大谷模式)</option>
+                </select>
+              </div>
+
+              <div class="form-group" id="sub-position-group">
+                <label for="select-subpos">詳細位置</label>
+                <select id="select-subpos">
+                  <option value="IF">內野手 (SS/2B/3B/1B)</option>
+                  <option value="OF">外野手 (CF/RF/LF)</option>
+                  <option value="C">捕手 (C)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="input-custom-seed">指定種子碼 (選填)</label>
+                <input type="text" id="input-custom-seed" placeholder="留空則隨機生成" maxlength="12">
+              </div>
+            </div>
+
+            <div class="archetype-selector">
+              <label class="section-label">選擇天賦原型 (Archetype)</label>
+              <div class="archetype-grid">
+                <div class="archetype-card selected" data-type="BALANCED">
+                  <div class="arch-icon">⚖️</div>
+                  <div class="arch-name">全能平衡型</div>
+                  <div class="arch-desc">五工俱全，天花板平穩</div>
+                </div>
+                <div class="archetype-card" data-type="POWER">
+                  <div class="arch-icon">💥</div>
+                  <div class="arch-name">怪力長打型 / 剛速球型</div>
+                  <div class="arch-desc">力量/球速頂尖，天花板極高</div>
+                </div>
+                <div class="archetype-card" data-type="SPEED_DEF">
+                  <div class="arch-icon">⚡</div>
+                  <div class="arch-name">快腿守備型 / 技巧控球型</div>
+                  <div class="arch-desc">高守備範圍或極致控球</div>
+                </div>
+                <div class="archetype-card" data-type="GENIUS">
+                  <div class="arch-icon">👑</div>
+                  <div class="arch-name">十年一遇天才</div>
+                  <div class="arch-desc">高初始天花板，受注目度極高</div>
+                </div>
+              </div>
+            </div>
+
+            <button id="btn-start-game" class="btn-primary btn-block btn-lg">
+              🚀 開始我的野球人生 (高中一年級)
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Screen 2: Main Dashboard -->
+      <section id="screen-dashboard" class="game-screen">
+        <div class="dashboard-grid">
+          <!-- Left Column: Player Status & Radar & Inventory -->
+          <div class="col-left">
+            <div class="card-player-profile glass-panel">
+              <div class="profile-header">
+                <div class="avatar-box">
+                  <span id="player-avatar-icon">⚾</span>
+                </div>
+                <div class="profile-main">
+                  <h2 id="player-name-display">---</h2>
+                  <div class="badge-row">
+                    <span id="badge-origin" class="tag-badge tag-origin">🇹🇼 台灣出生</span>
+                    <span id="badge-team" class="tag-badge tag-team">平鎮高中</span>
+                    <span id="badge-pos" class="tag-badge tag-pos">游擊手</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="profile-stats-row">
+                <div class="p-stat">
+                  <span class="p-label">年齡</span>
+                  <span id="stat-age" class="p-val">16 歲</span>
+                </div>
+                <div class="p-stat">
+                  <span class="p-label">層級</span>
+                  <span id="stat-league" class="p-val">高中一年級</span>
+                </div>
+                <div class="p-stat">
+                  <span class="p-label">綜合評分 (OVR)</span>
+                  <span id="stat-ovr" class="p-val hl-gold">55</span>
+                </div>
+                <div class="p-stat">
+                  <span class="p-label">零用金/資產</span>
+                  <span id="stat-money" class="p-val hl-green">$0</span>
+                </div>
+              </div>
+
+              <!-- Radar Chart -->
+              <div class="radar-container">
+                <canvas id="attributes-radar-chart"></canvas>
+              </div>
+
+              <!-- Traits -->
+              <div class="traits-container">
+                <div class="traits-title">能力天賦與常駐裝備</div>
+                <div id="traits-list" class="traits-tags">
+                  <span class="trait-tag trait-good">✨ 高中頂尖</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pitch Arsenal -->
+            <div id="panel-pitch-arsenal" class="glass-panel pitch-arsenal-panel hidden">
+              <h3 class="panel-subtitle">⚾ 投手球種庫 (Pitch Arsenal)</h3>
+              <div id="pitch-types-grid" class="pitch-grid"></div>
+            </div>
+
+            <!-- Inventory -->
+            <div class="glass-panel inventory-panel">
+              <h3 class="panel-subtitle">🎒 我的背號背包</h3>
+              <div id="inventory-list" class="inventory-grid">
+                <span class="text-muted text-sm">背包空空如也，可在商店購買道具。</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Tabs & Main Action Stream -->
+          <div class="col-right">
+            <!-- Top Bar -->
+            <div class="action-bar-top glass-panel">
+              <div class="stage-info">
+                <span class="stage-year-label" id="current-year-display">西元 2026 年</span>
+                <span class="stage-name-label" id="current-stage-display">【高中階段 - 高一】</span>
+              </div>
+              <div class="action-buttons">
+                <button id="btn-draw-chance-card" class="btn-warning btn-sm">🃏 抽取機會卡 (剩餘: <span id="chance-card-count">1</span>)</button>
+                <button id="btn-next-phase" class="btn-primary btn-pulse">⏩ 前進下個階段</button>
+              </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="dashboard-tabs">
+              <button class="tab-btn active" data-tab="tab-narrative">📜 生涯日誌</button>
+              <button class="tab-btn" data-tab="tab-alloc">🏋️ 訓練與配點 (屬性長條圖)</button>
+              <button class="tab-btn" data-tab="tab-shop">🛒 體育商店 (本局隨機道具池)</button>
+              <button class="tab-btn" data-tab="tab-assets">🏠 房產與跑車 (階梯式解鎖)</button>
+              <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽大獎</button>
+            </div>
+
+            <!-- TAB 1: Narrative Stream & Events -->
+            <div id="tab-narrative" class="tab-content active">
+              <!-- Choices Container -->
+              <div id="container-choices" class="choices-panel glass-panel hidden">
+                <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
+                <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
+                <div id="choices-grid" class="choices-btn-group"></div>
+              </div>
+
+              <!-- Log Feed -->
+              <div class="narrative-stream-container glass-panel">
+                <div class="stream-header">
+                  <h3>📜 棒球人生日誌 (Career Log)</h3>
+                  <button id="btn-clear-log" class="btn-text-sm">清空紀錄</button>
+                </div>
+                <div id="narrative-log-feed" class="log-feed"></div>
+              </div>
+            </div>
+
+            <!-- TAB 2: Allocation & Progress Bars with Ceilings -->
+            <div id="tab-alloc" class="tab-content">
+              <div class="glass-panel alloc-panel-full">
+                <div class="alloc-header">
+                  <h3>🏋️ 季度自主訓練與屬性成長 (OOTP天花板反饋)</h3>
+                  <div class="alloc-points">剩餘 AP: <span id="alloc-ap-count" class="hl-gold">10</span></div>
+                </div>
+
+                <div id="alloc-bars-container" class="alloc-bars-grid">
+                  <!-- Dynamic Progress Bars with Ceiling preview -->
+                </div>
+
+                <button id="btn-confirm-alloc" class="btn-success btn-block mt-3">✅ 完成本季自主訓練</button>
+              </div>
+            </div>
+
+            <!-- TAB 3: Shop (Randomized per run) -->
+            <div id="tab-shop" class="tab-content">
+              <div class="glass-panel">
+                <div class="shop-header">
+                  <h3>🛒 體育精品商店</h3>
+                  <p class="text-muted text-sm">每局開局隨機抽選專屬道具池，每季刷新 1~3 種常駐裝備與補給品！</p>
+                </div>
+                
+                <h4 class="shop-subheading">✨ 季刷新常駐裝備 (解鎖圖鑑)</h4>
+                <div id="shop-permanent-grid" class="shop-grid"></div>
+
+                <h4 class="shop-subheading mt-4">💊 消耗性運動補給與道具</h4>
+                <div id="shop-consumable-grid" class="shop-grid"></div>
+              </div>
+            </div>
+
+            <!-- TAB 4: Assets (Progressive Unlocks) -->
+            <div id="tab-assets" class="tab-content">
+              <div class="glass-panel">
+                <div class="shop-header">
+                  <h3>🏙️ 個人資產與生活解鎖</h3>
+                  <p class="text-muted text-sm">購買當前等級資產後，將自動解鎖更高階的奢華豪宅與極速跑車！</p>
+                </div>
+
+                <h4 class="shop-subheading">🏎️ 跑車與座駕 (階梯解鎖)</h4>
+                <div id="assets-cars-grid" class="assets-grid"></div>
+
+                <h4 class="shop-subheading mt-4">🏰 豪宅與莊園 (階梯解鎖)</h4>
+                <div id="assets-houses-grid" class="assets-grid"></div>
+              </div>
+            </div>
+
+            <!-- TAB 5: Trophies -->
+            <div id="tab-trophies" class="tab-content">
+              <div class="glass-panel trophy-panel-full">
+                <h3>🏆 生涯榮譽與冠軍戒指</h3>
+                <div id="trophy-list-full" class="trophy-grid-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Screen 3: Key Moment Clutch Play-by-Play Modal -->
+      <div id="modal-clutch" class="modal-backdrop hidden">
+        <div class="modal-content clutch-modal-box glass-panel">
+          <div class="clutch-header">
+            <span class="badge-alert">🔥 關鍵時刻 (CLUTCH MOMENT)</span>
+            <h2 id="clutch-title">第 9 局下半 滿壘 2出局</h2>
+          </div>
+
+          <div class="scoreboard-widget">
+            <div class="team-score away">
+              <span id="clutch-away-name" class="t-name">客隊</span>
+              <span id="clutch-away-score" class="t-score">3</span>
+            </div>
+            <div class="versus">VS</div>
+            <div class="team-score home">
+              <span id="clutch-home-name" class="t-name">主隊</span>
+              <span id="clutch-home-score" class="t-score">2</span>
+            </div>
+          </div>
+
+          <div class="clutch-situation-box">
+            <div class="bases-diamond">
+              <div id="base-2b" class="base second active"></div>
+              <div id="base-3b" class="base third active"></div>
+              <div id="base-1b" class="base first active"></div>
+            </div>
+            <div class="count-board">
+              <div>壞球 B: <span id="clutch-balls">3</span></div>
+              <div>好球 S: <span id="clutch-strikes">2</span></div>
+              <div>出局 O: <span id="clutch-outs">2</span></div>
+            </div>
+          </div>
+
+          <p id="clutch-narrative" class="clutch-desc-text">決定冠軍歸屬的最終一球！</p>
+          <div id="clutch-tactics-grid" class="tactics-grid"></div>
+        </div>
+      </div>
+
+      <!-- Codex Modal -->
+      <div id="modal-codex" class="modal-backdrop hidden">
+        <div class="modal-content glass-panel codex-modal-box">
+          <div class="modal-header">
+            <h2>📖 棒球常駐裝備圖鑑 (30款)</h2>
+            <button id="btn-close-codex" class="btn-close">&times;</button>
+          </div>
+          <p class="text-muted text-sm mb-3">收集橫跨職棒生涯的傳奇裝備，已購買裝備可於退役時傳承給下一代！</p>
+          <div id="codex-grid" class="codex-grid"></div>
+        </div>
+      </div>
+
+      <!-- Screen 4: Retirement Hall of Fame & Legacy Selection -->
+      <section id="screen-retirement" class="game-screen">
+        <div class="retirement-container">
+          <div class="retire-header glass-panel">
+            <span class="retire-crown">👑</span>
+            <h2>我的野球人生 - 殿堂終章</h2>
+            <p id="retire-summary-text">經過了數十年的奮戰，您正式脫下戰袍，留下了永恆的傳奇紀錄。</p>
+          </div>
+
+          <!-- Collectible HOF Card -->
+          <div class="hof-card-wrapper">
+            <div id="hof-card-element" class="hof-card">
+              <div class="hof-card-header">
+                <div class="hof-logo">MY BASEBALL LIFE PRO</div>
+                <div id="hof-card-tier" class="hof-tier-badge">殿堂傳奇 (LEGEND)</div>
+              </div>
+              
+              <div class="hof-card-body">
+                <div class="hof-avatar">
+                  <span id="hof-avatar-emoji">⚾</span>
+                </div>
+                <div class="hof-player-info">
+                  <h1 id="hof-player-name">佐藤大樹</h1>
+                  <p id="hof-player-meta">游擊手 · 生涯 21 年 · 日本/大聯盟</p>
+                </div>
+
+                <div class="hof-stats-grid">
+                  <div class="hof-stat-box">
+                    <span class="h-label">生涯 WAR</span>
+                    <span id="hof-stat-war" class="h-val">84.5</span>
+                  </div>
+                  <div class="hof-stat-box">
+                    <span class="h-label">安打/勝投</span>
+                    <span id="hof-stat-primary" class="h-val">2,850</span>
+                  </div>
+                  <div class="hof-stat-box">
+                    <span class="h-label">全壘打/三振</span>
+                    <span id="hof-stat-secondary" class="h-val">420</span>
+                  </div>
+                  <div class="hof-stat-box">
+                    <span class="h-label">冠軍戒指</span>
+                    <span id="hof-stat-rings" class="h-val">5 💍</span>
+                  </div>
+                </div>
+
+                <div class="hof-honors-list" id="hof-honors-tags"></div>
+              </div>
+
+              <div class="hof-card-footer">
+                <span>世界種子碼: <strong id="hof-seed-code">j9g23dpw</strong></span>
+                <span>MY BASEBALL LIFE</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legacy Selection -->
+          <div class="glass-panel legacy-selection-box mt-4">
+            <h3>🎁 野球的傳承 (Baseball Legacy)</h3>
+            <p class="text-muted text-sm">請選擇一件您在生涯中購買的常駐裝備，轉贈給下一位野球人生選手繼承：</p>
+            <div id="legacy-item-options" class="legacy-options-grid mt-3">
+              <span class="text-muted">本局未購買任何常駐裝備，無可繼承物品。</span>
+            </div>
+          </div>
+
+          <!-- Post-Career Manager Mode -->
+          <div class="glass-panel manager-mode-box mt-4">
+            <h3>👔 第二人生：開啟職棒總教練生涯 (Manager Mode)</h3>
+            <p>退役後的你受邀擔任職棒一軍總教練！帶領年輕球員爭奪總冠軍！</p>
+            <div class="manager-controls">
+              <button id="btn-sim-manager-year" class="btn-primary">🧢 帶隊進行下一個球季</button>
+            </div>
+            <div id="manager-log-feed" class="log-feed mt-3"></div>
+          </div>
+
+          <div class="mt-4 text-center">
+            <button id="btn-restart-game" class="btn-secondary btn-lg">🔄 開啟全新野球人生 (攜帶繼承物品)</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
