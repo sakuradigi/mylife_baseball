@@ -179,15 +179,10 @@
               </div>
             </div>
 
-            <div id="panel-pitch-arsenal" class="glass-panel pitch-arsenal-panel hidden">
-              <h3 class="panel-subtitle">⚾ 投手球種庫 (Pitch Arsenal)</h3>
-              <div id="pitch-types-grid" class="pitch-grid"></div>
-            </div>
-
             <div class="glass-panel inventory-panel">
-              <h3 class="panel-subtitle">🎒 我的背號背包</h3>
+              <h3 class="panel-subtitle">🎒 背號背包</h3>
               <div id="inventory-list" class="inventory-grid">
-                <span class="text-muted text-sm">背包空空如也，可在商店購買道具。</span>
+                <span class="text-muted text-sm">背包空空如也。</span>
               </div>
             </div>
           </div>
@@ -206,53 +201,42 @@
             </div>
 
             <div class="dashboard-tabs">
-              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓擲骰訓練</button>
-              <button class="tab-btn" data-tab="tab-narrative">📜 生涯日誌 & 事件</button>
+              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (正宗擲骰配點)</button>
               <button class="tab-btn" data-tab="tab-shop">🛒 體育商店</button>
               <button class="tab-btn" data-tab="tab-assets">🏠 房產與跑車</button>
               <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽大獎</button>
             </div>
 
-            <!-- TAB 1: Dice Allocation -->
+            <!-- TAB 1: Real Roll-First-Then-Assign Dice Allocation -->
             <div id="tab-dice-alloc" class="tab-content active">
               <div class="glass-panel alloc-panel-full">
                 <div class="alloc-header">
-                  <div>
-                    <h3>🏋️ 春訓自主訓練 (擲骰配點)</h3>
-                  </div>
-                  <div class="dice-pool-badge">
-                    <span class="dice-icon">🎲</span> 可分配骰子: <strong id="dice-pool-count" class="hl-gold">5</strong> 顆
-                  </div>
+                  <h3>🏋️ 春訓自主訓練 (先擲骰 ➔ 再手動點選配點)</h3>
                 </div>
 
-                <div id="dice-alloc-container" class="dice-alloc-grid mt-3"></div>
+                <div class="dice-roll-step text-center mb-3">
+                  <button id="btn-trigger-roll-dice" class="btn-tactile btn-tactile-success btn-lg btn-block">
+                    🎲 擲出本季訓練骰子！
+                  </button>
+                </div>
 
-                <div class="dice-action-box mt-3 text-center">
-                  <button id="btn-roll-dice-action" class="btn-tactile btn-tactile-success btn-lg btn-block">
-                    🎲 開始擲骰子！(Roll All Dice)
+                <!-- Interactive Dice Pool -->
+                <div id="dice-pool-wrapper" class="dice-pool-container hidden">
+                  <span class="text-muted text-sm w-100">點擊下方骰子或點擊屬性加號將點數分配給目標工具：</span>
+                  <div id="dice-blocks-pool" class="d-flex gap-2 flex-wrap"></div>
+                </div>
+
+                <div id="dice-alloc-container" class="dice-alloc-grid mt-3 hidden"></div>
+
+                <div id="dice-confirm-box" class="dice-action-box mt-3 text-center hidden">
+                  <button id="btn-confirm-dice-alloc" class="btn-tactile btn-tactile-primary btn-lg btn-block">
+                    ✅ 完成訓練，鎖定配點！
                   </button>
                 </div>
               </div>
             </div>
 
-            <!-- TAB 2: Narrative Log -->
-            <div id="tab-narrative" class="tab-content">
-              <div id="container-choices" class="choices-panel glass-panel hidden">
-                <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
-                <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
-                <div id="choices-grid" class="choices-btn-group"></div>
-              </div>
-
-              <div class="narrative-stream-container glass-panel">
-                <div class="stream-header">
-                  <h3>📜 棒球人生日誌 (Career Log)</h3>
-                  <button id="btn-clear-log" class="btn-text-sm">清空紀錄</button>
-                </div>
-                <div id="narrative-log-feed" class="log-feed"></div>
-              </div>
-            </div>
-
-            <!-- TAB 3: Shop -->
+            <!-- TAB 2: Shop -->
             <div id="tab-shop" class="tab-content">
               <div class="glass-panel">
                 <div class="shop-header">
@@ -267,7 +251,7 @@
               </div>
             </div>
 
-            <!-- TAB 4: Assets -->
+            <!-- TAB 3: Assets -->
             <div id="tab-assets" class="tab-content">
               <div class="glass-panel">
                 <div class="shop-header">
@@ -282,18 +266,44 @@
               </div>
             </div>
 
-            <!-- TAB 5: Trophies -->
+            <!-- TAB 4: Trophies -->
             <div id="tab-trophies" class="tab-content">
               <div class="glass-panel trophy-panel-full">
                 <h3>🏆 生涯榮譽與冠軍戒指</h3>
                 <div id="trophy-list-full" class="trophy-grid-full"></div>
               </div>
             </div>
+
+            <!-- Persistent Career Log Stream (Always Visible on Main Page!) -->
+            <div class="narrative-stream-card glass-panel">
+              <div class="stream-header">
+                <h3>📜 棒球人生即時日誌 (Career Live Feed)</h3>
+                <button id="btn-clear-log" class="btn-text-sm">清空紀錄</button>
+              </div>
+              
+              <div id="container-choices" class="choices-panel hidden mb-3">
+                <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
+                <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
+                <div id="choices-grid" class="choices-btn-group"></div>
+              </div>
+
+              <div id="narrative-log-feed" class="log-feed"></div>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Screen 3: Key Moment Clutch Modal -->
+      <!-- Modal 1: Chance Card Visual Popup -->
+      <div id="modal-chance-card" class="modal-backdrop hidden">
+        <div class="modal-content glass-panel chance-modal-box">
+          <div class="chance-card-icon-big" id="chance-modal-icon">🃏</div>
+          <h2 class="chance-card-name-big" id="chance-modal-name">機會卡名稱</h2>
+          <p class="chance-card-desc-big" id="chance-modal-desc">機會卡效果解說</p>
+          <button id="btn-close-chance-modal" class="btn-tactile btn-tactile-primary btn-block">收入囊中</button>
+        </div>
+      </div>
+
+      <!-- Modal 2: Key Moment Clutch Modal -->
       <div id="modal-clutch" class="modal-backdrop hidden">
         <div class="modal-content clutch-modal-box glass-panel">
           <div class="clutch-header">
@@ -331,7 +341,7 @@
         </div>
       </div>
 
-      <!-- Codex Modal -->
+      <!-- Modal 3: Codex Modal -->
       <div id="modal-codex" class="modal-backdrop hidden">
         <div class="modal-content glass-panel codex-modal-box">
           <div class="modal-header">

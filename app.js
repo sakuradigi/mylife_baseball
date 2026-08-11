@@ -1,5 +1,5 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - Core Logic & Dice Awakenings Engine
+   「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
    ========================================================================== */
 
 (function () {
@@ -41,23 +41,6 @@
       if (AudioContext) audioCtx = new AudioContext();
     }
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  }
-
-  function playHitSound() {
-    if (!soundEnabled) return;
-    initAudio();
-    if (!audioCtx) return;
-    try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-    } catch (e) { }
   }
 
   function playDiceSound() {
@@ -171,15 +154,14 @@
   ];
 
   /* ==========================================================================
-     4. 隨機事件與資料庫
+     4. 機會卡與資料庫
      ========================================================================== */
-  const NARRATIVE_EVENTS = [
-    { name: '打擊機特訓', stat: 'con', succText: '擊球點完全咬中！打擊提升', failText: '打擊姿勢有點跑掉。' },
-    { name: '重量訓練週期', stat: 'pow', succText: '深蹲破 PR，全身充滿力量！力量提升', failText: '肌肉緊繃休養了一週。' },
-    { name: '牛棚加練球種', stat: 'brk', succText: '找到了變化球新的握法！變化球提升', failText: '投球機制有些亂掉。' },
-    { name: '長傳接訓練', stat: 'arm', succText: '雷射肩養成中！臂力提升', failText: '肩膀有點緊繃。' },
-    { name: '影像分析課', stat: 'eye', succText: '看穿投打習性！選球提升', failText: '站上打擊區想太多。' },
-    { name: '跑壘特訓', stat: 'spd', succText: '起跑瞬間判斷神速！跑壘提升', failText: '拉傷大腿後側。' }
+  const CHANCE_CARDS = [
+    { name: '天道酬勤', icon: '🏋️', desc: '本季訓練獲得額外 +2 顆骰子加成！', effect: (S) => { S.diceBonus += 2; } },
+    { name: '球探重用', icon: '👁️', desc: '獲得球探熱烈關注，年薪合約大增！', effect: (S) => { S.salary = Math.round((S.salary || 3000000) * 1.2); } },
+    { name: '狀態極佳', icon: '🔥', desc: '打擊與控球感覺極佳，屬性提升+3！', effect: (S) => { S.ab.con += 3; S.ab.ctl += 3; } },
+    { name: '貴人相助', icon: '前', desc: '獲得隊友傳奇前輩親自指點，全屬性+2！', effect: (S) => { for (let k in S.ab) S.ab[k] += 2; } },
+    { name: '贊助加碼', icon: '💰', desc: '接下高檔代言廣告，零用金+30萬！', effect: (S) => { S.money += 300000; } }
   ];
 
   const CPBL_TEAMS = ['台中猛瑪', '府城雄獅', '桃園金剛', '新北騎士', '台北恐龍', '高雄神鵰'];
@@ -289,8 +271,136 @@
   }
 
   /* ==========================================================================
-     6. 🎲 骰子異變與隱藏宿命覺醒邏輯 (Dice Combo Awakenings Engine)
+     6. 🎲 正宗先擲骰 ➔ 再手動點選分配引擎 (Roll-First-Then-Assign Engine)
      ========================================================================== */
+  function calcDicePool() {
+    let count = 3;
+    if (S.age <= 21) count += 3;
+    else if (S.age <= 24) count += 2;
+    else if (S.age <= 27) count += 1;
+
+    if (S.archetype === 'GENIUS') count += 2;
+    else if (S.archetype === 'POWER' || S.archetype === 'SPEED_DEF') count += 1;
+
+    if (S.diceBonus) count += S.diceBonus;
+    return clamp(count, 2, 8);
+  }
+
+  function triggerInitialDiceRoll() {
+    playDiceSound();
+
+    const numDice = calcDicePool();
+    S.currentDicePool = [];
+    S.assignedDiceMap = {}; // statKey -> array of dice values e.g. { con: [6, 5], pow: [4] }
+
+    for (let i = 0; i < numDice; i++) {
+      S.currentDicePool.push({ id: `d_${i}`, val: ri(1, 6), assignedTo: null });
+    }
+
+    document.getElementById('btn-trigger-roll-dice').classList.add('hidden');
+    document.getElementById('dice-pool-wrapper').classList.remove('hidden');
+    document.getElementById('dice-alloc-container').classList.remove('hidden');
+    document.getElementById('dice-confirm-box').classList.remove('hidden');
+
+    renderDicePoolAndAlloc();
+  }
+
+  function renderDicePoolAndAlloc() {
+    // 渲染 3D 浮雕骰子池
+    const poolContainer = document.getElementById('dice-blocks-pool');
+    poolContainer.innerHTML = S.currentDicePool.map(d => `
+      <div class="dice-block ${d.assignedTo ? 'used' : ''}" data-id="${d.id}" title="${d.assignedTo ? '已分配至 ' + d.assignedTo : '點擊分配'}">
+        🎲${d.val}
+      </div>
+    `).join('');
+
+    // 渲染屬性分配行
+    const allocGrid = document.getElementById('dice-alloc-container');
+    const config = S.position === 'PITCHER'
+      ? [{ key: 'vel', label: '球速 (km/h)' }, { key: 'ctl', label: '控球' }, { key: 'brk', label: '變化球' }, { key: 'sta', label: '體力' }]
+      : [{ key: 'con', label: '打擊' }, { key: 'pow', label: '力量' }, { key: 'eye', label: '選球' }, { key: 'spd', label: '跑壘' }, { key: 'fld', label: '守備' }];
+
+    allocGrid.innerHTML = config.map(c => {
+      const assignedDice = (S.assignedDiceMap[c.key] || []);
+      const totalGain = assignedDice.reduce((a, b) => a + b, 0);
+      const val = S.ab[c.key];
+      const ceiling = S.pot[c.key] || 99;
+
+      return `
+        <div class="dice-alloc-row">
+          <div class="dice-row-info">
+            <span class="dice-row-label">${c.label}: <strong>${val}</strong> ${totalGain > 0 ? `<span class="hl-green">(+${totalGain})</span>` : ''} / ${ceiling}</span>
+            <span class="dice-row-sub">已投入: [${assignedDice.join(', ') || '無'}]</span>
+          </div>
+          <div class="dice-controls">
+            <button class="btn-dice-step btn-minus-dice" data-key="${c.key}">-</button>
+            <span class="dice-assigned-count">${assignedDice.length}</span>
+            <button class="btn-dice-step btn-plus-dice" data-key="${c.key}">+</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 加號按鈕：抓取池中第一個未使用的骰子分配給該屬性
+    allocGrid.querySelectorAll('.btn-plus-dice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const k = btn.dataset.key;
+        const availableDie = S.currentDicePool.find(d => !d.assignedTo);
+        if (availableDie) {
+          availableDie.assignedTo = k;
+          if (!S.assignedDiceMap[k]) S.assignedDiceMap[k] = [];
+          S.assignedDiceMap[k].push(availableDie.val);
+          renderDicePoolAndAlloc();
+        }
+      });
+    });
+
+    // 減號按鈕：移除該屬性分配的最後一顆骰子
+    allocGrid.querySelectorAll('.btn-minus-dice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const k = btn.dataset.key;
+        if (S.assignedDiceMap[k] && S.assignedDiceMap[k].length > 0) {
+          const removedVal = S.assignedDiceMap[k].pop();
+          const dieObj = S.currentDicePool.find(d => d.assignedTo === k && d.val === removedVal);
+          if (dieObj) dieObj.assignedTo = null;
+          renderDicePoolAndAlloc();
+        }
+      });
+    });
+  }
+
+  function confirmDiceAllocation() {
+    let unassigned = S.currentDicePool.filter(d => !d.assignedTo);
+    if (unassigned.length > 0) {
+      if (!confirm(`您還有 ${unassigned.length} 顆骰子尚未分配，是否直接確認完成訓練？`)) return;
+    }
+
+    let logResults = [];
+    let allRolls = S.currentDicePool.map(d => d.val);
+
+    for (let k in S.assignedDiceMap) {
+      const vals = S.assignedDiceMap[k];
+      if (vals.length > 0) {
+        const gainSum = vals.reduce((a, b) => a + b, 0);
+        const ceiling = S.pot[k] || 99;
+        S.ab[k] = Math.min(ceiling, S.ab[k] + gainSum);
+        logResults.push(`🎲 ${k.toUpperCase()}: 分配 [${vals.join(', ')}] 提升 +${gainSum} (現值:${S.ab[k]})`);
+      }
+    }
+
+    checkDiceComboAwakening(allRolls);
+
+    // 重置 UI
+    document.getElementById('btn-trigger-roll-dice').classList.remove('hidden');
+    document.getElementById('dice-pool-wrapper').classList.add('hidden');
+    document.getElementById('dice-alloc-container').classList.add('hidden');
+    document.getElementById('dice-confirm-box').classList.add('hidden');
+
+    addLogCard('🏋️ 春訓自主訓練完成！', logResults.length > 0 ? logResults.join('<br>') : '未進行屬性分配。', 'good', '春訓結果');
+    renderAll();
+    nextPhase();
+  }
+
   function addAwakenedTrait(traitName, logMsg) {
     if (!S.awakenedTraits) S.awakenedTraits = [];
     if (!S.awakenedTraits.includes(traitName)) {
@@ -304,7 +414,6 @@
     if (!S.diceStats) S.diceStats = { ones: 0, fives: 0, sixes: 0, totalCount: 0 };
     const ds = S.diceStats;
 
-    // 統計本次點數
     let currentSixes = 0;
     let currentFives = 0;
     let currentOnes = 0;
@@ -318,49 +427,41 @@
       if (r === 1) { ds.ones++; currentOnes++; }
     });
 
-    // 1. 【歐皇覺醒】(4個6 且 年齡 <= 23)
     if (currentSixes >= 4 && S.age <= 23) {
       addAwakenedTrait('👑 天才覺醒', '在23歲前驚天骰出 4 個 6 點！訓練骰子永久 +2，全天花板上限 +10！');
       S.diceBonus += 2;
       for (let k in S.pot) S.pot[k] += 10;
     }
 
-    // 2. 【少年奇才】(20歲前擲出雙六)
     if (currentSixes >= 2 && S.age <= 20) {
       addAwakenedTrait('🌟 少年奇才', '少年時期展現驚人閃光！打擊與力量上限提升！');
       S.ab.con += 4; S.ab.pow += 4;
     }
 
-    // 3. 【逆境狂獅 / 8個1重生】(累積 8 個 1點)
     if (ds.ones >= 8) {
       addAwakenedTrait('🌋 逆境狂獅', '累積磨練 8 個 1 點逆境重生！關鍵時刻戰術能力暴增 +15！');
     }
 
-    // 4. 【鋼鐵不屈】(累積 15 個 1點)
     if (ds.ones >= 15) {
       addAwakenedTrait('🛡️ 鋼鐵不屈', '經歷 15 次低谷淬鍊，獲得鋼鐵不壞之身！');
     }
 
-    // 5. 【賽道跑車】(累積 20 個 5點)
     if (ds.fives >= 20) {
       addAwakenedTrait('🏎️ 賽道跑車', '累積 20 個 5 點，跑壘天賦大爆發！跑壘+10！');
       S.ab.spd = Math.min(99, S.ab.spd + 10);
     }
 
-    // 6. 【歐皇之極】(累積 30 個 6點)
     if (ds.sixes >= 30) {
       addAwakenedTrait('✨ 神明眷顧', '生涯累積 30 個 6 點，獲得神明眷顧之體質！');
     }
 
-    // 7. 【七彩怪胎 / 1-2-3-4-5-6 大順子】
     const sorted = rolls.slice().sort((a, b) => a - b);
     const isStraight = sorted.length >= 5 && sorted.every((val, i) => i === 0 || val === sorted[i - 1] + 1);
     if (isStraight) {
-      addAwakenedTrait('🌈 七彩怪胎', '擲出極其罕見的大順子！打爆所有屬性天花板，全能力上限解鎖至 99 滿分！');
+      addAwakenedTrait('🌈 七彩怪胎', '擲出極其罕見的大順子！全能力上限解鎖至 99 滿分！');
       for (let k in S.pot) S.pot[k] = 99;
     }
 
-    // 8. 【專注發狂 / 豹子全同號】(3顆以上同號)
     for (let num in countMap) {
       if (countMap[num] >= 3) {
         addAwakenedTrait('🎯 專注發狂', `單次擲出 3 顆以上的 ${num} 點同號豹子！能力大躍進！`);
@@ -368,46 +469,6 @@
         break;
       }
     }
-
-    // 9. 【剛速火球狂魔】(3個 4點)
-    if (countMap[4] >= 3) {
-      addAwakenedTrait('🔥 剛速火球狂魔', '擲出三個 4 點，球速直接狂颺 +4km/h！');
-      S.ab.vel += 4;
-    }
-
-    // 10. 【塞翁失馬】(單次雙 1點)
-    if (currentOnes >= 2) {
-      addAwakenedTrait('🩹 越挫越勇', '單次出現雙 1 點，化挫折為力量！體力+8！');
-      S.ab.sta = Math.min(99, S.ab.sta + 8);
-    }
-
-    // 11. 【陰陽雙極 / 對稱鏡像】
-    if (rolls.length >= 3) {
-      const isPalindrome = rolls.join('') === rolls.slice().reverse().join('');
-      if (isPalindrome) {
-        addAwakenedTrait('☯️ 陰陽雙極', '擲出對稱鏡像陣列！選球與控球雙重大增！');
-        S.ab.eye = Math.min(99, S.ab.eye + 6);
-        S.ab.ctl = Math.min(99, S.ab.ctl + 6);
-      }
-    }
-
-    // 12. 【百戰老將】(累積 100 顆骰子)
-    if (ds.totalCount >= 100) {
-      addAwakenedTrait('🧢 棒球老頑童', '生涯投出上百顆骰子，經驗極其老練！');
-    }
-  }
-
-  function calcDicePool() {
-    let count = 3;
-    if (S.age <= 21) count += 3;
-    else if (S.age <= 24) count += 2;
-    else if (S.age <= 27) count += 1;
-
-    if (S.archetype === 'GENIUS') count += 2;
-    else if (S.archetype === 'POWER' || S.archetype === 'SPEED_DEF') count += 1;
-
-    if (S.diceBonus) count += S.diceBonus;
-    return clamp(count, 2, 8);
   }
 
   function resetState(name, origin, position, subpos, archetypeChoice, seed) {
@@ -438,8 +499,9 @@
       traits: [],
       awakenedTraits: [],
       diceStats: { ones: 0, fives: 0, sixes: 0, totalCount: 0 },
+      currentDicePool: [],
+      assignedDiceMap: {},
       diceBonus: 0,
-      assignedDice: {},
       chanceCardDrawnThisPhase: false,
 
       money: 100000,
@@ -459,7 +521,6 @@
     applyArchetypeBonus();
     applyInheritedItemBonus();
     initRunShopPool();
-    initAssignedDice();
     checkAchievements();
   }
 
@@ -494,12 +555,6 @@
   function initRunShopPool() {
     const shuffled = ALL_PROPOSALS.slice().sort(() => R() - 0.5);
     S.runShopPool = shuffled.slice(0, ri(18, 22));
-  }
-
-  function initAssignedDice() {
-    S.assignedDice = {};
-    const keys = S.position === 'PITCHER' ? ['vel', 'ctl', 'brk', 'sta'] : ['con', 'pow', 'eye', 'spd', 'fld'];
-    keys.forEach(k => S.assignedDice[k] = 0);
   }
 
   function calcOVR() {
@@ -591,7 +646,6 @@
     document.getElementById('chance-card-count').textContent = S.chanceCardDrawnThisPhase ? '0 (本季已抽)' : '1';
 
     renderTraits();
-    renderDiceAllocGrid();
     renderShop();
     renderAssets();
     renderCodex();
@@ -611,103 +665,6 @@
 
   function renderTraits() {
     document.getElementById('traits-list').innerHTML = S.traits.map(t => `<span class="trait-tag trait-good">${t}</span>`).join('');
-  }
-
-  function renderDiceAllocGrid() {
-    const diceTotal = calcDicePool();
-    let usedDice = 0;
-    for (let k in S.assignedDice) usedDice += S.assignedDice[k];
-    const remainDice = Math.max(0, diceTotal - usedDice);
-
-    document.getElementById('dice-pool-count').textContent = remainDice;
-
-    const container = document.getElementById('dice-alloc-container');
-    const a = S.ab;
-    const pot = S.pot;
-
-    const config = S.position === 'PITCHER'
-      ? [{ key: 'vel', label: '球速 (km/h)', max: 165 }, { key: 'ctl', label: '控球', max: 99 }, { key: 'brk', label: '變化球', max: 99 }, { key: 'sta', label: '體力', max: 99 }]
-      : [{ key: 'con', label: '打擊', max: 99 }, { key: 'pow', label: '力量', max: 99 }, { key: 'eye', label: '選球', max: 99 }, { key: 'spd', label: '跑壘', max: 99 }, { key: 'fld', label: '守備', max: 99 }];
-
-    container.innerHTML = config.map(c => {
-      const val = a[c.key];
-      const ceiling = pot[c.key] || 80;
-      const assigned = S.assignedDice[c.key] || 0;
-
-      return `
-        <div class="dice-alloc-row">
-          <div class="dice-row-info">
-            <span class="dice-row-label">${c.label}: <strong>${val}</strong> / ${ceiling}</span>
-            <span class="dice-row-sub">已投入: ${assigned} 顆骰子</span>
-          </div>
-          <div class="dice-controls">
-            <button class="btn-dice-step btn-minus" data-key="${c.key}">-</button>
-            <span class="dice-assigned-count">${assigned}</span>
-            <button class="btn-dice-step btn-plus" data-key="${c.key}">+</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    container.querySelectorAll('.btn-plus').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.dataset.key;
-        if (remainDice > 0) {
-          S.assignedDice[k] = (S.assignedDice[k] || 0) + 1;
-          renderDiceAllocGrid();
-        }
-      });
-    });
-
-    container.querySelectorAll('.btn-minus').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.dataset.key;
-        if ((S.assignedDice[k] || 0) > 0) {
-          S.assignedDice[k]--;
-          renderDiceAllocGrid();
-        }
-      });
-    });
-  }
-
-  function rollDiceAlloc() {
-    let totalDiceUsed = 0;
-    for (let k in S.assignedDice) totalDiceUsed += S.assignedDice[k];
-
-    if (totalDiceUsed === 0) {
-      alert('請先將骰子分配給想要強化的屬性工具！');
-      return;
-    }
-
-    playDiceSound();
-
-    let logResults = [];
-    let allRolls = [];
-
-    for (let k in S.assignedDice) {
-      const numDice = S.assignedDice[k];
-      if (numDice > 0) {
-        let rolls = [];
-        let gainSum = 0;
-        for (let d = 0; d < numDice; d++) {
-          const r = ri(1, 6);
-          rolls.push(r);
-          allRolls.push(r);
-          gainSum += r;
-        }
-        const ceiling = S.pot[k] || 99;
-        S.ab[k] = Math.min(ceiling, S.ab[k] + gainSum);
-        logResults.push(`🎲 ${k.toUpperCase()}: 投入${numDice}骰 ➔ [${rolls.join(', ')}] 提升 +${gainSum} (現值:${S.ab[k]})`);
-      }
-    }
-
-    // 觸發 🎲 骰子異變與隱藏宿命覺醒判定
-    checkDiceComboAwakening(allRolls);
-
-    initAssignedDice();
-    addLogCard('🏋️ 春訓擲骰訓練完成！', logResults.join('<br>'), 'good', '擲骰結果');
-    renderAll();
-    nextPhase();
   }
 
   function renderShop() {
@@ -891,6 +848,7 @@
 
   function addLogCard(title, text, type = 'info', tag = '日誌') {
     const feed = document.getElementById('narrative-log-feed');
+    if (!feed) return;
     const card = document.createElement('div');
     card.className = `log-card ${type}`;
     card.innerHTML = `
@@ -968,6 +926,7 @@
     });
   }
 
+  /* 🃏 機會卡視覺 Modal 彈窗與觸發 */
   function drawChanceCard() {
     if (S.chanceCardDrawnThisPhase) {
       alert('本行動階段已抽過機會卡！請前進下個階段後再行抽取！');
@@ -976,6 +935,13 @@
     S.chanceCardDrawnThisPhase = true;
     const card = CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)];
     card.effect(S);
+
+    // 彈出全螢幕視覺 Modal
+    document.getElementById('chance-modal-icon').textContent = card.icon;
+    document.getElementById('chance-modal-name').textContent = card.name;
+    document.getElementById('chance-modal-desc').textContent = card.desc;
+    document.getElementById('modal-chance-card').classList.remove('hidden');
+
     addLogCard(`🃏 抽中機會卡【${card.name}】`, card.desc, 'gold', '機會卡');
     renderAll();
   }
@@ -1079,9 +1045,15 @@
       }
     });
 
+    // 先擲骰 ➔ 再手動點選分配事件綁定
+    document.getElementById('btn-trigger-roll-dice').addEventListener('click', triggerInitialDiceRoll);
+    document.getElementById('btn-confirm-dice-alloc').addEventListener('click', confirmDiceAllocation);
+
     document.getElementById('btn-next-phase').addEventListener('click', nextPhase);
     document.getElementById('btn-draw-chance-card').addEventListener('click', drawChanceCard);
-    document.getElementById('btn-roll-dice-action').addEventListener('click', rollDiceAlloc);
+    document.getElementById('btn-close-chance-modal').addEventListener('click', () => {
+      document.getElementById('modal-chance-card').classList.add('hidden');
+    });
 
     document.getElementById('btn-open-codex').addEventListener('click', () => {
       renderCodex();

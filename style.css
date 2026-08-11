@@ -1,14 +1,14 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - Sleek UI & Screen Layout
+   「我的野球人生」 (My Baseball Life) - Complete Sleek UI & Pure Entertainment CSS
    ========================================================================== */
 
 /* Theme 1: MLB Classic */
 body.theme-mlb {
   --bg-dark: #07101f;
-  --bg-card: rgba(15, 29, 54, 0.88);
-  --bg-card-hover: rgba(22, 42, 77, 0.95);
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --border-gold: rgba(245, 209, 48, 0.4);
+  --bg-card: rgba(15, 29, 54, 0.92);
+  --bg-card-hover: rgba(22, 42, 77, 0.96);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-gold: rgba(245, 209, 48, 0.5);
 
   --text-main: #f0f4f8;
   --text-muted: #94a3b8;
@@ -35,10 +35,10 @@ body.theme-mlb {
 /* Theme 2: NPB Midnight */
 body.theme-npb {
   --bg-dark: #0a0e1a;
-  --bg-card: rgba(20, 26, 43, 0.88);
-  --bg-card-hover: rgba(29, 38, 64, 0.95);
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --border-gold: rgba(244, 162, 97, 0.4);
+  --bg-card: rgba(20, 26, 43, 0.92);
+  --bg-card-hover: rgba(29, 38, 64, 0.96);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-gold: rgba(244, 162, 97, 0.5);
 
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
@@ -65,10 +65,10 @@ body.theme-npb {
 /* Theme 3: CPBL Emerald */
 body.theme-cpbl {
   --bg-dark: #061c12;
-  --bg-card: rgba(14, 41, 28, 0.88);
-  --bg-card-hover: rgba(22, 61, 42, 0.95);
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --border-gold: rgba(255, 214, 10, 0.4);
+  --bg-card: rgba(14, 41, 28, 0.92);
+  --bg-card-hover: rgba(22, 61, 42, 0.96);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-gold: rgba(255, 214, 10, 0.5);
 
   --text-main: #f0fdf4;
   --text-muted: #86efac;
@@ -92,7 +92,7 @@ body.theme-cpbl {
   --btn-warning-shadow: #d48800;
 }
 
-/* Base Reset & Lock Screens */
+/* Reset & Layout */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
@@ -108,12 +108,12 @@ body {
 .app-container {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
 }
 
-/* Screen Management - Critical Fix */
+/* Strict Screen Isolation - Critical Fix */
 .game-screen {
   display: none !important;
 }
@@ -130,12 +130,12 @@ body {
 
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--border-glass);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 /* Header */
@@ -144,7 +144,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: rgba(10, 20, 38, 0.9);
+  background: rgba(10, 20, 38, 0.92);
   backdrop-filter: blur(16px);
   border-radius: 12px;
   border: 1px solid var(--border-glass);
@@ -155,10 +155,9 @@ body {
 .logo-icon { font-size: 26px; }
 .logo-text h1 { font-family: 'Outfit', sans-serif; font-size: 19px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; }
 .badge-v2 { font-size: 10px; background: var(--accent-gold); color: #000; padding: 2px 6px; border-radius: 12px; font-weight: 700; }
-.subtitle { font-size: 12px; color: var(--text-muted); }
 .header-actions { display: flex; align-items: center; gap: 10px; }
 
-.select-theme-sm { background: rgba(0, 0, 0, 0.4); border: 1px solid var(--border-gold); color: var(--accent-gold); padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer; }
+.select-theme-sm { background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-gold); color: var(--accent-gold); padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer; }
 .seed-badge-container { display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 14px; border: 1px solid var(--border-glass); font-size: 12px; }
 .seed-label { color: var(--text-muted); }
 .seed-code { font-family: monospace; color: var(--accent-gold); font-weight: 600; }
@@ -223,14 +222,14 @@ body {
 .btn-lg { font-size: 16px; padding: 14px 24px; }
 .btn-sm { font-size: 12px; padding: 6px 12px; }
 
-/* Screen 1: Creation Card (Clean & Centered) */
+/* Creation Form Styling Overhaul */
 .creation-container {
-  max-width: 760px;
-  margin: 20px auto;
+  max-width: 680px;
+  margin: 30px auto;
 }
 
 .creation-card {
-  padding: 24px;
+  padding: 28px;
 }
 
 .creation-header {
@@ -268,18 +267,27 @@ body {
 }
 
 .form-group input, .form-group select {
-  background: rgba(0, 0, 0, 0.4);
+  width: 100%;
+  height: 42px;
+  background: rgba(0, 0, 0, 0.45);
   border: 1px solid var(--border-glass);
   color: #fff;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
   transition: border-color 0.2s;
 }
 
+.form-group select option {
+  background: #0f1d36;
+  color: #fff;
+}
+
 .form-group input:focus, .form-group select:focus {
   border-color: var(--accent-blue);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
 .archetype-selector {
@@ -294,7 +302,6 @@ body {
   margin-bottom: 10px;
 }
 
-/* 3-Column Horizontal Grid for Archetypes */
 .archetype-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -306,27 +313,27 @@ body {
 }
 
 .archetype-card {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.35);
   border: 1px solid var(--border-glass);
   border-radius: 10px;
-  padding: 14px 10px;
+  padding: 16px 10px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .archetype-card:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.06);
   border-color: var(--accent-blue);
 }
 
 .archetype-card.selected {
   border-color: var(--accent-gold);
-  background: rgba(245, 209, 48, 0.12);
-  box-shadow: 0 0 12px rgba(245, 209, 48, 0.2);
+  background: rgba(245, 209, 48, 0.14);
+  box-shadow: 0 0 14px rgba(245, 209, 48, 0.25);
 }
 
-.arch-icon { font-size: 24px; margin-bottom: 6px; }
+.arch-icon { font-size: 26px; margin-bottom: 6px; }
 .arch-name { font-size: 13px; font-weight: 700; color: #fff; }
 
 /* Dashboard Layout */
@@ -364,12 +371,51 @@ body {
 .trait-tag { font-size: 11px; padding: 2px 7px; border-radius: 8px; font-weight: 500; }
 .trait-good { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
 
-/* Dashboard Action Bar & Tabs */
+/* Right Column Dashboard Elements */
 .action-bar-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
 .stage-year-label { font-size: 13px; color: var(--text-muted); }
 .stage-name-label { font-size: 15px; font-weight: 700; color: var(--accent-gold); }
 .action-buttons { display: flex; gap: 8px; }
 
+/* Interactive 3D Dice Pool (Roll First) */
+.dice-pool-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px dashed var(--border-gold);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+
+.dice-block {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+  color: #0f172a;
+  border-radius: 8px;
+  box-shadow: 0 4px 0 #cbd5e1, 0 6px 12px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.dice-block:hover { transform: translateY(-2px); }
+.dice-block.used {
+  opacity: 0.25;
+  transform: scale(0.85);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Dashboard Tabs */
 .dashboard-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-glass); padding-bottom: 2px; overflow-x: auto; margin-bottom: 14px; }
 .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 13px; font-weight: 600; padding: 8px 12px; cursor: pointer; border-radius: 6px 6px 0 0; whitespace: nowrap; }
 .tab-btn.active { color: var(--accent-gold); border-bottom: 2px solid var(--accent-gold); background: rgba(245, 209, 48, 0.08); }
@@ -377,20 +423,50 @@ body {
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* Dice Allocation Grid */
-.alloc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.dice-pool-badge { font-size: 14px; font-weight: 700; background: rgba(245, 209, 48, 0.15); border: 1px solid var(--border-gold); padding: 4px 12px; border-radius: 20px; color: var(--accent-gold); }
+/* Persistent Narrative Stream Card */
+.narrative-stream-card {
+  margin-top: 16px;
+}
 
-.dice-alloc-row { display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-glass); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
-.dice-row-label { font-size: 14px; font-weight: 600; }
-.dice-controls { display: flex; align-items: center; gap: 10px; }
-.btn-dice-step { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-glass); background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.btn-dice-step:active { transform: scale(0.95); }
-.dice-assigned-count { font-size: 15px; font-weight: 700; color: var(--accent-gold); min-width: 20px; text-align: center; }
+.log-feed { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+.log-card { background: rgba(0, 0, 0, 0.35); border-left: 3px solid var(--accent-blue); padding: 10px 12px; border-radius: 4px; }
+.log-card.good { border-left-color: var(--accent-green); }
+.log-card.gold { border-left-color: var(--accent-gold); }
+.log-card.bad { border-left-color: var(--accent-red); }
+.log-card-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+.log-card-body { font-size: 12px; color: var(--text-main); }
 
-/* Modals & Codex */
-.modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+/* Modals & Chance Card Visual Popup */
+.modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(12px); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 16px; }
 .hidden { display: none !important; }
+
+.chance-modal-box {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  padding: 28px 20px;
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 0 30px rgba(245, 209, 48, 0.3);
+}
+
+.chance-card-icon-big {
+  font-size: 56px;
+  margin-bottom: 12px;
+}
+
+.chance-card-name-big {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  margin-bottom: 8px;
+}
+
+.chance-card-desc-big {
+  font-size: 14px;
+  color: var(--text-main);
+  margin-bottom: 20px;
+}
+
 .codex-modal-box { max-width: 720px; width: 100%; max-height: 80vh; overflow-y: auto; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .btn-close { background: transparent; border: none; color: #fff; font-size: 22px; cursor: pointer; }
@@ -409,12 +485,3 @@ body {
 .achieve-title { font-size: 12px; font-weight: 700; color: #fff; }
 .achieve-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; }
 .achieve-reward-tag { font-size: 10px; background: rgba(59, 130, 246, 0.2); color: var(--accent-blue); padding: 2px 6px; border-radius: 6px; font-weight: 600; }
-
-/* Log feed */
-.log-feed { display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto; }
-.log-card { background: rgba(0, 0, 0, 0.3); border-left: 3px solid var(--accent-blue); padding: 10px 12px; border-radius: 4px; }
-.log-card.good { border-left-color: var(--accent-green); }
-.log-card.gold { border-left-color: var(--accent-gold); }
-.log-card.bad { border-left-color: var(--accent-red); }
-.log-card-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 2px; }
-.log-card-body { font-size: 12px; color: var(--text-main); }
