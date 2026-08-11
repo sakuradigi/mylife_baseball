@@ -904,21 +904,47 @@
     if (S.position === 'TWOWAY') S.traits.push('⚔️ 大谷雙刀流');
   }
 
+  // 野球的傳承：依裝備稀有度隨機挑選一段傳承劇情
+  const LEGACY_STORY_TEMPLATES = {
+    common: [
+      '這是由 {name} 使用過的 {item}，帶著簡單卻真摯的祝福傳到你手中。',
+      '退休整理球具室時，隊友留下這件 {item}，並附上一張紙條：「交給下一個相信自己的人。」',
+      '{name} 引退前隨手把 {item} 留在置物櫃，成為你野球生涯的起點。'
+    ],
+    rare: [
+      '{name} 引退那天特地把 {item} 交到你手上，說著：「這是我最信賴的夥伴，換你了。」',
+      '你曾是 {name} 的後援球僮，他將視若珍寶的 {item} 當作傳承禮物送給你。',
+      '球隊解散前的最後一次聚餐，{name} 鄭重地把 {item} 交給了你，象徵棒球魂的延續。'
+    ],
+    legendary: [
+      '傳說中，{name} 曾用 {item} 寫下無數傳奇。如今，這件傳家寶正式傳承到你的手中——野球的血脈，仍在延續。',
+      '在名人堂的展示櫃前，{name} 親自取下珍藏多年的 {item}，交給你說：「輪到你創造屬於自己的傳奇了。」',
+      '族譜般的傳承儀式上，{name} 家族世代相傳的 {item} 終於交棒到你手中，承載著跨世代的野球信仰。'
+    ]
+  };
+
+  function pickLegacyStory(item, fromName) {
+    const pool = LEGACY_STORY_TEMPLATES[item.rarity] || LEGACY_STORY_TEMPLATES.common;
+    const template = pool[ri(0, pool.length - 1)];
+    return template.replace('{name}', fromName).replace('{item}', item.name);
+  }
+
   function applyInheritedItemBonus() {
     if (!inheritedItem) return;
     const item = ALL_PROPOSALS.find(e => e.id === inheritedItem.id);
     if (item) {
       S.ownedEquipment.push(item);
       for (let k in item.stat) S.ab[k] = (S.ab[k] || 0) + item.stat[k];
-      S.traits.push(`🎁 傳承: ${item.name}`);
+      S.traits.push(`🎁 傳承(第${inheritedItem.generation || 1}代): ${item.name}`);
       unlockAchievement('ach_77');
       unlockAchievement('ach_78');
     }
   }
 
   function initRunShopPool() {
+    // 常駐裝備刻意稀有：每局只隨機開出 1-3 種，讓收集與世代傳承有意義
     const shuffled = ALL_PROPOSALS.slice().sort(() => R() - 0.5);
-    S.runShopPool = shuffled.slice(0, Math.min(ALL_PROPOSALS.length, ri(18, 22)));
+    S.runShopPool = shuffled.slice(0, ri(1, 3));
 
     const shuffledCons = CONSUMABLES.slice().sort(() => R() - 0.5);
     S.runConsumablePool = shuffledCons.slice(0, 12);
@@ -1564,7 +1590,7 @@
     }
 
     legacyGrid.innerHTML = S.ownedEquipment.map(item => `
-      <div class="legacy-item-card" data-id="${item.id}">
+      <div class="legacy-item-card rarity-${item.rarity}" data-id="${item.id}">
         <div class="item-icon">${item.icon}</div>
         <div class="item-name">${item.name}</div>
         <div class="item-desc">${item.desc}</div>
@@ -1578,8 +1604,10 @@
         const id = card.dataset.id;
         const item = ALL_PROPOSALS.find(e => e.id === id);
         if (item) {
-          localStorage.setItem('MYYAKYO_INHERITED', JSON.stringify(item));
-          alert(`已選擇【${item.name}】作為野球傳承之物！將遺贈給下一位棒球選手！`);
+          const generation = (inheritedItem && inheritedItem.generation) ? inheritedItem.generation + 1 : 1;
+          const story = pickLegacyStory(item, S.name);
+          localStorage.setItem('MYYAKYO_INHERITED', JSON.stringify({ id: item.id, generation, story, fromName: S.name }));
+          alert(`已選擇【${item.name}】作為野球傳承之物！將以「第 ${generation} 代傳承」的身分遺贈給下一位棒球選手！`);
         }
       });
     });
@@ -1593,8 +1621,10 @@
     if (inheritedItem) {
       const banner = document.getElementById('inherited-legacy-banner');
       banner.classList.remove('hidden');
-      document.getElementById('inherited-item-name').textContent = `🎁 野球的傳承：${inheritedItem.name}`;
-      document.getElementById('inherited-story-snippet').textContent = `「這是傳奇前輩留下來的 ${inheritedItem.name}，帶著他的棒球魂繼續奮戰吧！」`;
+      const legacyItemDef = ALL_PROPOSALS.find(e => e.id === inheritedItem.id) || inheritedItem;
+      const genLabel = inheritedItem.generation ? `【第 ${inheritedItem.generation} 代傳承】` : '';
+      document.getElementById('inherited-item-name').textContent = `🎁 ${genLabel} 野球的傳承：${legacyItemDef.name}`;
+      document.getElementById('inherited-story-snippet').textContent = inheritedItem.story || `「這是傳奇前輩留下來的 ${legacyItemDef.name}，帶著他的棒球魂繼續奮戰吧！」`;
     }
 
     document.getElementById('select-theme-switcher').addEventListener('change', (e) => {
