@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b1d3a">
   <title>我的野球人生 (My Baseball Life)</title>
-  <meta name="description" content="包含8%隨機天才降生、成就稱號解鎖、經典2-8顆骰子配點、D100事件擲骰判定、甲子園與大聯盟雙起點的極致棒球人生模擬器。">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="我的野球人生 (My Baseball Life)">
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,12 +23,10 @@
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
           <h1>我的野球人生 <span class="badge-v2">DICE PRO</span></h1>
-          <p class="subtitle">My Baseball Life Simulator</p>
         </div>
       </div>
       
       <div class="header-actions">
-        <!-- Theme Switcher -->
         <select id="select-theme-switcher" class="select-theme-sm" title="切換配色風格">
           <option value="theme-mlb">⚾ MLB 經典藍紅</option>
           <option value="theme-npb">⛩️ NPB 午夜金墨</option>
@@ -43,7 +38,7 @@
         <div class="seed-badge-container">
           <span class="seed-label">種子:</span>
           <span id="current-seed-code" class="seed-code">--------</span>
-          <button id="btn-copy-seed" class="btn-icon-sm" title="複製種子碼">📋</button>
+          <button id="btn-copy-seed" class="btn-icon-sm" title="複製種子">📋</button>
           <button id="btn-new-seed" class="btn-icon-sm" title="更換種子">🎲</button>
         </div>
         <button id="btn-toggle-sound" class="btn-icon-sound" title="切換音效">🔊</button>
@@ -51,95 +46,85 @@
     </header>
 
     <main class="main-content">
-      <!-- Screen 1: Creation -->
+      <!-- Screen 1: Creation Screen -->
       <section id="screen-creation" class="game-screen active">
-        <div class="hero-banner">
-          <div class="hero-content">
-            <span class="hero-tag">🎲 每一顆骰子都算數</span>
-            <h2>刻劃屬於你的野球人生</h2>
-            <p>經典 2~8 顆訓練骰子機制、8% 隨機天才降生、神秘裝備與成就稱號解鎖！</p>
-          </div>
-        </div>
-
-        <div class="creation-card glass-panel">
-          <!-- Inheritance Legacy Banner -->
-          <div id="inherited-legacy-banner" class="inherited-banner hidden">
-            <span class="banner-icon">🎁</span>
-            <div class="banner-text">
-              <strong id="inherited-item-name">繼承物品：前輩的加重打擊手套</strong>
-              <p id="inherited-story-snippet">「這是我在大聯盟打拼時留下的手套，現在交給年輕的你了...」</p>
-            </div>
-          </div>
-
-          <h3 class="panel-title"><span>👤</span> 創建角色檔案</h3>
-          
-          <form id="form-creation" onsubmit="return false;">
-            <div class="form-grid">
-              <div class="form-group">
-                <label for="input-name">選手姓名</label>
-                <input type="text" id="input-name" placeholder="例如：佐藤大樹 / 廖強棒" maxlength="10" required>
-              </div>
-
-              <div class="form-group">
-                <label for="select-origin">降生出生地 (Birthplace)</label>
-                <select id="select-origin">
-                  <option value="TW">🇹🇼 台灣出生 (黑豹旗 / 木棒聯賽 / CPBL選秀)</option>
-                  <option value="JP">🇯🇵 日本出生 (地區預選 / 阪神甲子園 / NPB選秀)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="select-position">主要定位</label>
-                <select id="select-position">
-                  <option value="BATTER">野手 (強棒 / 游擊手 / 外野手)</option>
-                  <option value="PITCHER">投手 (王牌先發 / 終結者)</option>
-                  <option value="TWOWAY">雙刀流 (投打雙修 / 大谷模式)</option>
-                </select>
-              </div>
-
-              <div class="form-group" id="sub-position-group">
-                <label for="select-subpos">詳細位置</label>
-                <select id="select-subpos">
-                  <option value="IF">內野手 (SS/2B/3B/1B)</option>
-                  <option value="OF">外野手 (CF/RF/LF)</option>
-                  <option value="C">捕手 (C)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="input-custom-seed">指定種子碼 (選填)</label>
-                <input type="text" id="input-custom-seed" placeholder="留空則隨機生成" maxlength="12">
+        <div class="creation-container">
+          <div class="creation-card glass-panel">
+            <!-- Inheritance Legacy Banner -->
+            <div id="inherited-legacy-banner" class="inherited-banner hidden">
+              <span class="banner-icon">🎁</span>
+              <div class="banner-text">
+                <strong id="inherited-item-name">繼承物品：前輩的裝備</strong>
+                <p id="inherited-story-snippet">「帶著前輩的棒球魂繼續奮戰吧...」</p>
               </div>
             </div>
 
-            <div class="archetype-selector">
-              <div class="section-label-flex">
+            <div class="creation-header">
+              <h2>⚾ 創建球員檔案</h2>
+            </div>
+            
+            <form id="form-creation" onsubmit="return false;">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="input-name">選手姓名</label>
+                  <input type="text" id="input-name" placeholder="例如：佐藤大樹 / 廖強棒" maxlength="10" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="select-origin">出生地 (Birthplace)</label>
+                  <select id="select-origin">
+                    <option value="TW">🇹🇼 台灣出生 (黑豹旗 / 木棒聯賽 / CPBL選秀)</option>
+                    <option value="JP">🇯🇵 日本出生 (地區預選 / 阪神甲子園 / NPB選秀)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="select-position">主要定位</label>
+                  <select id="select-position">
+                    <option value="BATTER">野手 (強棒 / 游擊手 / 外野手)</option>
+                    <option value="PITCHER">投手 (王牌先發 / 終結者)</option>
+                    <option value="TWOWAY">雙刀流 (投打雙修 / 大谷模式)</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="sub-position-group">
+                  <label for="select-subpos">詳細位置</label>
+                  <select id="select-subpos">
+                    <option value="IF">內野手 (SS/2B/3B/1B)</option>
+                    <option value="OF">外野手 (CF/RF/LF)</option>
+                    <option value="C">捕手 (C)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-custom-seed">指定種子碼 (選填)</label>
+                  <input type="text" id="input-custom-seed" placeholder="留空隨機生成" maxlength="12">
+                </div>
+              </div>
+
+              <div class="archetype-selector">
                 <span class="section-label">選擇天賦原型 (Archetype)</span>
-                <span class="genius-luck-tag">🎲 天才天賦：創角時有 8% 機率幸運觸發「👑 十年一遇天才」！</span>
-              </div>
-              <div class="archetype-grid">
-                <div class="archetype-card selected" data-type="BALANCED">
-                  <div class="arch-icon">⚖️</div>
-                  <div class="arch-name">全能平衡型</div>
-                  <div class="arch-desc">每季基礎 4 顆訓練骰子</div>
-                </div>
-                <div class="archetype-card" data-type="POWER">
-                  <div class="arch-icon">💥</div>
-                  <div class="arch-name">怪力長打型 / 剛速球型</div>
-                  <div class="arch-desc">力量/球速極出眾，每季+1 骰子</div>
-                </div>
-                <div class="archetype-card" data-type="SPEED_DEF">
-                  <div class="arch-icon">⚡</div>
-                  <div class="arch-name">快腿守備型 / 技巧控球型</div>
-                  <div class="arch-desc">高守備範圍/高選球，每季+1 骰子</div>
+                <div class="archetype-grid">
+                  <div class="archetype-card selected" data-type="BALANCED">
+                    <div class="arch-icon">⚖️</div>
+                    <div class="arch-name">全能平衡型</div>
+                  </div>
+                  <div class="archetype-card" data-type="POWER">
+                    <div class="arch-icon">💥</div>
+                    <div class="arch-name">怪力長打型 / 剛速球型</div>
+                  </div>
+                  <div class="archetype-card" data-type="SPEED_DEF">
+                    <div class="arch-icon">⚡</div>
+                    <div class="arch-name">快腿守備型 / 技巧控球型</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <button id="btn-start-game" class="btn-tactile btn-tactile-primary btn-block btn-lg">
-              🚀 開始我的野球人生 (高中一年級)
-            </button>
-          </form>
+              <button id="btn-start-game" class="btn-tactile btn-tactile-primary btn-block btn-lg">
+                🚀 開啟我的野球人生 (高中一年級)
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
@@ -212,7 +197,7 @@
             <div class="action-bar-top glass-panel">
               <div class="stage-info">
                 <span class="stage-year-label" id="current-year-display">西元 2026 年</span>
-                <span class="stage-name-label" id="current-stage-display">【春訓階段 - 🎲 擲骰自主訓練】</span>
+                <span class="stage-name-label" id="current-stage-display">【春訓階段】</span>
               </div>
               <div class="action-buttons">
                 <button id="btn-draw-chance-card" class="btn-tactile btn-tactile-warning btn-sm">🃏 抽取機會卡 (<span id="chance-card-count">1</span>)</button>
@@ -233,8 +218,7 @@
               <div class="glass-panel alloc-panel-full">
                 <div class="alloc-header">
                   <div>
-                    <h3>🏋️ 春訓自主訓練 (經典擲骰配點)</h3>
-                    <p class="text-muted text-sm">年輕球員與天才天賦獲得更多骰子！每顆骰子可擲出 1~6 點經驗值！</p>
+                    <h3>🏋️ 春訓自主訓練 (擲骰配點)</h3>
                   </div>
                   <div class="dice-pool-badge">
                     <span class="dice-icon">🎲</span> 可分配骰子: <strong id="dice-pool-count" class="hl-gold">5</strong> 顆
@@ -273,13 +257,12 @@
               <div class="glass-panel">
                 <div class="shop-header">
                   <h3>🛒 體育精品商店</h3>
-                  <p class="text-muted text-sm">每局隨機抽選專屬道具池，每季刷新常駐裝備與補給品！</p>
                 </div>
                 
-                <h4 class="shop-subheading">✨ 季刷新常駐裝備 (解鎖圖鑑)</h4>
+                <h4 class="shop-subheading">✨ 季刷新常駐裝備</h4>
                 <div id="shop-permanent-grid" class="shop-grid"></div>
 
-                <h4 class="shop-subheading mt-4">💊 消耗性運動補給與道具</h4>
+                <h4 class="shop-subheading mt-4">💊 運動補給與道具</h4>
                 <div id="shop-consumable-grid" class="shop-grid"></div>
               </div>
             </div>
@@ -289,13 +272,12 @@
               <div class="glass-panel">
                 <div class="shop-header">
                   <h3>🏙️ 個人資產與生活解鎖</h3>
-                  <p class="text-muted text-sm">購買當前等級資產後，將自動解鎖更高階的奢華豪宅與極速跑車！</p>
                 </div>
 
-                <h4 class="shop-subheading">🏎️ 跑車與座駕 (階梯解鎖)</h4>
+                <h4 class="shop-subheading">🏎️ 跑車與座駕</h4>
                 <div id="assets-cars-grid" class="assets-grid"></div>
 
-                <h4 class="shop-subheading mt-4">🏰 豪宅與莊園 (階梯解鎖)</h4>
+                <h4 class="shop-subheading mt-4">🏰 豪宅與莊園</h4>
                 <div id="assets-houses-grid" class="assets-grid"></div>
               </div>
             </div>
@@ -363,12 +345,10 @@
           </div>
 
           <div id="modtab-equipment" class="modal-tab-content active">
-            <p class="text-muted text-sm mb-3">收集橫跨職棒生涯的傳奇裝備，購買後解鎖圖鑑並可於退役時傳承給下一代！</p>
             <div id="codex-grid" class="codex-grid"></div>
           </div>
 
           <div id="modtab-achievements" class="modal-tab-content">
-            <p class="text-muted text-sm mb-3">達成生涯挑戰目標解鎖獨特成就與強大球員稱號！</p>
             <div id="achievements-grid" class="achievements-grid"></div>
           </div>
         </div>
