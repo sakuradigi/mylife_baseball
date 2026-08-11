@@ -489,19 +489,50 @@
     { id: 'c40', icon: '🀄', name: '職業級好手氣加持', desc: '接下來 4 個階段事件判定運氣上升', price: 28000, rarity: 'legendary', effect: { type: 'temp_luck', duration: 4 } }
   ];
 
+  // 15 款跑車，5 大 tier 各 3 款，逐階解鎖
   const CARS_LIST = [
     { id: 'car_01', tier: 1, name: '二手國民小轎車', price: 100000, icon: '🚗', desc: '代步小車' },
     { id: 'car_02', tier: 1, name: '國產舒適休旅車', price: 400000, icon: '🚙', desc: '載裝備方便' },
     { id: 'car_03', tier: 1, name: '日系街頭跑車', price: 800000, icon: '🏎️', desc: '年輕球員熱門首選' },
+
     { id: 'car_04', tier: 2, name: '德系豪華房車', price: 1500000, icon: '🚘', desc: '展現身價' },
-    { id: 'car_05', tier: 5, name: '傳奇狂飆賽車巨獸', price: 100000000, icon: '🏎️', desc: '巨星座駕' }
+    { id: 'car_05', tier: 2, name: '美式全尺寸休旅車', price: 1800000, icon: '🚐', desc: '家庭出遊首選' },
+    { id: 'car_06', tier: 2, name: '日系性能鋼砲', price: 2400000, icon: '🚗', desc: '街頭性能話題' },
+
+    { id: 'car_07', tier: 3, name: '義式敞篷跑車', price: 4500000, icon: '🏎️', desc: '職業選手代步款' },
+    { id: 'car_08', tier: 3, name: '德系性能轎跑', price: 6000000, icon: '🚘', desc: '賽道與街道兼備' },
+    { id: 'car_09', tier: 3, name: '全電動豪華轎車', price: 8500000, icon: '🔋', desc: '環保與科技結合' },
+
+    { id: 'car_10', tier: 4, name: '英倫手工訂製轎車', price: 15000000, icon: '🎩', desc: '尊爵不凡' },
+    { id: 'car_11', tier: 4, name: '義式超跑經典款', price: 22000000, icon: '🏎️', desc: '明星球員標配' },
+    { id: 'car_12', tier: 4, name: '限量聯名塗裝跑車', price: 32000000, icon: '🎨', desc: '全球限量收藏款' },
+
+    { id: 'car_13', tier: 5, name: '頂級競速超跑', price: 50000000, icon: '🏁', desc: '賽道王者之選' },
+    { id: 'car_14', tier: 5, name: '私人訂製黃金內裝跑車', price: 75000000, icon: '✨', desc: '頂級奢華座駕' },
+    { id: 'car_15', tier: 5, name: '傳奇狂飆賽車巨獸', price: 100000000, icon: '🏎️', desc: '巨星座駕' }
   ];
 
+  // 15 款房產，5 大 tier 各 3 款，逐階解鎖
   const HOUSES_LIST = [
     { id: 'house_01', tier: 1, name: '球隊青年單身宿舍', price: 0, icon: '🏠', desc: '預設居住' },
     { id: 'house_02', tier: 1, name: '市區單身套房', price: 500000, icon: '🏢', desc: '交通便捷' },
-    { id: 'house_03', tier: 2, name: '明星水岸豪宅公寓', price: 6000000, icon: '🏙️', desc: '高樓層河景' },
-    { id: 'house_04', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極城堡' }
+    { id: 'house_03', tier: 1, name: '近郊兩房公寓', price: 800000, icon: '🏘️', desc: '空間更寬敞' },
+
+    { id: 'house_04', tier: 2, name: '市中心景觀電梯大樓', price: 3500000, icon: '🏢', desc: '生活機能完善' },
+    { id: 'house_05', tier: 2, name: '近郊獨棟別墅', price: 5000000, icon: '🏡', desc: '附庭院車庫' },
+    { id: 'house_06', tier: 2, name: '明星水岸豪宅公寓', price: 6000000, icon: '🏙️', desc: '高樓層河景' },
+
+    { id: 'house_07', tier: 3, name: '山景渡假別墅', price: 10000000, icon: '⛰️', desc: '私人渡假天堂' },
+    { id: 'house_08', tier: 3, name: '濱海景觀豪宅', price: 16000000, icon: '🌊', desc: '無敵海景第一排' },
+    { id: 'house_09', tier: 3, name: '都心頂樓複式豪宅', price: 22000000, icon: '🏙️', desc: '城市天際線美景' },
+
+    { id: 'house_10', tier: 4, name: '私人島嶼度假莊園', price: 40000000, icon: '🏝️', desc: '專屬渡假天堂' },
+    { id: 'house_11', tier: 4, name: '古堡風格莊園別墅', price: 60000000, icon: '🏰', desc: '歐風城堡尊榮' },
+    { id: 'house_12', tier: 4, name: '頂級社區豪華別墅群', price: 85000000, icon: '🏛️', desc: '名流聚集地' },
+
+    { id: 'house_13', tier: 5, name: '摩天大樓頂層天空別墅', price: 150000000, icon: '🌆', desc: '俯瞰整座城市' },
+    { id: 'house_14', tier: 5, name: '私人山頭度假王國', price: 280000000, icon: '🏔️', desc: '專屬領地莊園' },
+    { id: 'house_15', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極城堡' }
   ];
 
   let S = {};
