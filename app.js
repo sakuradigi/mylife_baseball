@@ -1,9 +1,12 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
+   Version: EA 0.1
    ========================================================================== */
 
 (function () {
   'use strict';
+
+  const APP_VERSION = 'EA 0.1';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
@@ -271,7 +274,7 @@
   }
 
   /* ==========================================================================
-     6. 🎲 正宗先擲骰 ➔ 再手動點選分配引擎 (Roll-First-Then-Assign Engine)
+     6. 🎲 正宗先擲骰 ➔ 再手動點選分配引擎
      ========================================================================== */
   function calcDicePool() {
     let count = 3;
@@ -291,7 +294,7 @@
 
     const numDice = calcDicePool();
     S.currentDicePool = [];
-    S.assignedDiceMap = {}; // statKey -> array of dice values e.g. { con: [6, 5], pow: [4] }
+    S.assignedDiceMap = {};
 
     for (let i = 0; i < numDice; i++) {
       S.currentDicePool.push({ id: `d_${i}`, val: ri(1, 6), assignedTo: null });
@@ -306,15 +309,13 @@
   }
 
   function renderDicePoolAndAlloc() {
-    // 渲染 3D 浮雕骰子池
     const poolContainer = document.getElementById('dice-blocks-pool');
     poolContainer.innerHTML = S.currentDicePool.map(d => `
-      <div class="dice-block ${d.assignedTo ? 'used' : ''}" data-id="${d.id}" title="${d.assignedTo ? '已分配至 ' + d.assignedTo : '點擊分配'}">
+      <div class="dice-block ${d.assignedTo ? 'used' : ''}" data-id="${d.id}">
         🎲${d.val}
       </div>
     `).join('');
 
-    // 渲染屬性分配行
     const allocGrid = document.getElementById('dice-alloc-container');
     const config = S.position === 'PITCHER'
       ? [{ key: 'vel', label: '球速 (km/h)' }, { key: 'ctl', label: '控球' }, { key: 'brk', label: '變化球' }, { key: 'sta', label: '體力' }]
@@ -341,7 +342,6 @@
       `;
     }).join('');
 
-    // 加號按鈕：抓取池中第一個未使用的骰子分配給該屬性
     allocGrid.querySelectorAll('.btn-plus-dice').forEach(btn => {
       btn.addEventListener('click', () => {
         const k = btn.dataset.key;
@@ -355,7 +355,6 @@
       });
     });
 
-    // 減號按鈕：移除該屬性分配的最後一顆骰子
     allocGrid.querySelectorAll('.btn-minus-dice').forEach(btn => {
       btn.addEventListener('click', () => {
         const k = btn.dataset.key;
@@ -390,7 +389,6 @@
 
     checkDiceComboAwakening(allRolls);
 
-    // 重置 UI
     document.getElementById('btn-trigger-roll-dice').classList.remove('hidden');
     document.getElementById('dice-pool-wrapper').classList.add('hidden');
     document.getElementById('dice-alloc-container').classList.add('hidden');
@@ -926,7 +924,6 @@
     });
   }
 
-  /* 🃏 機會卡視覺 Modal 彈窗與觸發 */
   function drawChanceCard() {
     if (S.chanceCardDrawnThisPhase) {
       alert('本行動階段已抽過機會卡！請前進下個階段後再行抽取！');
@@ -936,7 +933,6 @@
     const card = CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)];
     card.effect(S);
 
-    // 彈出全螢幕視覺 Modal
     document.getElementById('chance-modal-icon').textContent = card.icon;
     document.getElementById('chance-modal-name').textContent = card.name;
     document.getElementById('chance-modal-desc').textContent = card.desc;
@@ -987,6 +983,10 @@
   }
 
   function initApp() {
+    console.log(`[My Baseball Life] Running version: ${APP_VERSION}`);
+    document.getElementById('app-version-tag').textContent = APP_VERSION;
+    document.getElementById('footer-version-tag').textContent = APP_VERSION;
+
     if (inheritedItem) {
       const banner = document.getElementById('inherited-legacy-banner');
       banner.classList.remove('hidden');
@@ -1045,7 +1045,6 @@
       }
     });
 
-    // 先擲骰 ➔ 再手動點選分配事件綁定
     document.getElementById('btn-trigger-roll-dice').addEventListener('click', triggerInitialDiceRoll);
     document.getElementById('btn-confirm-dice-alloc').addEventListener('click', confirmDiceAllocation);
 
