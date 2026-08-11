@@ -1,12 +1,12 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
-   Version: EA 0.3 (Deep yakyulife Alignment & Image 3 Match)
+   Version: EA 0.3.5 (College Pathway, Realistic Stats, Choice Cards UI Fix)
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const APP_VERSION = 'EA 0.3';
+  const APP_VERSION = 'EA 0.3.5';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
@@ -65,6 +65,29 @@
       }
     } catch (e) { }
   }
+
+  /* 微妙隱晦真實球隊命名 (Homage Team Naming) */
+  const CPBL_TEAMS = ['台中象勇', '府城飛獅', '桃園狂猿', '味全赤龍', '新北悍將', '高雄鋼鷹'];
+  const NPB_TEAMS = ['東京巨人', '關西猛虎', '濱海星光', '廣島赤鯉', '神宮疾燕', '名古屋青龍', '福岡金鷹', '千葉海鷗', '關西狂牛', '東北鷲王', '西武雄獅', '北海鬥士'];
+  const MLB_TEAMS = ['洛城湛藍', '紐約帝國', '波士頓赤襪', '聖地牙哥修士', '舊金山巨龍', '亞特蘭大勇士', '芝加哥幼熊', '安那罕天使'];
+
+  const HS_TW_TEAMS = ['平鎮高中', '穀保家商', '高苑工商', '南英商工'];
+  const HS_JP_TEAMS = ['大阪桐蔭', '智辯和歌山', '東海大相模', '橫濱高校'];
+  const UNI_TW_TEAMS = ['文化大學', '國立體大', '開南大學', '北市大'];
+  const UNI_JP_TEAMS = ['明治大學', '早稻田大學', '慶應義塾', '法政大學'];
+
+  const LEAGUES = {
+    HS_TW: { n: '高中棒球(台灣黑豹旗)', par: 30, min: 20 },
+    HS_JP: { n: '高中棒球(日本甲子園)', par: 34, min: 22 },
+    UNI_TW: { n: '大專棒球聯賽(TW)', par: 38, min: 28 },
+    UNI_JP: { n: '全日本大學選手權(JP)', par: 42, min: 32 },
+    CPBL2: { n: '中職二軍', par: 38, min: 30, org: 'CPBL' },
+    CPBL1: { n: '中職一軍', par: 48, min: 42, org: 'CPBL' },
+    NPB2: { n: '日職二軍', par: 50, min: 44, org: 'NPB' },
+    NPB1: { n: '日職一軍', par: 58, min: 52, org: 'NPB' },
+    MiLB: { n: '美職小聯盟(3A)', par: 56, min: 50, org: 'MLB' },
+    MLB: { n: '大聯盟(MLB)', par: 66, min: 60, org: 'MLB' }
+  };
 
   /* ==========================================================================
      3. 80 種成就與球員稱號資料庫
@@ -146,7 +169,7 @@
 
     { id: 'ach_71', icon: '🇹🇼', title: '【黑豹王者】', desc: '台灣出生高中賽事稱霸黑豹旗', titleReward: '稱號：黑豹王者' },
     { id: 'ach_72', icon: '🇯🇵', title: '【甲子園怪物】', desc: '日本出生殺入阪神甲子園大會', titleReward: '稱號：甲子園怪物' },
-    { id: 'ach_73', icon: '⛩️', title: '【甲子園全國制霸】', desc: '率領學校勇奪甲子園全國總冠軍', titleReward: '稱號：全國制霸' },
+    { id: 'ach_73', icon: '🎓', title: '【大專強打王】', desc: '大專聯賽展現統治級主宰力', titleReward: '稱號：大學王牌' },
     { id: 'ach_74', icon: '🇹🇼', title: '【CPBL中職巨星】', desc: '中華職棒生涯打出 1,000 支安打', titleReward: '稱號：CPBL巨星' },
     { id: 'ach_75', icon: '🇯🇵', title: '【NPB日職王牌】', desc: '日本職棒生涯獲得 100 勝', titleReward: '稱號：NPB王牌' },
     { id: 'ach_76', icon: '🇺🇸', title: '【MLB大聯盟超級巨星】', desc: '美職大聯盟生涯 WAR 突破 50', titleReward: '稱號：MLB超級巨星' },
@@ -157,7 +180,7 @@
   ];
 
   /* ==========================================================================
-     4. 豐富機會卡與事件資料庫 (含交易、交往/結婚)
+     4. 豐富機會卡與每季必定觸發事件
      ========================================================================== */
   const CHANCE_CARDS = [
     { name: '天道酬勤', icon: '🏋️', desc: '自主訓練發狂！本季訓練額外 +2 顆骰子加成！', type: 'good', effect: (S) => { S.diceBonus += 2; } },
@@ -168,11 +191,22 @@
     { name: '浪漫相遇', icon: '💕', desc: '在球場記者會結識體育女主播，展開浪漫熱戀！', type: 'gold', effect: (S) => { handleRomanceEvent(S); } },
     { name: '球隊交易', icon: '🔄', desc: '球團發動震撼交易！被交易至聯賽勁旅發揮！', type: 'good', effect: (S) => { handleTradeEvent(S); } },
     { name: '神器撿拾', icon: '🎁', desc: '在球場休息室撿到前輩遺留的幸運手套！守備+5！', type: 'good', effect: (S) => { S.ab.fld += 5; } },
-    { name: '特製補給', icon: '🧪', desc: '飲用名醫調配的高效氨基酸，球速+2km/h，選球+3！', type: 'good', effect: (S) => { S.ab.vel += 2; S.ab.eye += 3; } },
-    { name: '宿敵嗆聲', icon: '🔥', desc: '與死敵宿敵在球場對峙激發鬥志！力量上限突破+5！', type: 'gold', effect: (S) => { S.pot.pow += 5; } },
-    { name: '球隊旅遊', icon: '🏖️', desc: '參加球隊沖繩移地訓練，身心大放鬆！體力+6！', type: 'good', effect: (S) => { S.ab.sta += 6; } },
-    { name: '打擊特訓', icon: '🏏', desc: '特訓教練一對一修改打擊姿勢！力量+4，打擊+3！', type: 'good', effect: (S) => { S.ab.pow += 4; S.ab.con += 3; } }
+    { name: '特製補給', icon: '🧪', desc: '飲用名醫調配的高效氨基酸，球速+2km/h，選球+3！', type: 'good', effect: (S) => { S.ab.vel += 2; S.ab.eye += 3; } }
   ];
+
+  /* 100% 每季自動觸發賽季中隨機事件 */
+  function triggerGuaranteedInSeasonEvent(S) {
+    const events = [
+      { t: '📰 媒體獨家專訪', d: '受邀登上體育雜誌封面人物，知名度與選球能力加成 +3！', fn: () => { S.ab.eye += 3; } },
+      { t: '🔥 宿敵投手正面對決', d: '在關鍵賽事遇到同梯宿敵打出關鍵安打，力量屬性突破 +4！', fn: () => { S.ab.pow += 4; } },
+      { t: '💕 戀愛發展約會', d: '與女朋友共進浪漫晚餐，沉澱心態全屬性天花板 +2！', fn: () => { handleRomanceEvent(S); } },
+      { t: '🔄 隊友離隊交易', d: '球隊戰術體系重組，獲得教練更多上場指導！打擊+3！', fn: () => { S.ab.con += 3; } },
+      { t: '🧪 科技肌能防禦特訓', d: '引進最新大聯盟打擊數據分析儀，選球與守備大幅提升！', fn: () => { S.ab.eye += 4; S.ab.fld += 4; } }
+    ];
+    const ev = events[ri(0, events.length - 1)];
+    ev.fn();
+    addLogCard(ev.t, ev.d, 'gold', '球季中事件');
+  }
 
   function handleRomanceEvent(S) {
     if (!S.relationship) {
@@ -200,21 +234,6 @@
     }
   }
 
-  const CPBL_TEAMS = ['台中猛瑪', '府城雄獅', '桃園金剛', '新北騎士', '台北恐龍', '高雄神鵰'];
-  const NPB_TEAMS = ['東京大人', '阪神猛虎', '橫濱海星', '廣島紅鯉', '神宮飛燕', '福岡猛禽', '千葉海潮', '歐力士猛牛'];
-  const MLB_TEAMS = ['洛城藍電', '聖港修士', '灣區巨浪', '紐約帝國', '波士頓襪王', '亞城戰斧', '風城幼熊', '天使之城'];
-
-  const LEAGUES = {
-    HS_TW: { n: '高中棒球(台灣黑豹旗)', par: 30, min: 20 },
-    HS_JP: { n: '高中棒球(日本甲子園)', par: 34, min: 22 },
-    CPBL2: { n: '中職二軍', par: 36, min: 30, org: 'CPBL' },
-    CPBL1: { n: '中職一軍', par: 46, min: 42, org: 'CPBL' },
-    NPB2: { n: '日職二軍', par: 48, min: 44, org: 'NPB' },
-    NPB1: { n: '日職一軍', par: 56, min: 52, org: 'NPB' },
-    MiLB: { n: '美職小聯盟(3A)', par: 55, min: 50, org: 'MLB' },
-    MLB: { n: '大聯盟(MLB)', par: 64, min: 60, org: 'MLB' }
-  };
-
   const ALL_PROPOSALS = [
     { id: 'p_01', icon: '🏏', name: '特製楓木打擊重棒', desc: '力量+5', price: 150000, stat: { pow: 5 } },
     { id: 'p_02', icon: '🧤', name: '加重練習打擊手套', desc: '打擊+4, 選球+3', price: 120000, stat: { con: 4, eye: 3 } },
@@ -241,9 +260,6 @@
     { id: 'house_04', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極城堡' }
   ];
 
-  /* ==========================================================================
-     5. 全局狀態 S & 成就持久化
-     ========================================================================== */
   let S = {};
   let unlockedCodex = JSON.parse(localStorage.getItem('MYYAKYO_CODEX') || '[]');
   let unlockedAchievements = JSON.parse(localStorage.getItem('MYYAKYO_ACHIEVEMENTS') || '[]');
@@ -306,9 +322,6 @@
     if (S.origin === 'TW' && S.stage.startsWith('HS')) unlockAchievement('ach_71');
   }
 
-  /* ==========================================================================
-     6. 🎲 正宗先擲骰 ➔ 再分配點數引擎
-     ========================================================================== */
   function calcDicePool() {
     let count = 3;
     if (S.age <= 21) count += 3;
@@ -553,7 +566,7 @@
       year: 2026,
       stage: 'HS1',
       leagueKey: origin === 'JP' ? 'HS_JP' : 'HS_TW',
-      team: origin === 'JP' ? '大阪桐蔭高校' : '平鎮高中',
+      team: origin === 'JP' ? HS_JP_TEAMS[ri(0, HS_JP_TEAMS.length - 1)] : HS_TW_TEAMS[ri(0, HS_TW_TEAMS.length - 1)],
 
       ab: { con: 30, pow: 28, spd: 32, arm: 30, fld: 30, cat: 25, eye: 28, vel: 132, ctl: 28, brk: 26, sta: 35 },
       pot: { con: 82, pow: 80, spd: 78, arm: 76, fld: 78, cat: 70, eye: 80, vel: 156, ctl: 80, brk: 82, sta: 85 },
@@ -630,13 +643,14 @@
     return Math.round((a.con * 1.3 + a.pow * 1.2 + a.eye * 1.0 + a.spd * 0.7 + a.fld * 0.8) / 5);
   }
 
-  /* 📊 100% 復刻 Image 3 正宗賽季模擬與詳細 Box Score */
+  /* 區分高中/大學短期盃賽與職業賽事數據模擬器 (Tournament vs Pro Stats) */
   function simSeason() {
     const L = LEAGUES[S.leagueKey] || LEAGUES.HS_TW;
     const a = S.ab;
     const diff = calcOVR() - L.par;
+    const isPro = S.stage === 'PRO';
+    const isCollege = S.stage.startsWith('UNI');
 
-    // 30歲後衰退
     if (S.age >= 30) {
       a.sta = Math.max(10, a.sta - 1);
       a.spd = Math.max(10, a.spd - 1);
@@ -648,93 +662,98 @@
       isBatter: S.position === 'BATTER' || S.position === 'TWOWAY',
       isPitcher: S.position === 'PITCHER' || S.position === 'TWOWAY',
 
-      // 野手詳細 Box
       G: 0, PA: 0, AB: 0, H: 0, HR: 0, RBI: 0, BB: 0, SB: 0, E: 0,
       AVG: 0, OBP: 0, SLG: 0, OPS: 0, batWAR: 0,
 
-      // 投手詳細 Box
       pG: 0, W: 0, L: 0, ERA: 0, WHIP: 0, IP: 0, SO: 0, CG: 0, SHO: 0, pitWAR: 0,
 
-      // 球隊戰績
-      teamW: ri(65, 88), teamL: ri(50, 70), rank: ri(1, 4), isChampion: false,
+      teamW: 0, teamL: 0, rank: ri(1, 4), isChampion: false,
       contractRemaining: S.contractYears
     };
 
-    s.isChampion = s.rank === 1 && R() < 0.6;
-    if (s.isChampion) {
-      S.rings += 1;
-      unlockAchievement('ach_39');
-      s.honors = '總冠軍 🏆';
+    if (!isPro) {
+      /* 高中/大學盃賽短期數據 (8~22場淘汰賽) */
+      const totalTourneyGames = isCollege ? ri(14, 22) : ri(6, 14);
+      s.teamW = Math.round(totalTourneyGames * 0.65); s.teamL = totalTourneyGames - s.teamW;
+      s.isChampion = s.teamL <= 1;
+
+      if (s.isBatter) {
+        s.G = totalTourneyGames; s.PA = Math.round(s.G * 4.0); s.AB = Math.round(s.PA * 0.88); s.BB = Math.round(s.PA * 0.10);
+        s.H = Math.round(s.AB * clamp(0.280 + diff * 0.005 + (a.con - 40) * 0.003, 0.200, 0.450));
+        s.AVG = +(s.H / Math.max(1, s.AB)).toFixed(3);
+        s.OBP = +((s.H + s.BB) / Math.max(1, s.PA)).toFixed(3);
+        s.HR = Math.round(s.AB * clamp(0.03 + (a.pow - 30) * 0.003, 0.0, 0.15));
+        s.SLG = +(s.AVG + 0.18).toFixed(3); s.OPS = +(s.OBP + s.SLG).toFixed(3);
+        s.RBI = Math.round(s.HR * 1.6 + s.H * 0.3); s.SB = ri(1, 8); s.E = ri(0, 3);
+        s.batWAR = +((s.OPS - 0.700) * 1.5).toFixed(1);
+      }
+
+      if (s.isPitcher) {
+        s.pG = totalTourneyGames; s.IP = +(s.pG * 5.0).toFixed(1);
+        s.W = Math.round(s.pG * 0.6); s.L = Math.max(0, s.pG - s.W);
+        s.ERA = +clamp(3.20 - diff * 0.08, 0.80, 5.50).toFixed(2);
+        s.WHIP = +(1.15 - diff * 0.01).toFixed(2); s.SO = Math.round(s.IP * 1.1);
+        s.pitWAR = +((4.00 - s.ERA) * 0.8).toFixed(1);
+      }
+
+      s.honors = s.isChampion ? (isCollege ? '大專聯賽冠軍 🏆' : '甲子園全國制霸 🏆') : '八強複賽';
     } else {
-      s.honors = '-';
-    }
+      /* 職業聯賽完整長賽季數據 (120~130場) */
+      s.teamW = ri(65, 88); s.teamL = ri(50, 70);
+      s.isChampion = s.rank === 1 && R() < 0.6;
+      if (s.isChampion) {
+        S.rings += 1;
+        unlockAchievement('ach_39');
+        s.honors = '總冠軍 🏆';
+      } else { s.honors = '-'; }
 
-    if (s.isBatter) {
-      const gMax = S.leagueKey.startsWith('HS') ? 30 : 120;
-      s.G = Math.round(clamp(gMax * (0.75 + diff * 0.015 + R() * 0.1), 10, gMax));
-      s.PA = Math.round(s.G * 3.8); s.AB = Math.round(s.PA * 0.88); s.BB = Math.round(s.PA * 0.10);
-      s.H = Math.round(s.AB * clamp(0.250 + diff * 0.004 + (a.con - 40) * 0.002, 0.180, 0.390));
-      s.AVG = +(s.H / Math.max(1, s.AB)).toFixed(3);
-      s.OBP = +((s.H + s.BB) / Math.max(1, s.PA)).toFixed(3);
+      if (s.isBatter) {
+        s.G = Math.round(clamp(120 * (0.75 + diff * 0.015 + R() * 0.1), 30, 125));
+        s.PA = Math.round(s.G * 3.8); s.AB = Math.round(s.PA * 0.88); s.BB = Math.round(s.PA * 0.10);
+        s.H = Math.round(s.AB * clamp(0.250 + diff * 0.004 + (a.con - 40) * 0.002, 0.180, 0.390));
+        s.AVG = +(s.H / Math.max(1, s.AB)).toFixed(3);
+        s.OBP = +((s.H + s.BB) / Math.max(1, s.PA)).toFixed(3);
 
-      s.HR = Math.round(s.AB * clamp(0.02 + (a.pow - 30) * 0.0025, 0.005, 0.11));
-      const doubles = Math.round(s.H * 0.2);
-      const triples = Math.round(s.H * 0.03);
-      const singles = Math.max(0, s.H - s.HR - doubles - triples);
-      const totalBases = singles + doubles * 2 + triples * 3 + s.HR * 4;
-      s.SLG = +(totalBases / Math.max(1, s.AB)).toFixed(3);
-      s.OPS = +(s.OBP + s.SLG).toFixed(3);
+        s.HR = Math.round(s.AB * clamp(0.02 + (a.pow - 30) * 0.0025, 0.005, 0.11));
+        const doubles = Math.round(s.H * 0.2); const triples = Math.round(s.H * 0.03);
+        const singles = Math.max(0, s.H - s.HR - doubles - triples);
+        const totalBases = singles + doubles * 2 + triples * 3 + s.HR * 4;
+        s.SLG = +(totalBases / Math.max(1, s.AB)).toFixed(3);
+        s.OPS = +(s.OBP + s.SLG).toFixed(3);
 
-      s.RBI = Math.round(s.HR * 1.8 + s.H * 0.25 + ri(0, 10));
-      s.SB = Math.round((a.spd / 100) * ri(5, 30));
-      s.E = Math.max(0, ri(1, 12) - Math.round(a.fld / 15));
+        s.RBI = Math.round(s.HR * 1.8 + s.H * 0.25 + ri(0, 10));
+        s.SB = Math.round((a.spd / 100) * ri(5, 30)); s.E = Math.max(0, ri(1, 12) - Math.round(a.fld / 15));
+        s.batWAR = +((s.OPS - 0.700) * 8).toFixed(1);
+        S.careerHits += s.H; S.careerHR += s.HR;
+      }
 
-      s.batWAR = +((s.OPS - 0.700) * 8).toFixed(1);
-      S.careerHits += s.H; S.careerHR += s.HR;
+      if (s.isPitcher) {
+        s.pG = 25; s.IP = +(s.pG * clamp(5.5 + diff * 0.04, 4.5, 7.1)).toFixed(1);
+        s.W = Math.round(s.pG * 0.55); s.L = Math.max(0, s.pG - s.W);
+        s.ERA = +clamp(4.20 - diff * 0.08, 1.20, 7.50).toFixed(2);
+        s.WHIP = +(1.35 - diff * 0.012).toFixed(2);
+        s.SO = Math.round((s.IP / 9) * clamp(6.5 + (a.vel - 135) * 0.15, 4.0, 13.5));
+        s.CG = Math.round(s.pG * 0.15); s.SHO = Math.round(s.CG * 0.4);
 
-      if (s.AVG >= 0.350) unlockAchievement('ach_01');
-      if (s.AVG >= 0.400) unlockAchievement('ach_02');
-      if (s.HR >= 40) unlockAchievement('ach_03');
-      if (s.HR >= 50) unlockAchievement('ach_04');
-      if (s.HR >= 60) unlockAchievement('ach_05');
-      if (s.RBI >= 120) unlockAchievement('ach_06');
-      if (s.RBI >= 150) unlockAchievement('ach_07');
-    }
+        s.pitWAR = +((4.50 - s.ERA) * (s.IP / 40)).toFixed(1);
+        S.careerWins += s.W; S.careerSO += s.SO;
+      }
 
-    if (s.isPitcher) {
-      s.pG = 25; s.IP = +(s.pG * clamp(5.5 + diff * 0.04, 4.5, 7.1)).toFixed(1);
-      s.W = Math.round(s.pG * 0.55); s.L = Math.max(0, s.pG - s.W);
-      s.ERA = +clamp(4.20 - diff * 0.08, 1.20, 7.50).toFixed(2);
-      s.WHIP = +(1.35 - diff * 0.012).toFixed(2);
-      s.SO = Math.round((s.IP / 9) * clamp(6.5 + (a.vel - 135) * 0.15, 4.0, 13.5));
-      s.CG = Math.round(s.pG * 0.15); s.SHO = Math.round(s.CG * 0.4);
-
-      s.pitWAR = +((4.50 - s.ERA) * (s.IP / 40)).toFixed(1);
-      S.careerWins += s.W; S.careerSO += s.SO;
-
-      if (s.W >= 15) unlockAchievement('ach_10');
-      if (s.W >= 20) unlockAchievement('ach_11');
-      if (s.ERA <= 2.00) unlockAchievement('ach_12');
-      if (s.ERA <= 1.50) unlockAchievement('ach_13');
-      if (s.WHIP <= 0.95) unlockAchievement('ach_14');
-      if (s.SO >= 200) unlockAchievement('ach_15');
-      if (s.SO >= 300) unlockAchievement('ach_16');
+      if (S.salary > 0) {
+        S.money += Math.round(S.salary * 0.3);
+        S.careerSalaryTotal += S.salary;
+        S.contractYears = Math.max(1, S.contractYears - 1);
+        if (S.contractYears === 1) {
+          S.contractYears = ri(2, 4);
+          S.salary = Math.round(S.salary * clamp(1 + s.batWAR * 0.08, 0.9, 1.5));
+          addLogCard('💳 自由球員續約', `表現優異！球團與你簽下 ${S.contractYears} 年複數年合約，年薪調整至 $${(S.salary / 10000).toFixed(0)}萬！`, 'gold', '合約簽署');
+        }
+      }
     }
 
     const yearWAR = +((s.batWAR || 0) + (s.pitWAR || 0)).toFixed(1);
     S.careerWAR = +(S.careerWAR + yearWAR).toFixed(1);
     S.stats.push(s);
-
-    if (S.salary > 0) {
-      S.money += Math.round(S.salary * 0.3);
-      S.careerSalaryTotal += S.salary;
-      S.contractYears = Math.max(1, S.contractYears - 1);
-      if (S.contractYears === 1) {
-        S.contractYears = ri(2, 4);
-        S.salary = Math.round(S.salary * clamp(1 + yearWAR * 0.08, 0.9, 1.5));
-        addLogCard('💳 自由球員續約', `表現優異！球團與你簽下 ${S.contractYears} 年複數年合約，年薪調整至 $${(S.salary / 10000).toFixed(0)}萬！`, 'gold', '合約簽署');
-      }
-    }
 
     checkAchievements();
     renderSeasonSettlementBox(s);
@@ -742,7 +761,6 @@
     return s;
   }
 
-  /* 📊 100% 復刻 Image 3 正宗賽季結算面板渲染 */
   function renderSeasonSettlementBox(s) {
     const box = document.getElementById('season-settlement-display-box');
     if (!box) return;
@@ -768,8 +786,8 @@
 
       <div class="settlement-block">
         <div class="settlement-label">◆ 季末結算與戰績</div>
-        <p class="text-sm">本年度薪資：<strong class="hl-gold">$${(S.salary / 10000).toFixed(0)}萬</strong> (生涯累計 $${(S.careerSalaryTotal / 10000).toFixed(0)}萬) | 合約剩餘 ${S.contractYears} 年</p>
-        <p class="text-sm mt-1">球隊戰績 ${s.teamW}勝${s.teamL}敗 (排名 ${s.rank}) ${s.isChampion ? '| 榮獲總冠軍 🏆' : ''}</p>
+        <p class="text-sm">${S.salary > 0 ? `本年度薪資：<strong class="hl-gold">$${(S.salary / 10000).toFixed(0)}萬</strong> (生涯累計 $${(S.careerSalaryTotal / 10000).toFixed(0)}萬) | 合約剩餘 ${S.contractYears} 年` : '業餘盃賽經驗積累'}</p>
+        <p class="text-sm mt-1">球隊戰績 ${s.teamW}勝${s.teamL}敗 (${s.rank > 0 ? `排名 ${s.rank}` : '盃賽'}) ${s.isChampion ? '| 榮獲總冠軍 🏆' : ''}</p>
       </div>
 
       <div class="settlement-block">
@@ -779,13 +797,12 @@
     `;
   }
 
-  /* 📊 榮譽大獎頁面：逐年生涯數據總表 (Career Stats Table) */
   function renderCareerStatsTable() {
     const tbody = document.getElementById('career-stats-tbody');
     if (!tbody || !S.stats) return;
 
     if (S.stats.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-muted">尚無職業賽季數據。</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="text-muted">尚無賽季數據。</td></tr>`;
       return;
     }
 
@@ -798,7 +815,7 @@
         <td>${s.isBatter ? '.' + (s.AVG * 1000).toFixed(0).padStart(3, '0') : `${s.W}勝${s.L}敗`}</td>
         <td>${s.isBatter ? '.' + (s.OPS * 1000).toFixed(0).padStart(3, '0') : s.ERA.toFixed(2)}</td>
         <td><strong class="hl-gold">${s.batWAR || s.pitWAR}</strong></td>
-        <td>${s.teamW}勝${s.teamL}敗 (${s.rank})</td>
+        <td>${s.teamW}勝${s.teamL}敗</td>
         <td>${s.honors || '-'}</td>
       </tr>
     `).join('');
@@ -832,7 +849,8 @@
   function getStageLabel() {
     if (S.stage === 'HS1') return S.origin === 'JP' ? '高一 (地區預選大會)' : '高一 (木棒聯賽)';
     if (S.stage === 'HS2') return S.origin === 'JP' ? '高二 (阪神甲子園大會)' : '高二 (黑豹旗)';
-    if (S.stage === 'HS3') return S.origin === 'JP' ? '高三 (夏季甲子園決戰)' : '高三 (玉山盃與選秀)';
+    if (S.stage === 'HS3') return S.origin === 'JP' ? '高三 (夏季甲子園決戰)' : '高三 (玉山盃與選秀抉擇)';
+    if (S.stage.startsWith('UNI')) return `大學棒球 (${S.stage.replace('UNI', '大')}階段)`;
     if (S.stage === 'DRAFT') return '職棒選秀指名';
     if (S.stage === 'PRO') return `職棒階段 - ${LEAGUES[S.leagueKey].n}`;
     if (S.stage === 'RETIRED') return '退役名人堂';
@@ -1046,16 +1064,26 @@
     document.getElementById('container-choices').classList.add('hidden');
     S.chanceCardDrawnThisPhase = false;
 
+    // 100% 每季自動觸發 1 個球季中事件
+    triggerGuaranteedInSeasonEvent(S);
+
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();
       if (S.stage === 'HS1') { S.stage = 'HS2'; S.year += 1; S.age += 1; }
       else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; }
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       renderAll();
+    } else if (S.stage.startsWith('UNI')) {
+      const stat = simSeason();
+      if (S.stage === 'UNI1') S.stage = 'UNI2';
+      else if (S.stage === 'UNI2') S.stage = 'UNI3';
+      else if (S.stage === 'UNI3') S.stage = 'UNI4';
+      else { S.stage = 'DRAFT'; showDraftChoices(); }
+      S.year += 1; S.age += 1;
+      renderAll();
     } else if (S.stage === 'PRO') {
       const stat = simSeason();
 
-      // 34歲後主動詢問引退抉擇 (Age 34+ Voluntary Retirement Prompt)
       if (S.age >= 34) {
         if (confirm(`【老將退役抉擇】您今年已 ${S.age} 歲，身體素質逐漸下滑，是否決定宣佈正式引退，脫下戰袍開啟第二人生？`)) {
           S.stage = 'RETIRED';
@@ -1077,37 +1105,83 @@
     }
   }
 
+  /* 🎴 3D 質感互動抉擇卡片 (Image 4 獨立按鈕卡片修復) */
   function showDraftChoices() {
     const choicesPanel = document.getElementById('container-choices');
     choicesPanel.classList.remove('hidden');
-    document.getElementById('choices-title').textContent = '🎓 畢業選秀指名抉擇';
-    document.getElementById('choices-desc').textContent = '職棒球探向你拋出橄欖枝，請選擇你的職業舞台：';
 
-    document.getElementById('choices-grid').innerHTML = `
-      <div class="btn-choice" data-choice="CPBL">
-        <span class="btn-choice-title">🇹🇼 加盟中華職棒 (CPBL)</span>
-        <span class="btn-choice-sub">第一輪熱指名，爭奪 CPBL 新人王</span>
-      </div>
-      <div class="btn-choice" data-choice="NPB">
-        <span class="btn-choice-title">🇯🇵 加盟日本職棒 (NPB)</span>
-        <span class="btn-choice-sub">加盟日職名門球隊，挑戰頂尖職棒戰場</span>
-      </div>
-      <div class="btn-choice" data-choice="MLB">
-        <span class="btn-choice-title">🇺🇸 挑戰美職大聯盟 (MiLB/MLB)</span>
-        <span class="btn-choice-sub">高額簽約金旅美，直指世界大賽</span>
-      </div>
-    `;
+    const ovr = calcOVR();
+    const canGoMLB = ovr >= 60 || S.isGeniusBirth;
+
+    document.getElementById('choices-title').textContent = '🎓 棒球生涯重大路徑抉擇';
+    document.getElementById('choices-desc').textContent = '請選擇你接下來的棒球之路（投入職棒選秀或升學大學）：';
+
+    let html = '';
+
+    if (S.stage === 'DRAFT' && S.age <= 19) {
+      html += `
+        <div class="btn-choice" data-choice="COLLEGE">
+          <span class="btn-choice-title">🎓 升學大學棒球隊 (${S.origin === 'JP' ? '全日本大學聯賽' : '大專棒球聯賽'})</span>
+          <span class="btn-choice-sub">經歷 4 年大學聯賽養成磨練，22 歲以強棒之姿再戰選秀</span>
+        </div>
+      `;
+    }
+
+    if (S.origin === 'TW') {
+      html += `
+        <div class="btn-choice" data-choice="CPBL">
+          <span class="btn-choice-title">🇹🇼 投入中華職棒選秀 (CPBL)</span>
+          <span class="btn-choice-sub">第一輪首選指名，爭奪 CPBL 新人王</span>
+        </div>
+      `;
+      if (canGoMLB) {
+        html += `
+          <div class="btn-choice" data-choice="MLB">
+            <span class="btn-choice-title">🇺🇸 旅美挑戰大聯盟 (MiLB/MLB)</span>
+            <span class="btn-choice-sub">球探強烈推薦！高額簽約金旅美直指世界大賽</span>
+          </div>
+        `;
+      }
+    } else {
+      html += `
+        <div class="btn-choice" data-choice="NPB">
+          <span class="btn-choice-title">🇯🇵 投入日本職棒選秀 (NPB)</span>
+          <span class="btn-choice-sub">加盟日職名門球隊，挑戰頂尖職業戰場</span>
+        </div>
+      `;
+      if (canGoMLB) {
+        html += `
+          <div class="btn-choice" data-choice="MLB">
+            <span class="btn-choice-title">🇺🇸 旅美挑戰大聯盟 (MLB/MiLB)</span>
+            <span class="btn-choice-sub">球探強烈推薦！大聯盟高額簽約金挑戰最高殿堂</span>
+          </div>
+        `;
+      }
+    }
+
+    document.getElementById('choices-grid').innerHTML = html;
 
     document.querySelectorAll('.btn-choice').forEach(btn => {
       btn.addEventListener('click', () => {
         const choice = btn.dataset.choice;
         choicesPanel.classList.add('hidden');
 
-        if (choice === 'CPBL') { S.leagueKey = 'CPBL1'; S.team = CPBL_TEAMS[ri(0, CPBL_TEAMS.length - 1)]; S.salary = 3600000; }
-        else if (choice === 'NPB') { S.leagueKey = 'NPB1'; S.team = NPB_TEAMS[ri(0, NPB_TEAMS.length - 1)]; S.salary = 18000000; }
-        else { S.leagueKey = 'MiLB'; S.team = MLB_TEAMS[ri(0, MLB_TEAMS.length - 1)]; S.salary = 6000000; }
+        if (choice === 'COLLEGE') {
+          S.stage = 'UNI1';
+          S.leagueKey = S.origin === 'JP' ? 'UNI_JP' : 'UNI_TW';
+          S.team = S.origin === 'JP' ? UNI_JP_TEAMS[ri(0, UNI_JP_TEAMS.length - 1)] : UNI_TW_TEAMS[ri(0, UNI_TW_TEAMS.length - 1)];
+          addLogCard('🎓 大學升學成功', `考取【${S.team}】！展開 4 年大學棒球聯賽養成！`, 'gold', '大學升學');
+        } else if (choice === 'CPBL') {
+          S.leagueKey = 'CPBL1'; S.team = CPBL_TEAMS[ri(0, CPBL_TEAMS.length - 1)]; S.salary = 3600000;
+          S.stage = 'PRO'; S.year += 1; S.age += 1;
+        } else if (choice === 'NPB') {
+          S.leagueKey = 'NPB1'; S.team = NPB_TEAMS[ri(0, NPB_TEAMS.length - 1)]; S.salary = 18000000;
+          S.stage = 'PRO'; S.year += 1; S.age += 1;
+        } else {
+          S.leagueKey = 'MiLB'; S.team = MLB_TEAMS[ri(0, MLB_TEAMS.length - 1)]; S.salary = 6000000;
+          S.stage = 'PRO'; S.year += 1; S.age += 1;
+        }
 
-        S.stage = 'PRO'; S.year += 1; S.age += 1;
         renderAll();
       });
     });

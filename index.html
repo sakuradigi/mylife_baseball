@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#091512">
-  <title>我的野球人生 (My Baseball Life) - EA 0.3</title>
+  <title>我的野球人生 (My Baseball Life) - EA 0.3.5</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,8 +13,8 @@
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Cache Buster v=0.3 -->
-  <link rel="stylesheet" href="style.css?v=0.3">
+  <!-- Cache Buster v=0.3.5 -->
+  <link rel="stylesheet" href="style.css?v=0.3.5">
 </head>
 <body class="theme-npb">
   <div id="app" class="app-container">
@@ -23,7 +23,7 @@
       <div class="logo-group">
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
-          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.3</span></h1>
+          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.3.5</span></h1>
         </div>
       </div>
       
@@ -74,8 +74,8 @@
                 <div class="form-group">
                   <label for="select-origin">出生地 (Birthplace)</label>
                   <select id="select-origin">
-                    <option value="JP">🇯🇵 日本出生 (地區預選 / 阪神甲子園 / NPB選秀)</option>
-                    <option value="TW">🇹🇼 台灣出生 (黑豹旗 / 木棒聯賽 / CPBL選秀)</option>
+                    <option value="JP">🇯🇵 日本出生 (預選賽 / 阪神甲子園 / NPB首選)</option>
+                    <option value="TW">🇹🇼 台灣出生 (木棒聯賽 / 黑豹旗 / CPBL首選)</option>
                   </select>
                 </div>
 
@@ -308,6 +308,7 @@
                 <button id="btn-clear-log" class="btn-text-sm">清空紀錄</button>
               </div>
               
+              <!-- 🎴 3D 質感互動抉擇卡片容器 (Image 4 Fix) -->
               <div id="container-choices" class="choices-panel hidden mb-3">
                 <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
                 <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
@@ -423,11 +424,11 @@
 
     <!-- Version Badge Floating Corner -->
     <div class="version-floating-corner">
-      <span>BUILD: <strong id="footer-version-tag">EA 0.3</strong></span>
+      <span>BUILD: <strong id="footer-version-tag">EA 0.3.5</strong></span>
     </div>
   </div>
 
-  <!-- Cache Buster v=0.3 -->
-  <script src="app.js?v=0.3"></script>
+  <!-- Cache Buster v=0.3.5 -->
+  <script src="app.js?v=0.3.5"></script>
 </body>
 </html>

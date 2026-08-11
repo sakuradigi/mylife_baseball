@@ -1,5 +1,5 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - EA 0.3 Emerald Pure Theme CSS
+   「我的野球人生」 (My Baseball Life) - EA 0.3.5 Emerald Pure Theme CSS
    ========================================================================== */
 
 /* Theme 1: Emerald Pure (Matching yakyulife & Image 3) */
@@ -261,6 +261,73 @@ body {
 .tab-content.active { display: block; }
 
 /* ==========================================================================
+   🎴 3D 質感互動抉擇卡片 (Interactive Choice Cards - Fixing Image 4)
+   ========================================================================== */
+.choices-panel {
+  background: rgba(14, 32, 26, 0.96);
+  border: 2px solid #f4a261;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(244, 162, 97, 0.2);
+  margin-bottom: 20px;
+}
+
+.choices-heading {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f4a261;
+  margin-bottom: 6px;
+}
+
+.choices-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 14px;
+}
+
+.choices-btn-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.btn-choice {
+  background: linear-gradient(180deg, rgba(26, 54, 44, 0.9) 0%, rgba(13, 29, 24, 0.95) 100%);
+  border: 1.5px solid rgba(42, 157, 143, 0.5);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-choice:hover {
+  border-color: #f4a261;
+  background: linear-gradient(180deg, rgba(38, 70, 58, 0.95) 0%, rgba(20, 44, 36, 0.98) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(244, 162, 97, 0.25);
+}
+
+.btn-choice:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.btn-choice-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.btn-choice-sub {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ==========================================================================
    🎲 100% 復刻原版《yakyulife》分配訓練成果與經典膠囊長條圖 (Image 2 & Image 3)
    ========================================================================== */
 .ref-alloc-container {
@@ -278,7 +345,6 @@ body {
   display: block;
 }
 
-/* 經典雙邊框卡牌型骰子池 */
 .ref-dice-pool-row {
   display: flex;
   align-items: center;
@@ -323,7 +389,6 @@ body {
   cursor: not-allowed;
 }
 
-/* 經典膠囊型長條圖列 */
 .ref-stat-list {
   display: flex;
   flex-direction: column;
@@ -425,9 +490,7 @@ body {
   background: rgba(244, 162, 97, 0.15);
 }
 
-/* ==========================================================================
-   📊 Image 3 正宗賽季結算面板 (Season Settlement Card Matching Image 3)
-   ========================================================================== */
+/* Season Settlement Card */
 .season-settlement-card {
   background: rgba(10, 24, 19, 0.9);
   border: 1px solid rgba(42, 157, 143, 0.4);
@@ -479,7 +542,7 @@ body {
   font-family: monospace;
 }
 
-/* 📊 榮譽頁面逐年生涯數據總表 (Career Stats Table) */
+/* Career Stats Table */
 .career-stats-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -512,7 +575,7 @@ body {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* 🛒 商店 */
+/* Shop */
 .shop-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -558,7 +621,7 @@ body {
 
 .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Persistent Narrative Stream Card */
+/* Persistent Log Feed */
 .narrative-stream-card { margin-top: 16px; }
 .stream-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 .btn-text-sm { background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; }
