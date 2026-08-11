@@ -198,7 +198,15 @@
     { id: 'ach_77', icon: '🎁', title: '【傳承始祖】', desc: '首次將裝備轉贈傳承給下一代', titleReward: '稱號：傳承始祖' },
     { id: 'ach_78', icon: '🔥', title: '【野球的血脈】', desc: '攜帶前輩傳承裝備打滿一生', titleReward: '稱號：野球血脈' },
     { id: 'ach_79', icon: '📖', title: '【圖鑑收藏家】', desc: '解鎖 15 件常駐裝備圖鑑', titleReward: '稱號：圖鑑收藏家' },
-    { id: 'ach_80', icon: '🧢', title: '【名將教頭】', desc: '總教練模式帶隊奪得 3 次總冠軍', titleReward: '稱號：名將教頭' }
+    { id: 'ach_80', icon: '🧢', title: '【名將教頭】', desc: '總教練模式帶隊奪得 3 次總冠軍', titleReward: '稱號：名將教頭' },
+
+    { id: 'ach_81', icon: '📦', title: '【終極囤貨家】', desc: '背包內同時持有 15 件消耗道具', titleReward: '稱號：終極囤貨家' },
+    { id: 'ach_82', icon: '🌟', title: '【傳說收藏家】', desc: '擁有至少 1 件傳說級常駐裝備', titleReward: '稱號：傳說收藏家' },
+    { id: 'ach_83', icon: '🔍', title: '【裝備鑑定師】', desc: '同時擁有 3 件以上稀有/傳說級裝備', titleReward: '稱號：裝備鑑定師' },
+    { id: 'ach_84', icon: '💰', title: '【零用金富翁】', desc: '零用金累積達到 $50 萬', titleReward: '稱號：零用金富翁' },
+    { id: 'ach_85', icon: '🏎️', title: '【賽道狂人】', desc: '擁有 Tier 4 以上高階座駕', titleReward: '稱號：賽道狂人' },
+    { id: 'ach_86', icon: '🧬', title: '【血脈相承】', desc: '攜帶第 3 代以上傳承裝備開局', titleReward: '稱號：血脈相承' },
+    { id: 'ach_87', icon: '👨‍👩‍👦', title: '【野球世家】', desc: '攜帶第 5 代以上傳承裝備開局', titleReward: '稱號：野球世家' }
   ];
 
   /* ==========================================================================
@@ -595,8 +603,19 @@
     if (S.inventory && S.inventory.reduce((a, b) => a + b.qty, 0) >= 8) unlockAchievement('ach_70');
 
     if (unlockedCodex.length >= 15) unlockAchievement('ach_79');
-    if (S.origin === 'JP' && S.stage.startsWith('HS')) unlockAchievement('ach_72');
-    if (S.origin === 'TW' && S.stage.startsWith('HS')) unlockAchievement('ach_71');
+    if (S.origin === 'JP' && S.qualifiedForNationals) unlockAchievement('ach_72');
+    if (S.origin === 'TW' && S.qualifiedForNationals) unlockAchievement('ach_71');
+
+    // Phase 2-5 新系統勾稽
+    const consQty = S.inventory ? S.inventory.reduce((a, b) => a + b.qty, 0) : 0;
+    if (consQty >= 15) unlockAchievement('ach_81');
+    const ownedRarities = S.ownedEquipment.map(e => e.rarity);
+    if (ownedRarities.includes('legendary')) unlockAchievement('ach_82');
+    if (ownedRarities.filter(r => r === 'rare' || r === 'legendary').length >= 3) unlockAchievement('ach_83');
+    if (S.pocket >= 500000) unlockAchievement('ach_84');
+    if (S.ownedAssets.car && CARS_LIST.find(c => c.id === S.ownedAssets.car)?.tier >= 4) unlockAchievement('ach_85');
+    if (inheritedItem && inheritedItem.generation >= 3) unlockAchievement('ach_86');
+    if (inheritedItem && inheritedItem.generation >= 5) unlockAchievement('ach_87');
   }
 
   function calcDicePool() {
@@ -861,6 +880,7 @@
       chanceCardDrawnThisPhase: false,
       activeBuffs: [],
       daikichiCount: 0,
+      qualifiedForNationals: false,
 
       money: 100000,
       pocket: 20000,
@@ -1454,7 +1474,7 @@
 
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();
-      if (S.stage === 'HS1') { S.stage = 'HS2'; S.year += 1; S.age += 1; }
+      if (S.stage === 'HS1') { showRegionalQualifierEvent(); }
       else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; }
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       renderAll();
@@ -1488,6 +1508,52 @@
       S.year += 1; S.age += 1;
       renderAll();
     }
+  }
+
+  // 出生地分岔：高一結束後的地區資格賽，決定能否晉級甲子園/黑豹旗全國大賽
+  function showRegionalQualifierEvent() {
+    const choicesPanel = document.getElementById('container-choices');
+    choicesPanel.classList.remove('hidden');
+
+    const reveal = document.getElementById('dice-roll-reveal');
+    reveal.classList.add('hidden');
+    reveal.innerHTML = '';
+
+    const label = S.origin === 'JP' ? '地區預選資格賽' : '黑豹旗資格甄選賽';
+    const target = S.origin === 'JP' ? '阪神甲子園大會' : '黑豹旗全國大賽';
+
+    document.getElementById('choices-title').textContent = `◆ ${label} — 你要如何備戰？`;
+    document.getElementById('choices-desc').textContent = `這是晉級【${target}】的關鍵資格賽，你的應對策略將決定能否踏上全國舞台！`;
+
+    document.getElementById('choices-grid').innerHTML = ['high', 'med', 'low'].map(tier => `
+      <div class="btn-choice ${tier === 'high' ? 'high-risk' : tier === 'med' ? 'med-risk' : 'low-risk'}" data-risk="${tier}">
+        <span class="btn-choice-title">${RISK_ROLL_TABLE[tier].label}</span>
+        <span class="btn-choice-sub">${RISK_ROLL_TABLE[tier].sub}</span>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('#choices-grid .btn-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('disabled')) return;
+        document.querySelectorAll('#choices-grid .btn-choice').forEach(b => b.classList.add('disabled'));
+        animateDiceRoll(btn.dataset.risk, (result) => {
+          document.getElementById('container-choices').classList.add('hidden');
+
+          S.qualifiedForNationals = result.success;
+          S.ab.sta = clamp((S.ab.sta || 25) + result.mag, 10, S.pot.sta || 99);
+
+          if (result.success) {
+            addLogCard(`◆ ${label}`, `🎉 成功晉級！你的球隊將踏上【${target}】的全國舞台！（🎲 擲出 ${result.roll} 點・${result.tag}）`, 'good', '資格賽');
+          } else {
+            addLogCard(`◆ ${label}`, `😢 資格賽失利，無緣挑戰【${target}】，但這段經歷成為你邁向下個舞台的養分。（🎲 擲出 ${result.roll} 點・${result.tag}）`, 'bad', '資格賽');
+          }
+
+          S.stage = 'HS2'; S.year += 1; S.age += 1;
+          checkAchievements();
+          renderAll();
+        });
+      });
+    });
   }
 
   function showDraftChoices() {
