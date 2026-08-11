@@ -1,12 +1,12 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - Core Logic & Mechanics
+   「我的野球人生」 (My Baseball Life) - Core Logic & 80 Achievements System
    ========================================================================== */
 
 (function () {
   'use strict';
 
   /* ==========================================================================
-     1. PRNG (Mulberry32)
+     1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
      ========================================================================== */
   let SEED_STR = new URLSearchParams(location.search).get('seed') || Math.random().toString(36).slice(2, 10);
   let _seedState = 0;
@@ -60,44 +60,135 @@
     } catch (e) { }
   }
 
-  function playCheerSound() {
+  function playDiceSound() {
     if (!soundEnabled) return;
     initAudio();
     if (!audioCtx) return;
     try {
-      const bufferSize = audioCtx.sampleRate * 0.3;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-      const noise = audioCtx.createBufferSource();
-      noise.buffer = buffer;
-      const gain = audioCtx.createGain();
-      gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-      noise.connect(gain); gain.connect(audioCtx.destination);
-      noise.start();
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400 + Math.random() * 400, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+        }, i * 60);
+      }
     } catch (e) { }
   }
 
   /* ==========================================================================
-     3. 隨機事件庫 (Mid-Season & Training Narrative Events)
+     3. 80 種成就與球員稱號資料庫 (80 Achievements Database)
      ========================================================================== */
-  const NARRATIVE_EVENTS = [
-    { name: '打擊機特訓', stat: 'con', succText: '手感火燙，擊球點完全咬中！打擊+2', failText: '越打越糊，打擊姿勢有點跑掉。打擊-1' },
-    { name: '重量訓練週期', stat: 'pow', succText: '深蹲破 PR，全身充滿爆發力量！力量+2, 體力+1', failText: '操之過急，肌肉緊繃休養了一週。體力-1' },
-    { name: '牛棚加練球種', stat: 'brk', succText: '找到了球種新的握法，尾勁明顯提升！變化球+2', failText: '越投越歪，投球機制有些亂掉。控球-1' },
-    { name: '長傳接訓練', stat: 'arm', succText: '雷射肩養成中，外野長傳精準到位！臂力+2', failText: '肩膀有些緊繃，教練喊停叫你休養。臂力-1' },
-    { name: '影像分析課', stat: 'eye', succText: '看穿投打習性，選球判斷力大增！選球+2', failText: '資訊過載，站上打擊區反而想太多。選球-1' },
-    { name: '跑壘特訓', stat: 'spd', succText: '起跑瞬間判斷神速，盜壘時機抓極準！跑壘+2', failText: '拉傷大腿後側，休養了兩週。跑壘-1' },
-    { name: '啦啦隊約會傳聞', stat: 'con', succText: '感情甜蜜，場上表現更加英勇！全能力+1', failText: '被狗仔隊拍到登上週刊封面，心情大受影響。選球-1' },
-    { name: '教練深夜談話', stat: 'eye', succText: '教練點出你的關鍵缺點，心智成熟大躍進！天花板上限提升！', failText: '講話過於直接，壓力過大感到沮喪。' },
-    { name: '隊友宿敵對決', stat: 'pow', succText: '在隊內分組賽擊出再見全壘打！力量+2', failText: '遭到對方三振，激起了強烈的勝負欲！' },
-    { name: '商業廣告拍攝', stat: 'money', succText: '代言休旅車廣告獲得豐厚報酬！零用金+30萬', failText: '拍攝耽誤了自主訓練時間。' }
+  const ACHIEVEMENTS_LIST = [
+    // A. 單季神級紀錄
+    { id: 'ach_01', icon: '🏆', title: '【打擊王】', desc: '單季打擊率達到 .350 以上', titleReward: '稱號：打擊機器' },
+    { id: 'ach_02', icon: '⚡', title: '【四成男神話】', desc: '單季打擊率達到 .400 神蹟', titleReward: '稱號：四成男' },
+    { id: 'ach_03', icon: '🏏', title: '【四十轟巨砲】', desc: '單季擊出 40 支全壘打', titleReward: '稱號：四割砲手' },
+    { id: 'ach_04', icon: '💥', title: '【五十轟大刀】', desc: '單季擊出 50 支全壘打', titleReward: '稱號：五十轟王' },
+    { id: 'ach_05', icon: '👑', title: '【六十轟神話】', desc: '單季擊出 60 支全壘打傳承王貞治', titleReward: '稱號：傳奇巨砲' },
+    { id: 'ach_06', icon: '🎯', title: '【打點收割機】', desc: '單季貢獻 120 分打點', titleReward: '稱號：打點專家' },
+    { id: 'ach_07', icon: '🔥', title: '【打點怪物】', desc: '單季貢獻 150 分打點狂潮', titleReward: '稱號：打點怪物' },
+    { id: 'ach_08', icon: '🏃', title: '【飛速快腿】', desc: '單季完成 30 次盜壘成功', titleReward: '稱號：快腿快客' },
+    { id: 'ach_09', icon: '💨', title: '【神速盜壘王】', desc: '單季完成 50 次盜壘成功', titleReward: '稱號：神速盜王' },
+    { id: 'ach_10', icon: '⚾', title: '【勝投王】', desc: '單季獲得 15 勝', titleReward: '稱號：王牌勝投' },
+    { id: 'ach_11', icon: '👑', title: '【二十勝巨投】', desc: '單季獲得 20 勝傳奇巨投', titleReward: '稱號：二十勝投手' },
+    { id: 'ach_12', icon: '🛡️', title: '【壓制防禦率王】', desc: '單季防禦率低於 2.00', titleReward: '稱號：壓制鎖爆' },
+    { id: 'ach_13', icon: '✨', title: '【神鬼防禦率】', desc: '單季防禦率低於 1.50 神鬼極限', titleReward: '稱號：防禦鬼神' },
+    { id: 'ach_14', icon: '🔒', title: '【絕望支配者】', desc: '單季 WHIP 低於 0.95', titleReward: '稱號：絕望支配者' },
+    { id: 'ach_15', icon: '⚡', title: '【K9收割機】', desc: '單季飆出 200 次奪三振', titleReward: '稱號：三振王' },
+    { id: 'ach_16', icon: '🔥', title: '【三振魔神】', desc: '單季飆出 300 次奪三振極限', titleReward: '稱號：三振魔神' },
+    { id: 'ach_17', icon: '🛡️', title: '【終結者守護神】', desc: '單季獲得 30 次救援成功', titleReward: '稱號：守護神' },
+    { id: 'ach_18', icon: '👑', title: '【神鬼救援】', desc: '單季獲得 45 次救援成功', titleReward: '稱號：關門守護星' },
+    { id: 'ach_19', icon: '🦾', title: '【鐵臂鋼投】', desc: '單季完成 10 完投 5 完封', titleReward: '稱號：鐵臂王牌' },
+    { id: 'ach_20', icon: '🚀', title: '【統治級打者】', desc: '單季整體攻擊指數 OPS 突破 1.100', titleReward: '稱號：打擊主宰' },
+
+    // B. 生涯里程碑與殿堂階層
+    { id: 'ach_21', icon: '⚾', title: '【千安俱樂部】', desc: '生涯累積擊出 1,000 支安打', titleReward: '稱號：千安打者' },
+    { id: 'ach_22', icon: '🏆', title: '【兩千安名宿】', desc: '生涯累積擊出 2,000 支安打', titleReward: '稱号：兩千安名宿' },
+    { id: 'ach_23', icon: '👑', title: '【三千安殿堂巨星】', desc: '生涯累積擊出 3,000 支安打', titleReward: '稱號：殿堂巨星' },
+    { id: 'ach_24', icon: '🏏', title: '【百轟砲手】', desc: '生涯累積 150 支全壘打', titleReward: '稱號：百轟大砲' },
+    { id: 'ach_25', icon: '💥', title: '【三百轟怪力】', desc: '生涯累積 300 支全壘打', titleReward: '稱號：怪力巨砲' },
+    { id: 'ach_26', icon: '👑', title: '【五百轟偉大殿堂】', desc: '生涯累積 500 支全壘打', titleReward: '稱號：五百轟傳奇' },
+    { id: 'ach_27', icon: '⚾', title: '【五十勝投手】', desc: '投手生涯累積 50 勝', titleReward: '稱號：五十勝投手' },
+    { id: 'ach_28', icon: '👑', title: '【百勝王牌】', desc: '投手生涯累積 100 勝', titleReward: '稱號：百勝王牌' },
+    { id: 'ach_29', icon: '🌟', title: '【兩百勝傳奇巨投】', desc: '投手生涯累積 200 勝名人堂級', titleReward: '稱號：兩百勝傳奇' },
+    { id: 'ach_30', icon: '⚡', title: '【千K投手】', desc: '投手生涯累積 1,000 次三振', titleReward: '稱號：千K高手' },
+    { id: 'ach_31', icon: '🔥', title: '【兩千五百K魔神】', desc: '投手生涯累積 2,500 次三振', titleReward: '稱號：奪三振魔神' },
+    { id: 'ach_32', icon: '⭐', title: '【明星球員】', desc: '生涯累積 WAR 達到 30 以上', titleReward: '稱號：明星球員' },
+    { id: 'ach_33', icon: '👑', title: '【棒球殿堂名人堂】', desc: '生涯累積 WAR 達到 60 以上', titleReward: '稱號：殿堂名人堂' },
+    { id: 'ach_34', icon: '✨', title: '【千古第一人】', desc: '生涯累積 WAR 達到 100 歷史峰頂', titleReward: '稱號：棒球之神' },
+    { id: 'ach_35', icon: '👕', title: '【背號永久欠番】', desc: '榮獲球團退役背號榮譽', titleReward: '稱號：永久欠番' },
+    { id: 'ach_36', icon: '🗿', title: '【球場傳奇雕像】', desc: '主場球場為你建立紀念銅像', titleReward: '稱號：不朽傳奇' },
+    { id: 'ach_37', icon: '💨', title: '【黑色閃電】', desc: '生涯累積 200 次盜壘成功', titleReward: '稱號：黑色閃電' },
+    { id: 'ach_38', icon: '⚡', title: '【盜壘王傳奇】', desc: '生涯累積 400 次盜壘成功', titleReward: '稱號：盜壘之神' },
+    { id: 'ach_39', icon: '💍', title: '【多冠王者】', desc: '生涯累積獲得 3 枚總冠軍戒指', titleReward: '稱號：多冠王者' },
+    { id: 'ach_40', icon: '👑', title: '【戒指收集家】', desc: '生涯累積獲得 5 枚總冠軍戒指', titleReward: '稱號：戒指霸主' },
+
+    // C. 累計薪資與財務里程碑
+    { id: 'ach_41', icon: '💵', title: '【千萬年薪】', desc: '生涯薪資總計突破 $1,000 萬', titleReward: '稱號：千萬身價' },
+    { id: 'ach_42', icon: '💰', title: '【富豪球星】', desc: '生涯薪資總計突破 $5,000 萬', titleReward: '稱號：富豪球星' },
+    { id: 'ach_43', icon: '💳', title: '【億萬身價】', desc: '生涯薪資總計突破 $1 億', titleReward: '稱號：億萬男' },
+    { id: 'ach_44', icon: '🏦', title: '【大聯盟頂薪合約】', desc: '生涯薪資總計突破 $3 億', titleReward: '稱號：頂薪合約王' },
+    { id: 'ach_45', icon: '💎', title: '【黃金傳奇薪資】', desc: '生涯薪資總計突破 $5 億歷史極限', titleReward: '稱號：黃金身價' },
+    { id: 'ach_46', icon: '📈', title: '【理財大師】', desc: '個人零用金積蓄突破 $5,000 萬', titleReward: '稱號：理財大師' },
+    { id: 'ach_47', icon: '🏰', title: '【頂級豪宅之主】', desc: '入住 Tier 5 名人堂極致莊園', titleReward: '稱號：城堡主人' },
+    { id: 'ach_48', icon: '🏎️', title: '【極速超跑狂熱】', desc: '駕駛 Tier 5 傳奇狂飆賽車巨獸', titleReward: '稱號：飆速球星' },
+    { id: 'ach_49', icon: '🎒', title: '【資深裝備家】', desc: '擁有 5 件常駐型裝備', titleReward: '稱號：裝備玩家' },
+    { id: 'ach_50', icon: '🛡️', title: '【裝備大師】', desc: '擁有 12 件常駐型裝備', titleReward: '稱號：裝備大師' },
+
+    // D. 雙刀流與特殊榮譽
+    { id: 'ach_51', icon: '⚔️', title: '【二刀流開花】', desc: '雙刀流單季 10 轟且獲得 5 勝', titleReward: '稱號：二刀流開花' },
+    { id: 'ach_52', icon: '👑', title: '【大谷翔平神蹟】', desc: '雙刀流單季 20 轟且獲得 10 勝神蹟', titleReward: '稱號：大谷二世' },
+    { id: 'ach_53', icon: '👑', title: '【打擊三冠王】', desc: '單季包辦打擊率、全壘打、打點王', titleReward: '稱號：三冠至尊' },
+    { id: 'ach_54', icon: '🌟', title: '【年度 MVP】', desc: '獲得職棒年度最佳球員 MVP 大獎', titleReward: '稱號：年度 MVP' },
+    { id: 'ach_55', icon: '投', title: '【賽揚降臨】', desc: '獲得職棒年度最佳投手賽揚賞', titleReward: '稱號：賽揚得主' },
+    { id: 'ach_56', icon: '👶', title: '【大聯盟新人王】', desc: '獲得大聯盟 RoY 新人王標籤', titleReward: '稱號：超級新人' },
+    { id: 'ach_57', icon: '🧤', title: '【金手套防守神童】', desc: '獲得聯盟金手套防守大獎', titleReward: '稱號：金手套神童' },
+    { id: 'ach_58', icon: '🏏', title: '【銀棒打擊大獎】', desc: '獲得聯盟最佳九人銀棒大獎', titleReward: '稱號：銀棒強打' },
+    { id: 'ach_59', icon: '⭐', title: '【明星賽 MVP】', desc: '在職棒明星賽打出 MVP 高光表現', titleReward: '稱號：明星賽MVP' },
+    { id: 'ach_60', icon: '💥', title: '【全壘打大賽霸主】', desc: '奪得明星賽全壘打大賽冠軍', titleReward: '稱號：全壘打王' },
+
+    // E. 擲骰運氣與關鍵時刻
+    { id: 'ach_61', icon: '✨', title: '【十年一遇】', desc: '創角幸運觸發 8% 隨機「天才降生」', titleReward: '稱號：十年一遇' },
+    { id: 'ach_62', icon: '🎲', title: '【幸運大滿貫】', desc: '春訓擲骰單次出現 3 個 6 點歐皇', titleReward: '稱號：歐皇大滿貫' },
+    { id: 'ach_63', icon: '🏋️', title: '【完美自主訓練】', desc: '春訓擲骰獲得全部最高經驗加成', titleReward: '稱號：自主訓狂人' },
+    { id: 'ach_64', icon: '🔥', title: '【心臟很大】', desc: '完成 1 次關鍵時刻戰術勝利', titleReward: '稱號：大心臟' },
+    { id: 'ach_65', icon: '⚡', title: '【九局下半英雄】', desc: '完成 3 次關鍵時刻戰術勝利', titleReward: '稱號：九局下半英雄' },
+    { id: 'ach_66', icon: '🎯', title: '【再見安打專家】', desc: '完成 5 次關鍵時刻戰術勝利', titleReward: '稱號：再見安打王' },
+    { id: 'ach_67', icon: '⛩️', title: '【神明保佑】', desc: 'D100 事件擲骰判定 95 點以上高分過關', titleReward: '稱號：天選之子' },
+    { id: 'ach_68', icon: '🦾', title: '【鋼鐵不壞之身】', desc: '生涯未受重大傷病順利引退', titleReward: '稱號：鋼鐵人' },
+    { id: 'ach_69', icon: '🃏', title: '【幸運星眷顧】', desc: '抽中 5 次大吉幸運機會卡', titleReward: '稱號：幸運星' },
+    { id: 'ach_70', icon: '🎒', title: '【萬寶囊】', desc: '背包內擁有滿滿道具', titleReward: '稱號：萬寶囊' },
+
+    // F. 降生、聯盟與傳承里程碑
+    { id: 'ach_71', icon: '🇹🇼', title: '【黑豹王者】', desc: '台灣出生高中賽事稱霸黑豹旗', titleReward: '稱號：黑豹王者' },
+    { id: 'ach_72', icon: '🇯🇵', title: '【甲子園怪物】', desc: '日本出生殺入阪神甲子園大會', titleReward: '稱號：甲子園怪物' },
+    { id: 'ach_73', icon: '⛩️', title: '【甲子園全國制霸】', desc: '率領學校勇奪甲子園全國總冠軍', titleReward: '稱號：全國制霸' },
+    { id: 'ach_74', icon: '🇹🇼', title: '【CPBL中職巨星】', desc: '中華職棒生涯打出 1,000 支安打', titleReward: '稱號：CPBL巨星' },
+    { id: 'ach_75', icon: '🇯🇵', title: '【NPB日職王牌】', desc: '日本職棒生涯獲得 100 勝', titleReward: '稱號：NPB王牌' },
+    { id: 'ach_76', icon: '🇺🇸', title: '【MLB大聯盟超級巨星】', desc: '美職大聯盟生涯 WAR 突破 50', titleReward: '稱號：MLB超級巨星' },
+    { id: 'ach_77', icon: '🎁', title: '【傳承始祖】', desc: '首次將裝備轉贈傳承給下一代', titleReward: '稱號：傳承始祖' },
+    { id: 'ach_78', icon: '🔥', title: '【野球的血脈】', desc: '攜帶前輩傳承裝備打滿一生', titleReward: '稱號：野球血脈' },
+    { id: 'ach_79', icon: '📖', title: '【圖鑑收藏家】', desc: '解鎖 15 件常駐裝備圖鑑', titleReward: '稱號：圖鑑收藏家' },
+    { id: 'ach_80', icon: '🧢', title: '【名將教頭】', desc: '總教練模式帶隊奪得 3 次總冠軍', titleReward: '稱號：名將教頭' }
   ];
 
   /* ==========================================================================
-     4. 靜態資料庫 (Teams, Leagues, Equipment, Assets, Chance Cards)
+     4. 隨機事件與資料庫
      ========================================================================== */
+  const NARRATIVE_EVENTS = [
+    { name: '打擊機特訓', stat: 'con', succText: '擊球點完全咬中！打擊提升', failText: '打擊姿勢有點跑掉。' },
+    { name: '重量訓練週期', stat: 'pow', succText: '深蹲破 PR，全身充滿力量！力量提升', failText: '肌肉緊繃休養了一週。' },
+    { name: '牛棚加練球種', stat: 'brk', succText: '找到了變化球新的握法！變化球提升', failText: '投球機制有些亂掉。' },
+    { name: '長傳接訓練', stat: 'arm', succText: '雷射肩養成中！臂力提升', failText: '肩膀有點緊繃。' },
+    { name: '影像分析課', stat: 'eye', succText: '看穿投打習性！選球提升', failText: '站上打擊區想太多。' },
+    { name: '跑壘特訓', stat: 'spd', succText: '起跑瞬間判斷神速！跑壘提升', failText: '拉傷大腿後側。' }
+  ];
+
   const CPBL_TEAMS = ['台中猛瑪', '府城雄獅', '桃園金剛', '新北騎士', '台北恐龍', '高雄神鵰'];
   const NPB_TEAMS = ['東京大人', '阪神猛虎', '橫濱海星', '廣島紅鯉', '神宮飛燕', '福岡猛禽', '千葉海潮', '歐力士猛牛'];
   const MLB_TEAMS = ['洛城藍電', '聖港修士', '灣區巨浪', '紐約帝國', '波士頓襪王', '亞城戰斧', '風城幼熊', '天使之城'];
@@ -114,71 +205,37 @@
   };
 
   const ALL_PROPOSALS = [
-    { id: 'p_01', icon: '🏏', name: '特製楓木打擊重棒', desc: '力量+5, 全壘打率提升', price: 150000, stat: { pow: 5 } },
+    { id: 'p_01', icon: '🏏', name: '特製楓木打擊重棒', desc: '力量+5', price: 150000, stat: { pow: 5 } },
     { id: 'p_02', icon: '🧤', name: '加重練習打擊手套', desc: '打擊+4, 選球+3', price: 120000, stat: { con: 4, eye: 3 } },
-    { id: 'p_03', icon: '👟', name: '碳纖維輕量釘鞋', desc: '跑壘+6, 盜壘成功率大增', price: 140000, stat: { spd: 6 } },
-    { id: 'p_04', icon: '🦺', name: '鈦合金防護面罩', desc: '捕手接捕+8, 傷病風險-30%', price: 180000, stat: { cat: 8, fld: 4 } },
-    { id: 'p_05', icon: '⛩️', name: '神社必勝祈願勝守', desc: '運氣大爆發, 關鍵時刻能力+5', price: 100000, stat: { con: 3, pow: 3 } },
-    { id: 'p_06', icon: '🧢', name: '家傳幸運縫線球帽', desc: '控球+5, 精神抗壓高', price: 130000, stat: { ctl: 5 } },
-    { id: 'p_07', icon: '💪', name: '高科技肌能護臂', desc: '臂力+6, 球速+2km/h', price: 200000, stat: { arm: 6, vel: 2 } },
-    { id: 'p_08', icon: '💍', name: '總冠軍運勢金戒', desc: '全能力+2', price: 300000, stat: { con: 2, pow: 2, ctl: 2, vel: 2 } },
-    { id: 'p_09', icon: '🕶️', name: '戰術防眩光太陽眼鏡', desc: '選球+6, 守備範圍+4', price: 110000, stat: { eye: 6, fld: 4 } },
-    { id: 'p_10', icon: '🧂', name: '王牌專用止滑粉盒', desc: '變化球+6, 控球+3', price: 160000, stat: { brk: 6, ctl: 3 } },
-    { id: 'p_11', icon: '🏕️', name: '甲子園紀念白土香囊', desc: '體力+8', price: 220000, stat: { sta: 8 } },
-    { id: 'p_12', icon: '⚡', name: '雷射肩強投訓練彈繩', desc: '臂力+8', price: 170000, stat: { arm: 8 } },
-    { id: 'p_13', icon: '🎯', name: '九宮格精準控球目標', desc: '控球+7', price: 190000, stat: { ctl: 7 } },
-    { id: 'p_14', icon: '🔥', name: '剛速球火球訓練重球', desc: '球速+3km/h', price: 250000, stat: { vel: 3 } },
-    { id: 'p_15', icon: '🧘', name: '靜心冥想防壓耳罩', desc: '選球+7', price: 140000, stat: { eye: 7 } },
-    { id: 'p_16', icon: '🥊', name: '爆發力握力訓練器', desc: '打擊+5, 力量+3', price: 130000, stat: { con: 5, pow: 3 } },
-    { id: 'p_17', icon: '🩹', name: '運動水療保健劑', desc: '體力+5', price: 150000, stat: { sta: 5 } },
-    { id: 'p_18', icon: '📊', name: '大聯盟級影像分析軟體', desc: '選球+8, 變化球+4', price: 350000, stat: { eye: 8, brk: 4 } },
-    { id: 'p_19', icon: '🛡️', name: '護肘打擊保護甲', desc: '防護打擊', price: 120000, stat: { con: 3 } },
-    { id: 'p_20', icon: '👟', name: '人工草皮特製抓地鞋', desc: '守備+6, 跑壘+3', price: 160000, stat: { fld: 6, spd: 3 } },
-    { id: 'p_21', icon: '🏅', name: '國家隊MVP紀念項鍊', desc: '全能力+3', price: 400000, stat: { con: 3, pow: 3, ctl: 3 } },
-    { id: 'p_22', icon: '🧊', name: '低溫冰敷急速復原儀', desc: '體力+10', price: 300000, stat: { sta: 10 } },
-    { id: 'p_23', icon: '📖', name: '名將傳奇投打秘笈', desc: '打擊+6, 力量+6', price: 450000, stat: { con: 6, pow: 6 } },
-    { id: 'p_24', icon: '🥎', name: '魔球變轉角度測量儀', desc: '變化球+8', price: 280000, stat: { brk: 8 } },
-    { id: 'p_25', icon: '🏋️', name: '私人加壓重訓深蹲架', desc: '力量+7, 體力+4', price: 320000, stat: { pow: 7, sta: 4 } }
+    { id: 'p_03', icon: '👟', name: '碳纖維輕量釘鞋', desc: '跑壘+6', price: 140000, stat: { spd: 6 } },
+    { id: 'p_04', icon: '🦺', name: '鈦合金防護面罩', desc: '捕手接捕+8', price: 180000, stat: { cat: 8, fld: 4 } },
+    { id: 'p_05', icon: '⛩️', name: '神社必勝祈願勝守', desc: '能力+3', price: 100000, stat: { con: 3, pow: 3 } },
+    { id: 'p_06', icon: '🧢', name: '家傳幸運縫線球帽', desc: '控球+5', price: 130000, stat: { ctl: 5 } },
+    { id: 'p_07', icon: '💪', name: '高科技肌能護臂', desc: '臂力+6', price: 200000, stat: { arm: 6, vel: 2 } },
+    { id: 'p_08', icon: '💍', name: '總冠軍運勢金戒', desc: '全能力+2', price: 300000, stat: { con: 2, pow: 2, ctl: 2, vel: 2 } }
   ];
 
-  // 階梯式解鎖資產 (Progressive Cars & Houses)
   const CARS_LIST = [
-    { id: 'car_01', tier: 1, name: '二手國民小轎車', price: 100000, icon: '🚗', desc: '入門代步小車' },
-    { id: 'car_02', tier: 1, name: '國產舒適休旅車', price: 400000, icon: '🚙', desc: '空間寬敞，載裝備方便' },
+    { id: 'car_01', tier: 1, name: '二手國民小轎車', price: 100000, icon: '🚗', desc: '代步小車' },
+    { id: 'car_02', tier: 1, name: '國產舒適休旅車', price: 400000, icon: '🚙', desc: '載裝備方便' },
     { id: 'car_03', tier: 1, name: '日系街頭跑車', price: 800000, icon: '🏎️', desc: '年輕球員熱門首選' },
-    { id: 'car_04', tier: 2, name: '德系豪華房車', price: 1500000, icon: '🚘', desc: '展現職棒主力身價' },
-    { id: 'car_05', tier: 2, name: '美式肌肉跑車', price: 2500000, icon: '🏎️', desc: '霸氣引擎轟鳴聲' },
-    { id: 'car_06', tier: 3, name: '英倫敞篷跑車', price: 7000000, icon: '🏎️', desc: '兜風吸引媒體目光' },
-    { id: 'car_07', tier: 3, name: '義式紅雙座超跑', price: 12000000, icon: '🏎️', desc: '頂級夢幻超跑' },
-    { id: 'car_08', tier: 4, name: '德系極速賽道超跑', price: 20000000, icon: '🏎️', desc: '極速破300km/h' },
-    { id: 'car_09', tier: 5, name: '傳奇狂飆賽車巨獸', price: 100000000, icon: '🏎️', desc: '巨星至尊座駕' }
+    { id: 'car_04', tier: 2, name: '德系豪華房車', price: 1500000, icon: '🚘', desc: '展現身價' },
+    { id: 'car_05', tier: 5, name: '傳奇狂飆賽車巨獸', price: 100000000, icon: '🏎️', desc: '巨星座駕' }
   ];
 
   const HOUSES_LIST = [
     { id: 'house_01', tier: 1, name: '球隊青年單身宿舍', price: 0, icon: '🏠', desc: '預設居住' },
     { id: 'house_02', tier: 1, name: '市區單身套房', price: 500000, icon: '🏢', desc: '交通便捷' },
-    { id: 'house_03', tier: 1, name: '捷運景觀大樓公寓', price: 1200000, icon: '🏢', desc: '採光佳' },
-    { id: 'house_04', tier: 2, name: '明星水岸豪宅公寓', price: 6000000, icon: '🏙️', desc: '高樓層河景' },
-    { id: 'house_05', tier: 2, name: '綠意獨立別墅', price: 12000000, icon: '🏡', desc: '私人庭院' },
-    { id: 'house_06', tier: 3, name: '東京六本木高層豪宅', price: 45000000, icon: '🏙️', desc: '日職巨星象徵' },
-    { id: 'house_07', tier: 4, name: '紐約曼哈頓頂層豪宅', price: 150000000, icon: '🏙️', desc: '鳥瞰中央公園' },
-    { id: 'house_08', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極榮耀城堡' }
-  ];
-
-  const CHANCE_CARDS = [
-    { name: '天道酬勤', desc: '本季 AP 配點額外 +5 點！', effect: (S) => { S.ap += 5; } },
-    { name: '球探關注', desc: '評價大幅提升，合約金增加！', effect: (S) => { S.salary = Math.round(S.salary * 1.2); } },
-    { name: '超常發揮', desc: '本季打率/防禦率大幅提升！', effect: (S) => { S.ab.con += 3; S.ab.ctl += 3; } },
-    { name: '骰子爆發', desc: '配點效果雙倍爆發！', effect: (S) => { S.ap += 3; } },
-    { name: '貴人相助', desc: '前輩親自指導，全屬性+2！', effect: (S) => { for (let k in S.ab) S.ab[k] += 2; } },
-    { name: '贊助商加碼', desc: '獲得廣告代言，零用金+30萬！', effect: (S) => { S.money += 300000; } }
+    { id: 'house_03', tier: 2, name: '明星水岸豪宅公寓', price: 6000000, icon: '🏙️', desc: '高樓層河景' },
+    { id: 'house_04', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極城堡' }
   ];
 
   /* ==========================================================================
-     5. 全局狀態 S
+     5. 全局狀態 S & 成就持久化
      ========================================================================== */
   let S = {};
   let unlockedCodex = JSON.parse(localStorage.getItem('MYYAKYO_CODEX') || '[]');
+  let unlockedAchievements = JSON.parse(localStorage.getItem('MYYAKYO_ACHIEVEMENTS') || '[]');
   let inheritedItem = JSON.parse(localStorage.getItem('MYYAKYO_INHERITED') || 'null');
 
   function saveCodex(itemId) {
@@ -188,8 +245,75 @@
     }
   }
 
-  function resetState(name, origin, position, subpos, archetype, seed) {
+  function unlockAchievement(achId) {
+    if (!unlockedAchievements.includes(achId)) {
+      unlockedAchievements.push(achId);
+      localStorage.setItem('MYYAKYO_ACHIEVEMENTS', JSON.stringify(unlockedAchievements));
+      const ach = ACHIEVEMENTS_LIST.find(a => a.id === achId);
+      if (ach) {
+        addLogCard(`🏆 成就解鎖！【${ach.title}】`, `達成條件解鎖：${ach.desc}！（獲得${ach.titleReward}）`, 'gold', '成就解鎖');
+      }
+    }
+  }
+
+  function checkAchievements() {
+    if (!S.name) return;
+    if (S.isGeniusBirth) unlockAchievement('ach_61');
+    if (S.careerHits >= 1000) unlockAchievement('ach_21');
+    if (S.careerHits >= 2000) unlockAchievement('ach_22');
+    if (S.careerHits >= 3000) unlockAchievement('ach_23');
+
+    if (S.careerHR >= 150) unlockAchievement('ach_24');
+    if (S.careerHR >= 300) unlockAchievement('ach_25');
+    if (S.careerHR >= 500) unlockAchievement('ach_26');
+
+    if (S.careerWins >= 50) unlockAchievement('ach_27');
+    if (S.careerWins >= 100) unlockAchievement('ach_28');
+    if (S.careerWins >= 200) unlockAchievement('ach_29');
+
+    if (S.careerSO >= 1000) unlockAchievement('ach_30');
+    if (S.careerSO >= 2500) unlockAchievement('ach_31');
+
+    if (S.careerWAR >= 30) unlockAchievement('ach_32');
+    if (S.careerWAR >= 60) unlockAchievement('ach_33');
+    if (S.careerWAR >= 100) unlockAchievement('ach_34');
+
+    if (S.rings >= 3) unlockAchievement('ach_39');
+    if (S.rings >= 5) unlockAchievement('ach_40');
+
+    if (S.careerSalaryTotal >= 10000000) unlockAchievement('ach_41');
+    if (S.careerSalaryTotal >= 50000000) unlockAchievement('ach_42');
+    if (S.careerSalaryTotal >= 100000000) unlockAchievement('ach_43');
+    if (S.careerSalaryTotal >= 300000000) unlockAchievement('ach_44');
+    if (S.careerSalaryTotal >= 500000000) unlockAchievement('ach_45');
+
+    if (S.ownedEquipment.length >= 5) unlockAchievement('ach_49');
+    if (S.ownedEquipment.length >= 12) unlockAchievement('ach_50');
+
+    if (unlockedCodex.length >= 15) unlockAchievement('ach_79');
+    if (S.origin === 'JP' && S.stage.startsWith('HS')) unlockAchievement('ach_72');
+    if (S.origin === 'TW' && S.stage.startsWith('HS')) unlockAchievement('ach_71');
+  }
+
+  function calcDicePool() {
+    let count = 3;
+    if (S.age <= 21) count += 3;
+    else if (S.age <= 24) count += 2;
+    else if (S.age <= 27) count += 1;
+
+    if (S.archetype === 'GENIUS') count += 2;
+    else if (S.archetype === 'POWER' || S.archetype === 'SPEED_DEF') count += 1;
+
+    if (S.diceBonus) count += S.diceBonus;
+    return clamp(count, 2, 8);
+  }
+
+  function resetState(name, origin, position, subpos, archetypeChoice, seed) {
     seedInit(seed || Math.random().toString(36).slice(2, 10));
+
+    // 8% 機率幸運觸發「👑 十年一遇天才」！
+    const isGeniusRoll = R() < 0.08;
+    const finalArchetype = isGeniusRoll ? 'GENIUS' : archetypeChoice;
 
     S = {
       name: name || '佐藤大樹',
@@ -198,7 +322,8 @@
       subpos: subpos || 'IF',
       dpos: position === 'PITCHER' ? 'P' : (subpos === 'C' ? 'C' : (subpos === 'IF' ? 'SS' : 'CF')),
       role: position === 'PITCHER' ? 'SP' : (position === 'TWOWAY' ? 'SP/DH' : 'DH'),
-      archetype: archetype,
+      archetype: finalArchetype,
+      isGeniusBirth: isGeniusRoll,
 
       age: 16,
       year: 2026,
@@ -206,27 +331,24 @@
       leagueKey: origin === 'JP' ? 'HS_JP' : 'HS_TW',
       team: origin === 'JP' ? '大阪桐蔭高校' : '平鎮高中',
 
-      // 當前屬性 (Current)
       ab: { con: 30, pow: 28, spd: 32, arm: 30, fld: 30, cat: 25, eye: 28, vel: 132, ctl: 28, brk: 26, sta: 35 },
-      
-      // 天花板上限 (Potential Ceilings - OOTP style)
       pot: { con: 82, pow: 80, spd: 78, arm: 76, fld: 78, cat: 70, eye: 80, vel: 156, ctl: 80, brk: 82, sta: 85 },
 
       traits: [],
-      ap: 10,
-      chanceCardDrawnThisPhase: false, // 每次行動限抽 1 次
+      diceBonus: 0,
+      assignedDice: {},
+      chanceCardDrawnThisPhase: false,
 
       money: 100000,
       salary: 0,
-      maxUnlockedAssetTier: 1, // 資產階梯解鎖等級 (Tier 1 -> Tier 2 -> ...)
+      careerSalaryTotal: 0,
+      maxUnlockedAssetTier: 1,
       ownedAssets: { house: 'house_01', car: null },
 
       ownedEquipment: [],
-      runShopPool: [], // 20幾種道具隨機池
+      runShopPool: [],
 
-      stats: [],
-      trophies: [],
-      rings: 0,
+      stats: [], trophies: [], rings: 0,
       careerWAR: 0, careerHits: 0, careerHR: 0, careerWins: 0, careerSO: 0,
       managerStats: { years: 0, wins: 0, losses: 0, titles: 0 }
     };
@@ -234,14 +356,22 @@
     applyArchetypeBonus();
     applyInheritedItemBonus();
     initRunShopPool();
+    initAssignedDice();
+    checkAchievements();
   }
 
   function applyArchetypeBonus() {
     const a = S.ab;
-    if (S.archetype === 'POWER') { a.pow += 8; a.con += 3; a.vel += 5; S.traits.push('💥 怪力無雙'); }
-    else if (S.archetype === 'SPEED_DEF') { a.spd += 8; a.fld += 6; a.ctl += 6; S.traits.push('⚡ 疾風雷射肩'); }
-    else if (S.archetype === 'GENIUS') { a.con += 6; a.pow += 6; a.vel += 4; a.brk += 4; S.traits.push('👑 十年一遇天才'); }
-    else { a.con += 4; a.pow += 4; a.spd += 4; a.ctl += 4; S.traits.push('⚖️ 全能基石'); }
+    if (S.isGeniusBirth) {
+      a.con += 8; a.pow += 8; a.vel += 5; a.brk += 5;
+      S.traits.push('👑 天才降生 (8%幸運)');
+    } else if (S.archetype === 'POWER') {
+      a.pow += 8; a.con += 3; a.vel += 5; S.traits.push('💥 怪力無雙');
+    } else if (S.archetype === 'SPEED_DEF') {
+      a.spd += 8; a.fld += 6; a.ctl += 6; S.traits.push('⚡ 疾風雷射肩');
+    } else {
+      a.con += 4; a.pow += 4; a.spd += 4; a.ctl += 4; S.traits.push('⚖️ 全能基石');
+    }
 
     if (S.position === 'TWOWAY') S.traits.push('⚔️ 大谷雙刀流');
   }
@@ -253,18 +383,22 @@
       S.ownedEquipment.push(item);
       for (let k in item.stat) S.ab[k] = (S.ab[k] || 0) + item.stat[k];
       S.traits.push(`🎁 傳承: ${item.name}`);
+      unlockAchievement('ach_77');
+      unlockAchievement('ach_78');
     }
   }
 
-  // 每次開局隨機洗牌 20~24 種道具池
   function initRunShopPool() {
     const shuffled = ALL_PROPOSALS.slice().sort(() => R() - 0.5);
     S.runShopPool = shuffled.slice(0, ri(18, 22));
   }
 
-  /* ==========================================================================
-     6. 模擬與計算 (Sim Engine)
-     ========================================================================== */
+  function initAssignedDice() {
+    S.assignedDice = {};
+    const keys = S.position === 'PITCHER' ? ['vel', 'ctl', 'brk', 'sta'] : ['con', 'pow', 'eye', 'spd', 'fld'];
+    keys.forEach(k => S.assignedDice[k] = 0);
+  }
+
   function calcOVR() {
     const a = S.ab;
     if (S.position === 'PITCHER') return Math.round(((a.vel - 120) * 0.8 + a.ctl * 1.2 + a.brk * 1.1 + a.sta * 0.5) / 3.2);
@@ -296,6 +430,14 @@
       s.OPS = +(s.AVG + 0.12).toFixed(3);
       s.batWAR = +((s.OPS - 0.700) * 8).toFixed(1);
       S.careerHits += s.H; S.careerHR += s.HR;
+
+      if (s.AVG >= 0.350) unlockAchievement('ach_01');
+      if (s.AVG >= 0.400) unlockAchievement('ach_02');
+      if (s.HR >= 40) unlockAchievement('ach_03');
+      if (s.HR >= 50) unlockAchievement('ach_04');
+      if (s.HR >= 60) unlockAchievement('ach_05');
+      if (s.RBI >= 120) unlockAchievement('ach_06');
+      if (s.RBI >= 150) unlockAchievement('ach_07');
     }
 
     if (s.isPitcher) {
@@ -306,34 +448,29 @@
       s.SO = Math.round((s.IP / 9) * clamp(6.5 + (a.vel - 135) * 0.15, 4.0, 13.5));
       s.pitWAR = +((4.50 - s.ERA) * (s.IP / 40)).toFixed(1);
       S.careerWins += s.W; S.careerSO += s.SO;
+
+      if (s.W >= 15) unlockAchievement('ach_10');
+      if (s.W >= 20) unlockAchievement('ach_11');
+      if (s.ERA <= 2.00) unlockAchievement('ach_12');
+      if (s.ERA <= 1.50) unlockAchievement('ach_13');
+      if (s.WHIP <= 0.95) unlockAchievement('ach_14');
+      if (s.SO >= 200) unlockAchievement('ach_15');
+      if (s.SO >= 300) unlockAchievement('ach_16');
     }
 
     const yearWAR = +((s.batWAR || 0) + (s.pitWAR || 0)).toFixed(1);
     S.careerWAR = +(S.careerWAR + yearWAR).toFixed(1);
     S.stats.push(s);
 
-    if (S.salary > 0) S.money += Math.round(S.salary * 0.3);
+    if (S.salary > 0) {
+      S.money += Math.round(S.salary * 0.3);
+      S.careerSalaryTotal += S.salary;
+    }
 
-    // 觸發 1~2 次季中隨機事件
-    triggerRandomEvent();
-
+    checkAchievements();
     return s;
   }
 
-  function triggerRandomEvent() {
-    const ev = NARRATIVE_EVENTS[ri(0, NARRATIVE_EVENTS.length - 1)];
-    const succ = R() < 0.6;
-    if (succ) {
-      if (ev.stat !== 'money' && S.ab[ev.stat]) S.ab[ev.stat] += 2;
-      addLogCard(`✨ 季中隨機事件【${ev.name}】`, ev.succText, 'good', '訓練事件');
-    } else {
-      addLogCard(`⚠️ 季中隨機事件【${ev.name}】`, ev.failText, 'bad', '訓練事件');
-    }
-  }
-
-  /* ==========================================================================
-     7. UI Renderers (Theme, Progress Bars, Shop, Assets, Codex)
-     ========================================================================== */
   function renderAll() {
     document.getElementById('current-seed-code').textContent = SEED_STR;
     document.getElementById('player-name-display').textContent = S.name;
@@ -351,10 +488,11 @@
     document.getElementById('chance-card-count').textContent = S.chanceCardDrawnThisPhase ? '0 (本季已抽)' : '1';
 
     renderTraits();
-    renderAllocBars();
+    renderDiceAllocGrid();
     renderShop();
     renderAssets();
     renderCodex();
+    renderAchievements();
     renderRadarChart();
   }
 
@@ -372,9 +510,15 @@
     document.getElementById('traits-list').innerHTML = S.traits.map(t => `<span class="trait-tag trait-good">${t}</span>`).join('');
   }
 
-  // 屬性配點與天花板進度條 (Progress Bars with Ceilings)
-  function renderAllocBars() {
-    const container = document.getElementById('alloc-bars-container');
+  function renderDiceAllocGrid() {
+    const diceTotal = calcDicePool();
+    let usedDice = 0;
+    for (let k in S.assignedDice) usedDice += S.assignedDice[k];
+    const remainDice = Math.max(0, diceTotal - usedDice);
+
+    document.getElementById('dice-pool-count').textContent = remainDice;
+
+    const container = document.getElementById('dice-alloc-container');
     const a = S.ab;
     const pot = S.pot;
 
@@ -385,25 +529,18 @@
     container.innerHTML = config.map(c => {
       const val = a[c.key];
       const ceiling = pot[c.key] || 80;
-      const curPct = Math.min(100, (val / c.max) * 100);
-      const ceilPct = Math.min(100, (ceiling / c.max) * 100);
+      const assigned = S.assignedDice[c.key] || 0;
 
       return `
-        <div class="alloc-bar-row">
-          <div class="alloc-bar-header">
-            <span class="alloc-bar-name">${c.label}</span>
-            <div>
-              <span class="alloc-bar-num">${val}</span>
-              <span class="alloc-bar-ceiling">(天花板: ${ceiling})</span>
-            </div>
+        <div class="dice-alloc-row">
+          <div class="dice-row-info">
+            <span class="dice-row-label">${c.label}: <strong>${val}</strong> / ${ceiling}</span>
+            <span class="dice-row-sub">已投入: ${assigned} 顆骰子</span>
           </div>
-          <div class="bar-track-outer">
-            <div class="bar-fill-current" style="width: ${curPct}%"></div>
-            <div class="bar-ceiling-marker" style="left: ${ceilPct}%" title="潛力上限: ${ceiling}"></div>
-          </div>
-          <div class="alloc-controls mt-2">
-            <button class="btn-alloc-step btn-minus" data-key="${c.key}">-</button>
-            <button class="btn-alloc-step btn-plus" data-key="${c.key}">+</button>
+          <div class="dice-controls">
+            <button class="btn-dice-step btn-minus" data-key="${c.key}">-</button>
+            <span class="dice-assigned-count">${assigned}</span>
+            <button class="btn-dice-step btn-plus" data-key="${c.key}">+</button>
           </div>
         </div>
       `;
@@ -412,11 +549,9 @@
     container.querySelectorAll('.btn-plus').forEach(btn => {
       btn.addEventListener('click', () => {
         const k = btn.dataset.key;
-        if (S.ap > 0 && a[k] < (pot[k] || 99)) {
-          S.ap--;
-          a[k]++;
-          document.getElementById('alloc-ap-count').textContent = S.ap;
-          renderAllocBars();
+        if (remainDice > 0) {
+          S.assignedDice[k] = (S.assignedDice[k] || 0) + 1;
+          renderDiceAllocGrid();
         }
       });
     });
@@ -424,14 +559,50 @@
     container.querySelectorAll('.btn-minus').forEach(btn => {
       btn.addEventListener('click', () => {
         const k = btn.dataset.key;
-        if (a[k] > 20) {
-          S.ap++;
-          a[k]--;
-          document.getElementById('alloc-ap-count').textContent = S.ap;
-          renderAllocBars();
+        if ((S.assignedDice[k] || 0) > 0) {
+          S.assignedDice[k]--;
+          renderDiceAllocGrid();
         }
       });
     });
+  }
+
+  function rollDiceAlloc() {
+    let totalDiceUsed = 0;
+    for (let k in S.assignedDice) totalDiceUsed += S.assignedDice[k];
+
+    if (totalDiceUsed === 0) {
+      alert('請先將骰子分配給想要強化的屬性工具！');
+      return;
+    }
+
+    playDiceSound();
+
+    let logResults = [];
+    let sixCount = 0;
+    for (let k in S.assignedDice) {
+      const numDice = S.assignedDice[k];
+      if (numDice > 0) {
+        let rolls = [];
+        let gainSum = 0;
+        for (let d = 0; d < numDice; d++) {
+          const r = ri(1, 6);
+          if (r === 6) sixCount++;
+          rolls.push(r);
+          gainSum += r;
+        }
+        const ceiling = S.pot[k] || 99;
+        S.ab[k] = Math.min(ceiling, S.ab[k] + gainSum);
+        logResults.push(`🎲 ${k.toUpperCase()}: 投入${numDice}骰 ➔ [${rolls.join(', ')}] 提升 +${gainSum} (現值:${S.ab[k]})`);
+      }
+    }
+
+    if (sixCount >= 3) unlockAchievement('ach_62');
+
+    initAssignedDice();
+    addLogCard('🏋️ 春訓擲骰訓練完成！', logResults.join('<br>'), 'good', '擲骰結果');
+    renderAll();
+    nextPhase();
   }
 
   function renderShop() {
@@ -476,6 +647,7 @@
       for (let k in item.stat) S.ab[k] = (S.ab[k] || 0) + item.stat[k];
       S.traits.push(`🛡️ 裝備: ${item.name}`);
       addLogCard('🛒 購買常駐裝備', `解鎖【${item.name}】！能力永久提升！`, 'gold', '購物成功');
+      checkAchievements();
       renderAll();
     }
   };
@@ -485,12 +657,11 @@
     if (item && S.money >= item.price) {
       S.money -= item.price;
       for (let k in item.stat) S.ab[k] = (S.ab[k] || 0) + item.stat[k];
-      addLogCard('🛒 購買補給品', `成功使用【${item.name}】獲得即時能力增強！`, 'good', '購物成功');
+      addLogCard('🛒 購買補給品', `成功使用【${item.name}】獲得能力增強！`, 'good', '購物成功');
       renderAll();
     }
   };
 
-  // 階梯式解鎖資產渲染
   function renderAssets() {
     const carGrid = document.getElementById('assets-cars-grid');
     carGrid.innerHTML = CARS_LIST.filter(c => c.tier <= S.maxUnlockedAssetTier + 1).map(car => {
@@ -500,7 +671,7 @@
         <div class="asset-card">
           <div class="asset-icon">${car.icon}</div>
           <div class="asset-name">${locked ? '🔒 待解鎖座駕' : car.name}</div>
-          <div class="asset-desc">${locked ? '購買前一階座駕以解鎖此款高級跑車' : car.desc}</div>
+          <div class="asset-desc">${locked ? '購買前一階座駕解鎖' : car.desc}</div>
           <div class="asset-footer">
             <span class="asset-price">$${(car.price / 10000).toFixed(0)}萬</span>
             <button class="btn-buy" ${locked || owned || S.money < car.price ? 'disabled' : ''} onclick="window.buyCar('${car.id}', ${car.tier})">
@@ -519,7 +690,7 @@
         <div class="asset-card">
           <div class="asset-icon">${house.icon}</div>
           <div class="asset-name">${locked ? '🔒 待解鎖豪宅' : house.name}</div>
-          <div class="asset-desc">${locked ? '購買前一階豪宅以解鎖頂級莊園' : house.desc}</div>
+          <div class="asset-desc">${locked ? '購買前一階豪宅解鎖' : house.desc}</div>
           <div class="asset-footer">
             <span class="asset-price">${house.price === 0 ? '免費' : `$${(house.price / 10000).toFixed(0)}萬`}</span>
             <button class="btn-buy" ${locked || owned || S.money < house.price ? 'disabled' : ''} onclick="window.buyHouse('${house.id}', ${house.tier})">
@@ -537,7 +708,8 @@
       S.money -= car.price;
       S.ownedAssets.car = car.id;
       if (tier >= S.maxUnlockedAssetTier) S.maxUnlockedAssetTier = tier + 1;
-      addLogCard('🏎️ 豪車交車', `成功購買【${car.name}】！解鎖更高階豪華超跑！`, 'gold', '資產解鎖');
+      if (tier === 5) unlockAchievement('ach_48');
+      addLogCard('🏎️ 豪車交車', `成功購買【${car.name}】！解鎖更佳跑車！`, 'gold', '資產解鎖');
       renderAll();
     }
   };
@@ -548,7 +720,8 @@
       S.money -= house.price;
       S.ownedAssets.house = house.id;
       if (tier >= S.maxUnlockedAssetTier) S.maxUnlockedAssetTier = tier + 1;
-      addLogCard('🏰 豪宅入住', `入住【${house.name}】！解鎖下一階奢華莊園！`, 'gold', '資產解鎖');
+      if (tier === 5) unlockAchievement('ach_47');
+      addLogCard('🏰 豪宅入住', `入住【${house.name}】！解鎖下一階極致莊園！`, 'gold', '資產解鎖');
       renderAll();
     }
   };
@@ -562,6 +735,23 @@
           <div class="item-icon">${item.icon}</div>
           <div class="item-name">${unlocked ? item.name : '??? (未解鎖)'}</div>
           <div class="item-desc">${unlocked ? item.desc : '於商店購買後解鎖圖鑑與繼承'}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderAchievements() {
+    const grid = document.getElementById('achievements-grid');
+    grid.innerHTML = ACHIEVEMENTS_LIST.map(ach => {
+      const unlocked = unlockedAchievements.includes(ach.id);
+      return `
+        <div class="achievement-card ${unlocked ? 'unlocked' : ''}">
+          <div class="achieve-header">
+            <span class="achieve-icon">${ach.icon}</span>
+            <span class="achieve-title">${ach.title}</span>
+          </div>
+          <div class="achieve-desc">${ach.desc}</div>
+          <span class="achieve-reward-tag">${unlocked ? '✅ ' + ach.titleReward : '🔒 解鎖後獲得稱號'}</span>
         </div>
       `;
     }).join('');
@@ -608,13 +798,10 @@
     feed.insertBefore(card, feed.firstChild);
   }
 
-  /* ==========================================================================
-     8. 流程推進與機會卡限制
-     ========================================================================== */
   function nextPhase() {
     if (S.stage === 'RETIRED') { showRetirementScreen(); return; }
     document.getElementById('container-choices').classList.add('hidden');
-    S.chanceCardDrawnThisPhase = false; // 重置每季限抽1次限制
+    S.chanceCardDrawnThisPhase = false;
 
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();
@@ -728,9 +915,6 @@
     });
   }
 
-  /* ==========================================================================
-     9. 初始化
-     ========================================================================== */
   function initApp() {
     if (inheritedItem) {
       const banner = document.getElementById('inherited-legacy-banner');
@@ -739,12 +923,10 @@
       document.getElementById('inherited-story-snippet').textContent = `「這是傳奇前輩留下來的 ${inheritedItem.name}，帶著他的棒球魂繼續奮戰吧！」`;
     }
 
-    // 主題切換器
     document.getElementById('select-theme-switcher').addEventListener('change', (e) => {
       document.body.className = e.target.value;
     });
 
-    // 頁籤切換
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -754,7 +936,15 @@
       });
     });
 
-    // 天賦選擇
+    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.modtab).classList.add('active');
+      });
+    });
+
     document.querySelectorAll('.archetype-card').forEach(card => {
       card.addEventListener('click', () => {
         document.querySelectorAll('.archetype-card').forEach(c => c.classList.remove('selected'));
@@ -762,30 +952,35 @@
       });
     });
 
-    // 開始遊戲
     document.getElementById('btn-start-game').addEventListener('click', () => {
       const name = document.getElementById('input-name').value.trim() || '佐藤大樹';
       const origin = document.getElementById('select-origin').value;
       const pos = document.getElementById('select-position').value;
       const subpos = document.getElementById('select-subpos').value;
       const seed = document.getElementById('input-custom-seed').value.trim();
-      const arch = document.querySelector('.archetype-card.selected').dataset.type;
+      const archChoice = document.querySelector('.archetype-card.selected').dataset.type;
 
-      resetState(name, origin, pos, subpos, arch, seed);
+      resetState(name, origin, pos, subpos, archChoice, seed);
 
       document.getElementById('screen-creation').classList.remove('active');
       document.getElementById('screen-dashboard').classList.add('active');
 
       renderAll();
-      addLogCard('🌟 《我的野球人生》傳奇啟航', `${S.name} 降生於【${S.origin === 'JP' ? '日本' : '台灣'}】，踏入【${S.team}】，開啟了他的棒球生涯！`, 'gold', '開場');
+
+      if (S.isGeniusBirth) {
+        addLogCard('✨ 驚天降生！【👑 十年一遇天才】', `老天賜予了你驚人的棒球天賦！每季訓練獲得額外 +2 顆骰子，屬性天花板極高！`, 'gold', '天才降生');
+      } else {
+        addLogCard('🌟 《我的野球人生》傳奇啟航', `${S.name} 降生於【${S.origin === 'JP' ? '日本' : '台灣'}】，踏入【${S.team}】，開啟了他的棒球生涯！`, 'gold', '開場');
+      }
     });
 
     document.getElementById('btn-next-phase').addEventListener('click', nextPhase);
     document.getElementById('btn-draw-chance-card').addEventListener('click', drawChanceCard);
-    document.getElementById('btn-confirm-alloc').addEventListener('click', nextPhase);
+    document.getElementById('btn-roll-dice-action').addEventListener('click', rollDiceAlloc);
 
     document.getElementById('btn-open-codex').addEventListener('click', () => {
       renderCodex();
+      renderAchievements();
       document.getElementById('modal-codex').classList.remove('hidden');
     });
     document.getElementById('btn-close-codex').addEventListener('click', () => {
