@@ -1,5 +1,5 @@
 /* ==========================================================================
-   「我的野球人生」 (My Baseball Life) - EA 0.2 Sleek UI & Progress Bar CSS
+   「我的野球人生」 (My Baseball Life) - EA 0.2.1 100% Reference Matching CSS
    ========================================================================== */
 
 /* Theme 1: MLB Classic */
@@ -32,13 +32,13 @@ body.theme-mlb {
   --btn-warning-shadow: #78350f;
 }
 
-/* Theme 2: NPB Midnight */
+/* Theme 2: NPB Midnight (Matching Image 2 Emerald Green) */
 body.theme-npb {
-  --bg-dark: #0a0e1a;
-  --bg-card: rgba(20, 26, 43, 0.92);
-  --bg-card-hover: rgba(29, 38, 64, 0.96);
+  --bg-dark: #091512;
+  --bg-card: rgba(13, 29, 24, 0.94);
+  --bg-card-hover: rgba(20, 44, 36, 0.96);
   --border-glass: rgba(255, 255, 255, 0.15);
-  --border-gold: rgba(244, 162, 97, 0.5);
+  --border-gold: rgba(244, 162, 97, 0.6);
 
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
@@ -49,9 +49,9 @@ body.theme-npb {
   --accent-blue: #48cae4;
   --accent-red: #e63946;
 
-  --btn-primary-bg: linear-gradient(180deg, #e76f51 0%, #d62828 100%);
-  --btn-primary-border: #d62828;
-  --btn-primary-shadow: #780000;
+  --btn-primary-bg: linear-gradient(180deg, #2a9d8f 0%, #264653 100%);
+  --btn-primary-border: #264653;
+  --btn-primary-shadow: #14213d;
 
   --btn-success-bg: linear-gradient(180deg, #2a9d8f 0%, #264653 100%);
   --btn-success-border: #264653;
@@ -92,7 +92,7 @@ body.theme-cpbl {
   --btn-warning-shadow: #d48800;
 }
 
-/* Reset & Layout */
+/* Reset & Basic Layout */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
@@ -182,9 +182,7 @@ body {
   pointer-events: none;
 }
 
-.version-floating-corner strong {
-  color: var(--accent-gold);
-}
+.version-floating-corner strong { color: var(--accent-gold); }
 
 .header-actions { display: flex; align-items: center; gap: 10px; }
 .select-theme-sm { background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-gold); color: var(--accent-gold); padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer; }
@@ -251,7 +249,7 @@ body {
 .btn-lg { font-size: 16px; padding: 14px 24px; }
 .btn-sm { font-size: 12px; padding: 6px 12px; }
 
-/* Creation Form Styling Overhaul */
+/* Creation Form */
 .creation-container { max-width: 680px; margin: 30px auto; }
 .creation-card { padding: 28px; }
 .creation-header { text-align: center; margin-bottom: 24px; }
@@ -314,129 +312,6 @@ body {
 .stage-name-label { font-size: 15px; font-weight: 700; color: var(--accent-gold); }
 .action-buttons { display: flex; gap: 8px; }
 
-/* 🎲 橫向極簡單行骰子列 (Horizontal Compact Dice Bar) */
-.dice-pool-horizontal {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid var(--border-glass);
-  border-radius: 8px;
-  margin-bottom: 14px;
-}
-
-.dice-badge-sm {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-  color: #0f172a;
-  border-radius: 6px;
-  box-shadow: 0 3px 0 #cbd5e1, 0 4px 8px rgba(0,0,0,0.3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 800;
-  user-select: none;
-  transition: all 0.15s ease;
-}
-
-.dice-badge-sm.used {
-  opacity: 0.25;
-  transform: scale(0.85);
-  box-shadow: none;
-}
-
-/* 📊 經典能力值長條圖 (Attribute Progress Bars) */
-.stat-bar-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.stat-bar-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-glass);
-}
-
-.stat-bar-info {
-  width: 140px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.stat-name { color: var(--text-main); }
-.stat-val-text { color: var(--accent-gold); }
-
-.stat-bar-track {
-  flex: 1;
-  height: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 7px;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.stat-bar-fill-current {
-  height: 100%;
-  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
-  border-radius: 7px 0 0 7px;
-  transition: width 0.2s ease;
-}
-
-.stat-bar-fill-preview {
-  height: 100%;
-  position: absolute;
-  top: 0;
-  background: linear-gradient(90deg, #f59e0b 0%, #f5d130 100%);
-  opacity: 0.85;
-  transition: all 0.2s ease;
-}
-
-.stat-bar-ceiling-line {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  background: #ef4444;
-  box-shadow: 0 0 4px #ef4444;
-}
-
-.stat-controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-dice-step {
-  width: 26px;
-  height: 26px;
-  border-radius: 6px;
-  border: 1px solid var(--border-glass);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s;
-}
-
-.btn-dice-step:hover { background: var(--accent-blue); }
-.dice-assigned-count { font-size: 12px; font-weight: 700; color: var(--accent-gold); min-width: 14px; text-align: center; }
-
 /* Dashboard Tabs */
 .dashboard-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-glass); padding-bottom: 2px; overflow-x: auto; margin-bottom: 14px; }
 .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 13px; font-weight: 600; padding: 8px 12px; cursor: pointer; border-radius: 6px 6px 0 0; whitespace: nowrap; }
@@ -444,6 +319,171 @@ body {
 
 .tab-content { display: none; }
 .tab-content.active { display: block; }
+
+/* ==========================================================================
+   🎲 100% 復刻原版《野球人生》分配訓練成果與經典膠囊長條圖 (Image 2 Match)
+   ========================================================================== */
+.ref-alloc-container {
+  background: rgba(10, 24, 19, 0.85);
+  border: 1px solid rgba(42, 157, 143, 0.4);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+
+.ref-alloc-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: block;
+}
+
+/* 經典雙邊框卡牌型骰子池 */
+.ref-dice-pool-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ref-dice-card {
+  width: 48px;
+  height: 48px;
+  background: #fdfbf7;
+  color: #172a23;
+  border: 2px solid #c9a875;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9), 0 4px 10px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.ref-dice-card:hover {
+  transform: translateY(-2px);
+  border-color: #ffd60a;
+}
+
+.ref-dice-card.selected {
+  border-color: #ffd60a;
+  box-shadow: 0 0 16px rgba(255, 214, 10, 0.7);
+  transform: translateY(-4px) scale(1.06);
+}
+
+.ref-dice-card.used {
+  opacity: 0.2;
+  transform: scale(0.88);
+  box-shadow: none;
+  border-color: #666;
+  cursor: not-allowed;
+}
+
+/* 經典膠囊型長條圖列 (Attribute Rows Matching Image 2) */
+.ref-stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.ref-stat-row {
+  background: rgba(14, 30, 24, 0.75);
+  border: 1px solid rgba(42, 157, 143, 0.35);
+  border-radius: 10px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ref-stat-row:hover {
+  background: rgba(22, 48, 38, 0.85);
+  border-color: rgba(244, 162, 97, 0.6);
+}
+
+.ref-stat-label {
+  width: 90px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+}
+
+.ref-progress-track {
+  flex: 1;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ref-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #e76f51 0%, #f4a261 100%);
+  border-radius: 6px;
+  transition: width 0.25s ease;
+}
+
+.ref-progress-preview {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  background: linear-gradient(90deg, #e76f51 0%, #ffd60a 100%);
+  opacity: 0.9;
+  transition: all 0.25s ease;
+}
+
+.ref-ceiling-line {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: #f4a261;
+  box-shadow: 0 0 6px #f4a261;
+}
+
+.ref-stat-val {
+  width: 65px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  font-family: monospace;
+}
+
+.ref-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btn-reset-alloc {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #94a3b8;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-reset-alloc:hover {
+  color: #fff;
+  border-color: #f4a261;
+  background: rgba(244, 162, 97, 0.15);
+}
 
 /* 🛒 恢復 Version 1 精簡經典商店 (V1 Compact Shop Grid) */
 .shop-grid {

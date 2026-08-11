@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#0b1d3a">
-  <title>我的野球人生 (My Baseball Life) - EA 0.2</title>
+  <title>我的野球人生 (My Baseball Life) - EA 0.2.1</title>
   
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,23 +13,24 @@
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="style.css">
+  <!-- Cache Buster v=0.2.1 -->
+  <link rel="stylesheet" href="style.css?v=0.2.1">
 </head>
-<body class="theme-mlb">
+<body class="theme-npb">
   <div id="app" class="app-container">
     <!-- Header -->
     <header class="main-header">
       <div class="logo-group">
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
-          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.2</span></h1>
+          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.2.1</span></h1>
         </div>
       </div>
       
       <div class="header-actions">
         <select id="select-theme-switcher" class="select-theme-sm" title="切換配色風格">
+          <option value="theme-npb">⛩️ NPB 午夜金墨 (正宗綠)</option>
           <option value="theme-mlb">⚾ MLB 經典藍紅</option>
-          <option value="theme-npb">⛩️ NPB 午夜金墨</option>
           <option value="theme-cpbl">🌿 CPBL 翡翠極光</option>
         </select>
 
@@ -73,8 +74,8 @@
                 <div class="form-group">
                   <label for="select-origin">出生地 (Birthplace)</label>
                   <select id="select-origin">
-                    <option value="TW">🇹🇼 台灣出生 (黑豹旗 / 木棒聯賽 / CPBL選秀)</option>
                     <option value="JP">🇯🇵 日本出生 (地區預選 / 阪神甲子園 / NPB選秀)</option>
+                    <option value="TW">🇹🇼 台灣出生 (黑豹旗 / 木棒聯賽 / CPBL選秀)</option>
                   </select>
                 </div>
 
@@ -141,8 +142,8 @@
                 <div class="profile-main">
                   <h2 id="player-name-display">---</h2>
                   <div class="badge-row">
-                    <span id="badge-origin" class="tag-badge tag-origin">🇹🇼 台灣出生</span>
-                    <span id="badge-team" class="tag-badge tag-team">平鎮高中</span>
+                    <span id="badge-origin" class="tag-badge tag-origin">🇯🇵 日本出生</span>
+                    <span id="badge-team" class="tag-badge tag-team">大阪桐蔭高校</span>
                     <span id="badge-pos" class="tag-badge tag-pos">游擊手</span>
                   </div>
                 </div>
@@ -201,38 +202,38 @@
             </div>
 
             <div class="dashboard-tabs">
-              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (長條圖能力與天賦上限)</button>
+              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (100% 正宗配點長條圖)</button>
               <button class="tab-btn" data-tab="tab-shop">🛒 體育商店</button>
               <button class="tab-btn" data-tab="tab-assets">🏠 房產與跑車</button>
               <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽大獎</button>
             </div>
 
-            <!-- TAB 1: Classic Progress Bar Dice Allocation -->
+            <!-- TAB 1: 100% Reference Matching Dice Allocation (Image 2) -->
             <div id="tab-dice-alloc" class="tab-content active">
               <div class="glass-panel alloc-panel-full">
-                <div class="alloc-header mb-3">
-                  <h3>🏋️ 春訓自主訓練 (擲骰與長條圖分配)</h3>
-                </div>
-
                 <div class="dice-roll-step text-center mb-3">
                   <button id="btn-trigger-roll-dice" class="btn-tactile btn-tactile-success btn-lg btn-block">
                     🎲 擲出本季訓練骰子！
                   </button>
                 </div>
 
-                <!-- 🎲 橫向極簡單行骰子列 (Horizontal Dice Bar) -->
-                <div id="dice-pool-wrapper" class="dice-pool-horizontal hidden">
-                  <span class="text-muted text-sm" style="white-space: nowrap;">本季獲得骰子：</span>
-                  <div id="dice-blocks-pool" class="d-flex gap-2 align-items-center"></div>
-                </div>
+                <!-- 100% 復刻 Image 2 正宗分配訓練成果容器 -->
+                <div id="ref-alloc-box" class="ref-alloc-container hidden">
+                  <span class="ref-alloc-title">分配訓練成果（點骰套用 | 球探量表：70/75 以上成長遞減）</span>
 
-                <!-- 📊 經典能力值長條圖 (Attribute Progress Bars) -->
-                <div id="dice-alloc-container" class="stat-bar-grid hidden"></div>
+                  <!-- 頂部卡牌型骰子列 -->
+                  <div id="ref-dice-pool-container" class="ref-dice-pool-row"></div>
 
-                <div id="dice-confirm-box" class="dice-action-box mt-3 text-center hidden">
-                  <button id="btn-confirm-dice-alloc" class="btn-tactile btn-tactile-primary btn-lg btn-block">
-                    ✅ 完成本季春訓，鎖定配點！
-                  </button>
+                  <!-- 經典膠囊長條圖屬性列表 -->
+                  <div id="ref-stat-list-container" class="ref-stat-list"></div>
+
+                  <!-- 底部重置與鎖定按鈕 -->
+                  <div class="ref-actions-row">
+                    <button id="btn-reset-alloc" class="btn-reset-alloc">↩ 復原</button>
+                    <button id="btn-confirm-dice-alloc" class="btn-tactile btn-tactile-primary">
+                      ✅ 完成本季春訓，鎖定配點！
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -397,10 +398,11 @@
 
     <!-- Version Badge Floating Corner -->
     <div class="version-floating-corner">
-      <span>BUILD: <strong id="footer-version-tag">EA 0.2</strong></span>
+      <span>BUILD: <strong id="footer-version-tag">EA 0.2.1</strong></span>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Cache Buster v=0.2.1 -->
+  <script src="app.js?v=0.2.1"></script>
 </body>
 </html>

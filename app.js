@@ -1,12 +1,12 @@
 /* ==========================================================================
    「我的野球人生」 (My Baseball Life) - Core Logic & Roll-First Dice Engine
-   Version: EA 0.2
+   Version: EA 0.2.1
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  const APP_VERSION = 'EA 0.2';
+  const APP_VERSION = 'EA 0.2.1';
 
   /* ==========================================================================
      1. PRNG (Mulberry32 Engine - 4.2 Billion Seeds)
@@ -157,7 +157,7 @@
   ];
 
   /* ==========================================================================
-     4. 豐富機會卡資料庫 (15+ 多樣化隨機事件)
+     4. 豐富機會卡資料庫
      ========================================================================== */
   const CHANCE_CARDS = [
     { name: '天道酬勤', icon: '🏋️', desc: '自主訓練發狂！本季訓練額外 +2 顆骰子加成！', type: 'good', effect: (S) => { S.diceBonus += 2; } },
@@ -281,7 +281,7 @@
   }
 
   /* ==========================================================================
-     6. 📊 經典能力值長條圖 (Progress Bars) 與橫向極簡骰子列
+     6. 🎲 100% 復刻 Image 2 雙模式互動 (選骰 ➔ 點列分配 or 直接點按)
      ========================================================================== */
   function calcDicePool() {
     let count = 3;
@@ -302,39 +302,64 @@
     const numDice = calcDicePool();
     S.currentDicePool = [];
     S.assignedDiceMap = {};
+    S.selectedDieId = null;
 
     for (let i = 0; i < numDice; i++) {
       S.currentDicePool.push({ id: `d_${i}`, val: ri(1, 6), assignedTo: null });
     }
 
     document.getElementById('btn-trigger-roll-dice').classList.add('hidden');
-    document.getElementById('dice-pool-wrapper').classList.remove('hidden');
-    document.getElementById('dice-alloc-container').classList.remove('hidden');
-    document.getElementById('dice-confirm-box').classList.remove('hidden');
+    document.getElementById('ref-alloc-box').classList.remove('hidden');
 
-    renderDicePoolAndAlloc();
+    renderRefAllocUI();
   }
 
-  function renderDicePoolAndAlloc() {
-    // 1. 渲染單行橫向極簡骰子列 (Horizontal Dice Bar)
-    const poolContainer = document.getElementById('dice-blocks-pool');
-    poolContainer.innerHTML = S.currentDicePool.map(d => `
-      <div class="dice-badge-sm ${d.assignedTo ? 'used' : ''}" data-id="${d.id}">
-        🎲${d.val}
+  function renderRefAllocUI() {
+    // 1. 渲染頂部卡牌型骰子列 (Image 2 Match)
+    const diceContainer = document.getElementById('ref-dice-pool-container');
+    diceContainer.innerHTML = S.currentDicePool.map(d => `
+      <div class="ref-dice-card ${d.id === S.selectedDieId ? 'selected' : ''} ${d.assignedTo ? 'used' : ''}" data-id="${d.id}">
+        ${d.val}
       </div>
     `).join('');
 
-    // 2. 渲染經典能力值長條圖 (Attribute Progress Bars)
-    const allocGrid = document.getElementById('dice-alloc-container');
-    const config = S.position === 'PITCHER'
-      ? [{ key: 'vel', label: '球速 (km/h)', maxVal: 165 }, { key: 'ctl', label: '控球', maxVal: 99 }, { key: 'brk', label: '變化球', maxVal: 99 }, { key: 'sta', label: '體力', maxVal: 99 }]
-      : [{ key: 'con', label: '打擊', maxVal: 99 }, { key: 'pow', label: '力量', maxVal: 99 }, { key: 'eye', label: '選球', maxVal: 99 }, { key: 'spd', label: '跑壘', maxVal: 99 }, { key: 'fld', label: '守備', maxVal: 99 }];
+    // 點擊骰子卡牌：設為選中高亮狀態
+    diceContainer.querySelectorAll('.ref-dice-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        const dieObj = S.currentDicePool.find(d => d.id === id);
+        if (dieObj && !dieObj.assignedTo) {
+          S.selectedDieId = (S.selectedDieId === id) ? null : id;
+          renderRefAllocUI();
+        }
+      });
+    });
 
-    allocGrid.innerHTML = config.map(c => {
+    // 2. 渲染屬性長條圖列表 (Image 2 Capsule Rows)
+    const statContainer = document.getElementById('ref-stat-list-container');
+    const config = S.position === 'PITCHER'
+      ? [
+        { key: 'sta', label: '體力' },
+        { key: 'vel', label: '球速 (km/h)', maxVal: 165 },
+        { key: 'ctl', label: '控球' },
+        { key: 'brk', label: '變化球' }
+      ]
+      : [
+        { key: 'sta', label: '體力' },
+        { key: 'con', label: 'Contact (打擊)' },
+        { key: 'pow', label: '力量' },
+        { key: 'spd', label: '速度' },
+        { key: 'eye', label: '選球' },
+        { key: 'fld', label: '守備範圍' },
+        { key: 'cat', label: '接球' },
+        { key: 'arm', label: '臂力' }
+      ];
+
+    statContainer.innerHTML = config.map(c => {
       const assignedDice = (S.assignedDiceMap[c.key] || []);
       const totalGain = assignedDice.reduce((a, b) => a + b, 0);
-      const curVal = S.ab[c.key];
-      const ceiling = S.pot[c.key] || 99;
+      const curVal = S.ab[c.key] || 25;
+      const ceiling = S.pot[c.key] || 75;
       const maxRange = c.key === 'vel' ? 165 : 99;
 
       const curWidth = Math.min(100, (curVal / maxRange) * 100);
@@ -342,51 +367,49 @@
       const ceilingWidth = Math.min(100, (ceiling / maxRange) * 100);
 
       return `
-        <div class="stat-bar-row">
-          <div class="stat-bar-info">
-            <span class="stat-name">${c.label}</span>
-            <span class="stat-val-text">${curVal} ${totalGain > 0 ? `<span class="hl-green">(+${totalGain})</span>` : ''} / ${ceiling}</span>
+        <div class="ref-stat-row" data-key="${c.key}">
+          <div class="ref-stat-label">${c.label}</div>
+          <div class="ref-progress-track">
+            <div class="ref-progress-fill" style="width: ${curWidth}%;"></div>
+            ${totalGain > 0 ? `<div class="ref-progress-preview" style="left: ${curWidth}%; width: ${previewWidth - curWidth}%;"></div>` : ''}
+            <div class="ref-ceiling-line" style="left: ${ceilingWidth}%;" title="天賦上限: ${ceiling}"></div>
           </div>
-
-          <div class="stat-bar-track">
-            <div class="stat-bar-fill-current" style="width: ${curWidth}%;"></div>
-            ${totalGain > 0 ? `<div class="stat-bar-fill-preview" style="left: ${curWidth}%; width: ${previewWidth - curWidth}%;"></div>` : ''}
-            <div class="stat-bar-ceiling-line" style="left: ${ceilingWidth}%;" title="天賦上限: ${ceiling}"></div>
-          </div>
-
-          <div class="stat-controls">
-            <button class="btn-dice-step btn-minus-dice" data-key="${c.key}">-</button>
-            <span class="dice-assigned-count">${assignedDice.length}</span>
-            <button class="btn-dice-step btn-plus-dice" data-key="${c.key}">+</button>
+          <div class="ref-stat-val">
+            <strong>${curVal + totalGain}</strong>/${ceiling}
           </div>
         </div>
       `;
     }).join('');
 
-    allocGrid.querySelectorAll('.btn-plus-dice').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.dataset.key;
-        const availableDie = S.currentDicePool.find(d => !d.assignedTo);
-        if (availableDie) {
-          availableDie.assignedTo = k;
-          if (!S.assignedDiceMap[k]) S.assignedDiceMap[k] = [];
-          S.assignedDiceMap[k].push(availableDie.val);
-          renderDicePoolAndAlloc();
-        }
-      });
-    });
+    // 點擊屬性列：若有選中的骰子直接分配，若未選中自動拿池中第一個未使用的骰子！
+    statContainer.querySelectorAll('.ref-stat-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const k = row.dataset.key;
+        let dieToAssign = null;
 
-    allocGrid.querySelectorAll('.btn-minus-dice').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const k = btn.dataset.key;
-        if (S.assignedDiceMap[k] && S.assignedDiceMap[k].length > 0) {
-          const removedVal = S.assignedDiceMap[k].pop();
-          const dieObj = S.currentDicePool.find(d => d.assignedTo === k && d.val === removedVal);
-          if (dieObj) dieObj.assignedTo = null;
-          renderDicePoolAndAlloc();
+        if (S.selectedDieId) {
+          dieToAssign = S.currentDicePool.find(d => d.id === S.selectedDieId && !d.assignedTo);
+        } else {
+          dieToAssign = S.currentDicePool.find(d => !d.assignedTo);
+        }
+
+        if (dieToAssign) {
+          dieToAssign.assignedTo = k;
+          if (!S.assignedDiceMap[k]) S.assignedDiceMap[k] = [];
+          S.assignedDiceMap[k].push(dieToAssign.val);
+          S.selectedDieId = null;
+          renderRefAllocUI();
         }
       });
     });
+  }
+
+  function resetDiceAllocations() {
+    if (!S.currentDicePool) return;
+    S.currentDicePool.forEach(d => d.assignedTo = null);
+    S.assignedDiceMap = {};
+    S.selectedDieId = null;
+    renderRefAllocUI();
   }
 
   function confirmDiceAllocation() {
@@ -411,9 +434,7 @@
     checkDiceComboAwakening(allRolls);
 
     document.getElementById('btn-trigger-roll-dice').classList.remove('hidden');
-    document.getElementById('dice-pool-wrapper').classList.add('hidden');
-    document.getElementById('dice-alloc-container').classList.add('hidden');
-    document.getElementById('dice-confirm-box').classList.add('hidden');
+    document.getElementById('ref-alloc-box').classList.add('hidden');
 
     addLogCard('🏋️ 春訓自主訓練完成！', logResults.length > 0 ? logResults.join('<br>') : '未進行屬性分配。', 'good', '春訓結果');
     renderAll();
@@ -520,6 +541,7 @@
       diceStats: { ones: 0, fives: 0, sixes: 0, totalCount: 0 },
       currentDicePool: [],
       assignedDiceMap: {},
+      selectedDieId: null,
       diceBonus: 0,
       chanceCardDrawnThisPhase: false,
 
@@ -686,7 +708,6 @@
     document.getElementById('traits-list').innerHTML = S.traits.map(t => `<span class="trait-tag trait-good">${t}</span>`).join('');
   }
 
-  /* 🛒 恢復 Version 1 精簡經典商店渲染 */
   function renderShop() {
     const permGrid = document.getElementById('shop-permanent-grid');
     permGrid.innerHTML = S.runShopPool.slice(0, 4).map(item => {
@@ -950,7 +971,6 @@
     });
   }
 
-  /* 🃏 機會卡：廢除彈窗！完全內嵌於即時日誌中 (Zero Modals, Direct Log Stream) */
   function drawChanceCard() {
     if (S.chanceCardDrawnThisPhase) {
       alert('本行動階段已抽過機會卡！請前進下個階段後再行抽取！');
@@ -960,7 +980,6 @@
     const card = CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)];
     card.effect(S);
 
-    // 直接流暢寫入日誌串流，零彈窗干擾！
     addLogCard(`🃏 抽中機會卡【${card.icon} ${card.name}】`, card.desc, card.type || 'gold', '機會卡事件');
     renderAll();
   }
@@ -1069,6 +1088,7 @@
     });
 
     document.getElementById('btn-trigger-roll-dice').addEventListener('click', triggerInitialDiceRoll);
+    document.getElementById('btn-reset-alloc').addEventListener('click', resetDiceAllocations);
     document.getElementById('btn-confirm-dice-alloc').addEventListener('click', confirmDiceAllocation);
 
     document.getElementById('btn-next-phase').addEventListener('click', nextPhase);
