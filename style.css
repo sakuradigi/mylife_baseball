@@ -2,7 +2,7 @@
    「我的野球人生」 (My Baseball Life) - EA 0.4 Emerald Pure Theme CSS
    ========================================================================== */
 
-/* Theme 1: Emerald Pure (Matching yakyulife & Image 3) */
+/* Theme 1: Emerald Pure */
 body, body.theme-npb, body.theme-mlb, body.theme-cpbl {
   --bg-dark: #091512;
   --bg-card: rgba(13, 29, 24, 0.94);
@@ -252,6 +252,33 @@ body {
 .stage-name-label { font-size: 15px; font-weight: 700; color: var(--accent-gold); }
 .action-buttons { display: flex; gap: 8px; }
 
+/* 本季事件面板 (強制事件 + 機會卡)：固定在動作列正下方，無需捲動即可看見 */
+.events-panel { margin-bottom: 14px; }
+.events-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.events-panel-header h3 { font-size: 15px; font-weight: 800; color: var(--accent-gold); }
+
+.mandatory-events-list { display: flex; flex-direction: column; gap: 10px; }
+
+.event-card-block {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1.5px solid var(--border-glass);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.event-card-block.resolved { padding: 8px 14px; opacity: 0.75; }
+.event-card-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.event-card-title { font-size: 14px; font-weight: 700; color: #fff; }
+.event-card-desc { font-size: 12px; color: var(--text-muted); margin: 6px 0 10px; }
+.event-result-tag { font-size: 12px; font-weight: 700; }
+.event-result-tag.good { color: #34d399; }
+.event-result-tag.bad { color: #f87171; }
+
+.event-choices-grid { display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; }
+.event-choices-grid .btn-choice { flex: 1 1 160px; padding: 10px 12px; }
+.event-choices-grid .btn-choice-title { font-size: 13px; }
+.event-choices-grid .btn-choice-sub { font-size: 11px; }
+
 /* Dashboard Tabs */
 .dashboard-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-glass); padding-bottom: 2px; overflow-x: auto; margin-bottom: 14px; }
 .tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 13px; font-weight: 600; padding: 8px 12px; cursor: pointer; border-radius: 6px 6px 0 0; whitespace: nowrap; }
@@ -261,7 +288,7 @@ body {
 .tab-content.active { display: block; }
 
 /* ==========================================================================
-   🃏 100% 復刻 Image 7/8 互動式事件卡 3 應對策略選項 (Risk/Reward Choice Cards)
+   🃏 互動式事件卡 3 應對策略選項 (Risk/Reward Choice Cards)
    ========================================================================== */
 .choices-panel {
   background: rgba(14, 32, 26, 0.96);
@@ -304,7 +331,7 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* 高風險「全力一搏」按鈕 (Image 7/8 Match - 紅邊框) */
+/* 高風險「全力一搏」按鈕 (紅邊框) */
 .btn-choice.high-risk {
   border-color: #e76f51;
   background: linear-gradient(180deg, rgba(45, 25, 20, 0.95) 0%, rgba(25, 15, 12, 0.98) 100%);
@@ -315,7 +342,7 @@ body {
   box-shadow: 0 0 16px rgba(231, 111, 81, 0.4);
 }
 
-/* 中風險「照常執行」按鈕 (Image 7/8 Match - 綠邊框) */
+/* 中風險「照常執行」按鈕 (綠邊框) */
 .btn-choice.med-risk {
   border-color: #2a9d8f;
   background: linear-gradient(180deg, rgba(20, 48, 38, 0.95) 0%, rgba(10, 26, 20, 0.98) 100%);
@@ -326,7 +353,7 @@ body {
   box-shadow: 0 0 16px rgba(42, 157, 143, 0.4);
 }
 
-/* 低風險「保守應對」按鈕 (Image 7/8 Match) */
+/* 低風險「保守應對」按鈕 */
 .btn-choice.low-risk {
   border-color: #10b981;
   background: linear-gradient(180deg, rgba(16, 42, 32, 0.95) 0%, rgba(8, 24, 18, 0.98) 100%);
@@ -676,6 +703,63 @@ body {
 
 .item-card.rarity-rare { border-color: #3b82f6; }
 .item-card.rarity-legendary { border-color: #f4a261; box-shadow: 0 0 12px rgba(244, 162, 97, 0.25); }
+
+/* Assets (Cars / Houses): grouped by tier with headers */
+.asset-tier-group { margin-bottom: 18px; }
+.asset-tier-group:last-child { margin-bottom: 0; }
+
+.asset-tier-header {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--accent-gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(245, 209, 48, 0.2);
+}
+
+.assets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.asset-card {
+  position: relative;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.asset-card.owned { border-color: #34d399; box-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
+.asset-card.locked { opacity: 0.55; }
+
+.asset-lock-badge {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 14px;
+}
+
+.asset-icon { font-size: 26px; }
+.asset-name { font-size: 13px; font-weight: 700; color: #fff; }
+.asset-desc { font-size: 11px; color: var(--text-muted); flex-grow: 1; }
+
+.asset-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.asset-price { font-size: 12px; font-weight: 700; color: var(--accent-gold); }
 
 /* Inventory / Backpack */
 .inventory-grid {

@@ -294,83 +294,109 @@
     { id: 'cc10', icon: '🌾', title: '末吉籤 · 塞翁失馬', desc: '末吉籤說著塞翁失馬焉知非福，你決定換個心態面對。', effect: { type: 'stat', key: 'ctl', amount: 1 } }
   ];
 
-  function drawChanceCard() {
-    if (S.chanceCardDrawnThisPhase) {
-      alert('本行動階段已抽過事件卡！請前進下個階段後再行抽取！');
+  // 本季事件：每次進入新階段自動排入 2-3 件強制事件，直接呈現在版面最上方
+  function queueMandatoryEvents() {
+    const pool = INTERACTIVE_EVENTS.filter(e => !e.stages || e.stages.includes(S.stage));
+    const list = (pool.length ? pool : INTERACTIVE_EVENTS).slice().sort(() => R() - 0.5);
+    const count = Math.min(list.length, ri(2, 3));
+    S.pendingEvents = list.slice(0, count).map(ev => ({ ev, resolved: false, resultGood: null, resultText: '' }));
+    S.chanceCardDrawnThisPhase = false;
+  }
+
+  function renderMandatoryEvents() {
+    const container = document.getElementById('mandatory-events-list');
+    if (!container) return;
+
+    if (!S.pendingEvents || !S.pendingEvents.length) {
+      container.innerHTML = `<span class="text-muted text-sm">本季暫無事件。</span>`;
       return;
     }
 
-    S.chanceCardDrawnThisPhase = true;
+    container.innerHTML = S.pendingEvents.map((pe, idx) => {
+      if (pe.resolved) {
+        return `
+          <div class="event-card-block resolved">
+            <div class="event-card-header">
+              <span class="event-card-title">✅ ${pe.ev.title}</span>
+              <span class="event-result-tag ${pe.resultGood ? 'good' : 'bad'}">${pe.resultText}</span>
+            </div>
+          </div>
+        `;
+      }
+      return `
+        <div class="event-card-block">
+          <div class="event-card-header">
+            <span class="event-card-title">◆ ${pe.ev.title}</span>
+          </div>
+          <p class="event-card-desc">${pe.ev.desc}</p>
+          <div class="choices-btn-group event-choices-grid">
+            ${['high', 'med', 'low'].map(tier => `
+              <div class="btn-choice ${tier === 'high' ? 'high-risk' : tier === 'med' ? 'med-risk' : 'low-risk'}" data-risk="${tier}" data-idx="${idx}">
+                <span class="btn-choice-title">${RISK_ROLL_TABLE[tier].label}</span>
+                <span class="btn-choice-sub">${RISK_ROLL_TABLE[tier].sub}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="dice-roll-reveal hidden" data-reveal-idx="${idx}"></div>
+        </div>
+      `;
+    }).join('');
 
-    if (R() < 0.7) {
-      const pool = INTERACTIVE_EVENTS.filter(e => !e.stages || e.stages.includes(S.stage));
-      const list = pool.length ? pool : INTERACTIVE_EVENTS;
-      showInteractiveEventCard(list[ri(0, list.length - 1)]);
-    } else {
-      resolveChanceCard(CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)]);
-    }
-
-    renderAll();
-  }
-
-  function showInteractiveEventCard(ev) {
-    const choicesPanel = document.getElementById('container-choices');
-    choicesPanel.classList.remove('hidden');
-
-    const reveal = document.getElementById('dice-roll-reveal');
-    reveal.classList.add('hidden');
-    reveal.innerHTML = '';
-
-    document.getElementById('choices-title').textContent = `◆ 事件卡 | ${ev.title} — 你要怎麼應對？`;
-    document.getElementById('choices-desc').textContent = ev.desc;
-
-    document.getElementById('choices-grid').innerHTML = ['high', 'med', 'low'].map(tier => `
-      <div class="btn-choice ${tier === 'high' ? 'high-risk' : tier === 'med' ? 'med-risk' : 'low-risk'}" data-risk="${tier}">
-        <span class="btn-choice-title">${RISK_ROLL_TABLE[tier].label}</span>
-        <span class="btn-choice-sub">${RISK_ROLL_TABLE[tier].sub}</span>
-      </div>
-    `).join('');
-
-    document.querySelectorAll('#choices-grid .btn-choice').forEach(btn => {
+    container.querySelectorAll('.btn-choice').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.classList.contains('disabled')) return;
-        document.querySelectorAll('#choices-grid .btn-choice').forEach(b => b.classList.add('disabled'));
-        animateDiceRoll(btn.dataset.risk, (result) => applyEventOutcome(ev, result));
+        const idx = parseInt(btn.dataset.idx, 10);
+        const pe = S.pendingEvents[idx];
+        if (!pe || pe.resolved) return;
+
+        container.querySelectorAll(`.btn-choice[data-idx="${idx}"]`).forEach(b => b.classList.add('disabled'));
+        const reveal = container.querySelector(`.dice-roll-reveal[data-reveal-idx="${idx}"]`);
+
+        animateDiceRoll(reveal, btn.dataset.risk, (result) => {
+          S.ab[pe.ev.statKey] = clamp((S.ab[pe.ev.statKey] || 25) + result.mag, 10, S.pot[pe.ev.statKey] || 99);
+
+          const msg = result.success ? pe.ev.win : pe.ev.lose;
+          addLogCard(`◆ 事件卡 | ${pe.ev.title}`, `${msg}（🎲 擲出 ${result.roll} 點・${result.tag}）`, result.success ? 'good' : 'bad', '事件判定');
+
+          pe.resolved = true;
+          pe.resultGood = result.success;
+          pe.resultText = `${result.tag}（${result.roll}點）`;
+          renderAll();
+        });
       });
     });
   }
 
-  function animateDiceRoll(tier, callback) {
+  function drawChanceCard() {
+    if (S.chanceCardDrawnThisPhase) {
+      alert('本季機會卡已經抽取過了！請前進下個階段後再行抽取！');
+      return;
+    }
+
+    S.chanceCardDrawnThisPhase = true;
+    resolveChanceCard(CHANCE_CARDS[ri(0, CHANCE_CARDS.length - 1)]);
+    renderAll();
+  }
+
+  function animateDiceRoll(revealEl, tier, callback) {
     playDiceSound();
-    const reveal = document.getElementById('dice-roll-reveal');
-    reveal.classList.remove('hidden');
+    revealEl.classList.remove('hidden');
 
     let ticks = 0;
     const maxTicks = 8;
     const interval = setInterval(() => {
       ticks++;
-      reveal.innerHTML = `<div class="ref-dice-card rolling">${ri(1, 6)}</div>`;
+      revealEl.innerHTML = `<div class="ref-dice-card rolling">${ri(1, 6)}</div>`;
       if (ticks >= maxTicks) {
         clearInterval(interval);
         const result = rollRiskTier(tier);
-        reveal.innerHTML = `
+        revealEl.innerHTML = `
           <div class="ref-dice-card ${result.success ? 'selected' : ''}">${result.roll}</div>
           <div class="dice-result-tag ${result.success ? 'good' : 'bad'}">${result.tag}</div>
         `;
         setTimeout(() => callback(result), 700);
       }
     }, 80);
-  }
-
-  function applyEventOutcome(ev, result) {
-    document.getElementById('container-choices').classList.add('hidden');
-
-    S.ab[ev.statKey] = clamp((S.ab[ev.statKey] || 25) + result.mag, 10, S.pot[ev.statKey] || 99);
-
-    const msg = result.success ? ev.win : ev.lose;
-    addLogCard(`◆ 事件卡 | ${ev.title}`, `${msg}（🎲 擲出 ${result.roll} 點・${result.tag}）`, result.success ? 'good' : 'bad', '事件判定');
-
-    renderAll();
   }
 
   function resolveChanceCard(card) {
@@ -897,6 +923,7 @@
       runShopPool: [],
       runConsumablePool: [],
       inventory: [],
+      pendingEvents: [],
 
       stats: [], trophies: [], rings: 0,
       careerWAR: 0, careerHits: 0, careerHR: 0, careerWins: 0, careerSO: 0,
@@ -906,6 +933,7 @@
     applyArchetypeBonus();
     applyInheritedItemBonus();
     initRunShopPool();
+    queueMandatoryEvents();
     checkAchievements();
   }
 
@@ -1194,9 +1222,13 @@
 
     document.getElementById('current-year-display').textContent = `西元 ${S.year} 年`;
     document.getElementById('current-stage-display').textContent = `【${getStageLabel()}】`;
-    document.getElementById('chance-card-count').textContent = S.chanceCardDrawnThisPhase ? '0 (本季已抽)' : '1';
+
+    const chanceBtn = document.getElementById('btn-draw-chance-card');
+    chanceBtn.disabled = S.chanceCardDrawnThisPhase;
+    chanceBtn.textContent = S.chanceCardDrawnThisPhase ? '🃏 本季機會卡已抽取' : '🃏 抽機會卡（可自由選擇）';
 
     renderTraits();
+    renderMandatoryEvents();
     renderShop();
     renderInventory();
     renderAssets();
@@ -1330,44 +1362,45 @@
     renderAll();
   };
 
-  function renderAssets() {
-    const carGrid = document.getElementById('assets-cars-grid');
-    carGrid.innerHTML = CARS_LIST.filter(c => c.tier <= S.maxUnlockedAssetTier + 1).map(car => {
-      const owned = S.ownedAssets.car === car.id;
-      const locked = car.tier > S.maxUnlockedAssetTier;
-      return `
-        <div class="asset-card">
-          <div class="asset-icon">${car.icon}</div>
-          <div class="asset-name">${locked ? '🔒 待解鎖座駕' : car.name}</div>
-          <div class="asset-desc">${locked ? '購買前一階座駕解鎖' : car.desc}</div>
-          <div class="asset-footer">
-            <span class="asset-price">$${(car.price / 10000).toFixed(0)}萬</span>
-            <button class="btn-buy" ${locked || owned || S.money < car.price ? 'disabled' : ''} onclick="window.buyCar('${car.id}', ${car.tier})">
-              ${owned ? '已駕駛' : (locked ? '未解鎖' : '購買')}
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
+  const ASSET_TIER_LABELS = { 1: '新秀等級', 2: '小有成就', 3: '明星等級', 4: '巨星等級', 5: '傳奇殿堂' };
 
-    const houseGrid = document.getElementById('assets-houses-grid');
-    houseGrid.innerHTML = HOUSES_LIST.filter(h => h.tier <= S.maxUnlockedAssetTier + 1).map(house => {
-      const owned = S.ownedAssets.house === house.id;
-      const locked = house.tier > S.maxUnlockedAssetTier;
-      return `
-        <div class="asset-card">
-          <div class="asset-icon">${house.icon}</div>
-          <div class="asset-name">${locked ? '🔒 待解鎖豪宅' : house.name}</div>
-          <div class="asset-desc">${locked ? '購買前一階豪宅解鎖' : house.desc}</div>
-          <div class="asset-footer">
-            <span class="asset-price">${house.price === 0 ? '免費' : `$${(house.price / 10000).toFixed(0)}萬`}</span>
-            <button class="btn-buy" ${locked || owned || S.money < house.price ? 'disabled' : ''} onclick="window.buyHouse('${house.id}', ${house.tier})">
-              ${owned ? '已入住' : (locked ? '未解鎖' : '入住')}
-            </button>
+  function renderAssetTierGroups(list, ownedId, buyFnName, ownedLabel) {
+    const visible = list.filter(item => item.tier <= S.maxUnlockedAssetTier + 1);
+    const tiers = [...new Set(visible.map(i => i.tier))];
+
+    return tiers.map(tier => {
+      const cards = visible.filter(i => i.tier === tier).map(item => {
+        const owned = ownedId === item.id;
+        const locked = item.tier > S.maxUnlockedAssetTier;
+        const affordable = S.money >= item.price;
+        return `
+          <div class="asset-card ${locked ? 'locked' : ''} ${owned ? 'owned' : ''}">
+            ${locked ? '<span class="asset-lock-badge">🔒</span>' : ''}
+            <div class="asset-icon">${item.icon}</div>
+            <div class="asset-name">${item.name}</div>
+            <div class="asset-desc">${item.desc}</div>
+            <div class="asset-footer">
+              <span class="asset-price">${item.price === 0 ? '免費' : `$${(item.price / 10000).toFixed(0)}萬`}</span>
+              <button class="btn-buy" ${locked || owned || !affordable ? 'disabled' : ''} onclick="window.${buyFnName}('${item.id}', ${item.tier})">
+                ${owned ? ownedLabel : (locked ? '尚未解鎖' : '購買')}
+              </button>
+            </div>
           </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="asset-tier-group">
+          <div class="asset-tier-header">Tier ${tier} · ${ASSET_TIER_LABELS[tier] || ''}</div>
+          <div class="assets-grid">${cards}</div>
         </div>
       `;
     }).join('');
+  }
+
+  function renderAssets() {
+    document.getElementById('assets-cars-grid').innerHTML = renderAssetTierGroups(CARS_LIST, S.ownedAssets.car, 'buyCar', '已駕駛');
+    document.getElementById('assets-houses-grid').innerHTML = renderAssetTierGroups(HOUSES_LIST, S.ownedAssets.house, 'buyHouse', '已入住');
   }
 
   window.buyCar = function (id, tier) {
@@ -1469,6 +1502,10 @@
 
   function nextPhase() {
     if (S.stage === 'RETIRED') { showRetirementScreen(); return; }
+
+    const unresolvedCount = (S.pendingEvents || []).filter(pe => !pe.resolved).length;
+    if (unresolvedCount > 0 && !confirm(`本季還有 ${unresolvedCount} 件事件尚未處理，確定要跳過並前進下一階段嗎？`)) return;
+
     document.getElementById('container-choices').classList.add('hidden');
     S.chanceCardDrawnThisPhase = false;
     tickBuffs();
@@ -1476,16 +1513,18 @@
     if (S.stage.startsWith('HS')) {
       const stat = simSeason();
       if (S.stage === 'HS1') { showRegionalQualifierEvent(); }
-      else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; }
+      else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; queueMandatoryEvents(); }
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       renderAll();
     } else if (S.stage.startsWith('UNI')) {
       const stat = simSeason();
+      const goingToDraft = (S.stage === 'UNI4');
       if (S.stage === 'UNI1') S.stage = 'UNI2';
       else if (S.stage === 'UNI2') S.stage = 'UNI3';
       else if (S.stage === 'UNI3') S.stage = 'UNI4';
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       S.year += 1; S.age += 1;
+      if (!goingToDraft) queueMandatoryEvents();
       renderAll();
     } else if (S.stage === 'PRO') {
       const stat = simSeason();
@@ -1507,6 +1546,7 @@
       }
 
       S.year += 1; S.age += 1;
+      queueMandatoryEvents();
       renderAll();
     }
   }
@@ -1537,7 +1577,7 @@
       btn.addEventListener('click', () => {
         if (btn.classList.contains('disabled')) return;
         document.querySelectorAll('#choices-grid .btn-choice').forEach(b => b.classList.add('disabled'));
-        animateDiceRoll(btn.dataset.risk, (result) => {
+        animateDiceRoll(reveal, btn.dataset.risk, (result) => {
           document.getElementById('container-choices').classList.add('hidden');
 
           S.qualifiedForNationals = result.success;
@@ -1550,6 +1590,7 @@
           }
 
           S.stage = 'HS2'; S.year += 1; S.age += 1;
+          queueMandatoryEvents();
           checkAchievements();
           renderAll();
         });
@@ -1633,6 +1674,7 @@
           S.stage = 'PRO'; S.year += 1; S.age += 1;
         }
 
+        queueMandatoryEvents();
         renderAll();
       });
     });

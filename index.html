@@ -23,13 +23,13 @@
       <div class="logo-group">
         <div class="logo-icon">⚾</div>
         <div class="logo-text">
-          <h1>我的野球人生 <span class="badge-v2">DICE PRO</span> <span id="app-version-tag" class="version-badge">EA 0.5</span></h1>
+          <h1>我的野球人生 <span id="app-version-tag" class="version-badge">EA 0.5</span></h1>
         </div>
       </div>
       
       <div class="header-actions">
         <select id="select-theme-switcher" class="select-theme-sm" title="切換配色風格">
-          <option value="theme-npb">⛩️ NPB 墨綠極簡 (正宗綠)</option>
+          <option value="theme-npb">⛩️ NPB 墨綠極簡</option>
           <option value="theme-mlb">⚾ MLB 經典藍紅</option>
           <option value="theme-cpbl">🌿 CPBL 翡翠極光</option>
         </select>
@@ -200,13 +200,29 @@
                 <span class="stage-name-label" id="current-stage-display">【春訓階段】</span>
               </div>
               <div class="action-buttons">
-                <button id="btn-draw-chance-card" class="btn-tactile btn-tactile-warning btn-sm">🃏 抽事件卡 (<span id="chance-card-count">1</span>)</button>
                 <button id="btn-next-phase" class="btn-tactile btn-tactile-primary btn-pulse">⏩ 進行下個階段</button>
               </div>
             </div>
 
+            <!-- 重大人生抉擇 (地區資格賽 / 選秀升學路徑等，出現機會少但影響大) -->
+            <div id="container-choices" class="choices-panel hidden">
+              <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
+              <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
+              <div id="choices-grid" class="choices-btn-group"></div>
+              <div id="dice-roll-reveal" class="dice-roll-reveal hidden"></div>
+            </div>
+
+            <!-- 本季事件：2-3 件主動出現的強制事件 + 1 張可自由選擇的機會卡 -->
+            <div class="events-panel glass-panel">
+              <div class="events-panel-header">
+                <h3>🎯 本季事件</h3>
+                <button id="btn-draw-chance-card" class="btn-tactile btn-tactile-warning btn-sm">🃏 抽機會卡（可自由選擇）</button>
+              </div>
+              <div id="mandatory-events-list" class="mandatory-events-list"></div>
+            </div>
+
             <div class="dashboard-tabs">
-              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練 (正宗長條圖配點)</button>
+              <button class="tab-btn active" data-tab="tab-dice-alloc">🎲 春訓自主訓練</button>
               <button class="tab-btn" data-tab="tab-shop">🛒 體育商店</button>
               <button class="tab-btn" data-tab="tab-assets">🏠 房產與跑車</button>
               <button class="tab-btn" data-tab="tab-trophies">🏆 榮譽與生涯數據</button>
@@ -215,7 +231,6 @@
             <!-- TAB 1: Dice Allocation -->
             <div id="tab-dice-alloc" class="tab-content active">
               <div class="glass-panel alloc-panel-full">
-                <!-- 📊 100% 復刻 Image 3 正宗賽季數據結算區塊 (Season Settlement Card) -->
                 <div id="season-settlement-display-box" class="season-settlement-card hidden"></div>
 
                 <div class="dice-roll-step text-center mb-3">
@@ -224,17 +239,12 @@
                   </button>
                 </div>
 
-                <!-- 100% 復刻 Image 2 正宗分配訓練成果容器 -->
                 <div id="ref-alloc-box" class="ref-alloc-container hidden">
                   <span class="ref-alloc-title">分配訓練成果（點骰套用 | 球探量表：70/75 以上成長遞減）</span>
 
-                  <!-- 頂部卡牌型骰子列 -->
                   <div id="ref-dice-pool-container" class="ref-dice-pool-row"></div>
-
-                  <!-- 經典膠囊長條圖屬性列表 -->
                   <div id="ref-stat-list-container" class="ref-stat-list"></div>
 
-                  <!-- 底部重置與鎖定按鈕 -->
                   <div class="ref-actions-row">
                     <button id="btn-reset-alloc" class="btn-reset-alloc">↩ 復原</button>
                     <button id="btn-confirm-dice-alloc" class="btn-tactile btn-tactile-primary">
@@ -245,13 +255,13 @@
               </div>
             </div>
 
-            <!-- TAB 2: V1 Compact Shop -->
+            <!-- TAB 2: Shop -->
             <div id="tab-shop" class="tab-content">
               <div class="glass-panel">
                 <div class="shop-header">
                   <h3>🛒 體育精品商店</h3>
                 </div>
-                
+
                 <h4 class="shop-subheading">✨ 季刷新常駐裝備</h4>
                 <div id="shop-permanent-grid" class="shop-grid"></div>
 
@@ -268,10 +278,10 @@
                 </div>
 
                 <h4 class="shop-subheading">🏎️ 跑車與座駕</h4>
-                <div id="assets-cars-grid" class="assets-grid"></div>
+                <div id="assets-cars-grid" class="assets-tier-list"></div>
 
                 <h4 class="shop-subheading mt-4">🏰 豪宅與莊園</h4>
-                <div id="assets-houses-grid" class="assets-grid"></div>
+                <div id="assets-houses-grid" class="assets-tier-list"></div>
               </div>
             </div>
 
@@ -310,14 +320,6 @@
               <div class="stream-header">
                 <h3>📜 棒球人生即時日誌 (Career Live Feed)</h3>
                 <button id="btn-clear-log" class="btn-text-sm">清空紀錄</button>
-              </div>
-              
-              <!-- 🃏 100% 復刻 Image 7/8 互動式事件卡 3 應對選項容器 -->
-              <div id="container-choices" class="choices-panel hidden mb-3">
-                <h3 id="choices-title" class="choices-heading">🎯 重要的抉擇時刻</h3>
-                <p id="choices-desc" class="choices-desc">請選擇你本階段的方向：</p>
-                <div id="choices-grid" class="choices-btn-group"></div>
-                <div id="dice-roll-reveal" class="dice-roll-reveal hidden"></div>
               </div>
 
               <div id="narrative-log-feed" class="log-feed"></div>
