@@ -215,6 +215,8 @@
      ========================================================================== */
 
   // 共用風險判定表：3 種應對策略各自對應 1 顆骰子的結果分佈，取代舊版隱形 35/50/70% 機率
+  const STAT_LABELS = { con: '打擊', pow: '力量', spd: '跑壘', arm: '臂力', fld: '守備', cat: '接球', eye: '選球', vel: '球速', ctl: '控球', brk: '變化球', sta: '體力' };
+
   const RISK_ROLL_TABLE = {
     high: {
       label: '🔥 全力一搏', sub: '擲 1 顆骰子 | 高風險高報酬 (最大 ±4)',
@@ -369,11 +371,13 @@
           S.ab[pe.ev.statKey] = clamp((S.ab[pe.ev.statKey] || 25) + result.mag, 10, S.pot[pe.ev.statKey] || 99);
 
           const msg = result.success ? pe.ev.win : pe.ev.lose;
-          addLogCard(`◆ 事件卡 | ${pe.ev.title}`, `${msg}（🎲 擲出 ${result.roll} 點・${result.tag}）`, result.success ? 'good' : 'bad', '事件判定');
+          const statLabel = STAT_LABELS[pe.ev.statKey] || pe.ev.statKey;
+          const deltaText = result.mag === 0 ? `${statLabel} 持平` : `${statLabel} ${result.mag > 0 ? '+' : ''}${result.mag}`;
+          addLogCard(`◆ 事件卡 | ${pe.ev.title}`, `${msg} <strong>${deltaText}</strong>（🎲 擲出 ${result.roll} 點・${result.tag}）`, result.success ? 'good' : 'bad', '事件判定');
 
           pe.resolved = true;
           pe.resultGood = result.success;
-          pe.resultText = `${result.tag}（${result.roll}點）`;
+          pe.resultText = `${deltaText}・${result.tag}（${result.roll}點）`;
           renderAll();
         });
       });
@@ -418,7 +422,7 @@
 
     if (eff.type === 'stat') {
       S.ab[eff.key] = clamp((S.ab[eff.key] || 25) + eff.amount, 10, S.pot[eff.key] || 99);
-      logMsg += ` ${eff.key.toUpperCase()} ${eff.amount > 0 ? '+' : ''}${eff.amount}！`;
+      logMsg += ` <strong>${STAT_LABELS[eff.key] || eff.key} ${eff.amount > 0 ? '+' : ''}${eff.amount}</strong>！`;
     } else if (eff.type === 'dice') {
       S.activeBuffs.push({ type: 'dice', amount: eff.amount, remainingPhases: eff.duration });
       logMsg += ` 接下來 ${eff.duration} 個階段，訓練骰子 +${eff.amount} 顆！`;
@@ -539,48 +543,48 @@
 
   // 15 款跑車，5 大 tier 各 3 款，逐階解鎖
   const CARS_LIST = [
-    { id: 'car_01', tier: 1, name: '二手國民小轎車', price: 100000, icon: '🚗', desc: '代步小車' },
-    { id: 'car_02', tier: 1, name: '國產舒適休旅車', price: 400000, icon: '🚙', desc: '載裝備方便' },
-    { id: 'car_03', tier: 1, name: '日系街頭跑車', price: 800000, icon: '🏎️', desc: '年輕球員熱門首選' },
+    { id: 'car_01', tier: 1, name: '二手國民小轎車', price: 100000, icon: '🚗', desc: '代步小車', stat: { spd: 1 } },
+    { id: 'car_02', tier: 1, name: '國產舒適休旅車', price: 400000, icon: '🚙', desc: '載裝備方便', stat: { sta: 1 } },
+    { id: 'car_03', tier: 1, name: '日系街頭跑車', price: 800000, icon: '🏎️', desc: '年輕球員熱門首選', stat: { spd: 1 } },
 
-    { id: 'car_04', tier: 2, name: '德系豪華房車', price: 1500000, icon: '🚘', desc: '展現身價' },
-    { id: 'car_05', tier: 2, name: '美式全尺寸休旅車', price: 1800000, icon: '🚐', desc: '家庭出遊首選' },
-    { id: 'car_06', tier: 2, name: '日系性能鋼砲', price: 2400000, icon: '🚗', desc: '街頭性能話題' },
+    { id: 'car_04', tier: 2, name: '德系豪華房車', price: 1500000, icon: '🚘', desc: '展現身價', stat: { sta: 2 } },
+    { id: 'car_05', tier: 2, name: '美式全尺寸休旅車', price: 1800000, icon: '🚐', desc: '家庭出遊首選', stat: { spd: 1, sta: 1 } },
+    { id: 'car_06', tier: 2, name: '日系性能鋼砲', price: 2400000, icon: '🚗', desc: '街頭性能話題', stat: { spd: 2 } },
 
-    { id: 'car_07', tier: 3, name: '義式敞篷跑車', price: 4500000, icon: '🏎️', desc: '職業選手代步款' },
-    { id: 'car_08', tier: 3, name: '德系性能轎跑', price: 6000000, icon: '🚘', desc: '賽道與街道兼備' },
-    { id: 'car_09', tier: 3, name: '全電動豪華轎車', price: 8500000, icon: '🔋', desc: '環保與科技結合' },
+    { id: 'car_07', tier: 3, name: '義式敞篷跑車', price: 4500000, icon: '🏎️', desc: '職業選手代步款', stat: { spd: 2, sta: 1 } },
+    { id: 'car_08', tier: 3, name: '德系性能轎跑', price: 6000000, icon: '🚘', desc: '賽道與街道兼備', stat: { spd: 2 } },
+    { id: 'car_09', tier: 3, name: '全電動豪華轎車', price: 8500000, icon: '🔋', desc: '環保與科技結合', stat: { sta: 2, spd: 1 } },
 
-    { id: 'car_10', tier: 4, name: '英倫手工訂製轎車', price: 15000000, icon: '🎩', desc: '尊爵不凡' },
-    { id: 'car_11', tier: 4, name: '義式超跑經典款', price: 22000000, icon: '🏎️', desc: '明星球員標配' },
-    { id: 'car_12', tier: 4, name: '限量聯名塗裝跑車', price: 32000000, icon: '🎨', desc: '全球限量收藏款' },
+    { id: 'car_10', tier: 4, name: '英倫手工訂製轎車', price: 15000000, icon: '🎩', desc: '尊爵不凡', stat: { sta: 3 } },
+    { id: 'car_11', tier: 4, name: '義式超跑經典款', price: 22000000, icon: '🏎️', desc: '明星球員標配', stat: { spd: 3 } },
+    { id: 'car_12', tier: 4, name: '限量聯名塗裝跑車', price: 32000000, icon: '🎨', desc: '全球限量收藏款', stat: { spd: 2, sta: 2 } },
 
-    { id: 'car_13', tier: 5, name: '頂級競速超跑', price: 50000000, icon: '🏁', desc: '賽道王者之選' },
-    { id: 'car_14', tier: 5, name: '私人訂製黃金內裝跑車', price: 75000000, icon: '✨', desc: '頂級奢華座駕' },
-    { id: 'car_15', tier: 5, name: '傳奇狂飆賽車巨獸', price: 100000000, icon: '🏎️', desc: '巨星座駕' }
+    { id: 'car_13', tier: 5, name: '頂級競速超跑', price: 50000000, icon: '🏁', desc: '賽道王者之選', stat: { spd: 3, sta: 2 } },
+    { id: 'car_14', tier: 5, name: '私人訂製黃金內裝跑車', price: 75000000, icon: '✨', desc: '頂級奢華座駕', stat: { sta: 4 } },
+    { id: 'car_15', tier: 5, name: '傳奇狂飆賽車巨獸', price: 100000000, icon: '🏎️', desc: '巨星座駕', stat: { spd: 4, sta: 3 } }
   ];
 
   // 15 款房產，5 大 tier 各 3 款，逐階解鎖
   const HOUSES_LIST = [
-    { id: 'house_01', tier: 1, name: '球隊青年單身宿舍', price: 0, icon: '🏠', desc: '預設居住' },
-    { id: 'house_02', tier: 1, name: '市區單身套房', price: 500000, icon: '🏢', desc: '交通便捷' },
-    { id: 'house_03', tier: 1, name: '近郊兩房公寓', price: 800000, icon: '🏘️', desc: '空間更寬敞' },
+    { id: 'house_01', tier: 1, name: '球隊青年單身宿舍', price: 0, icon: '🏠', desc: '預設居住', stat: {} },
+    { id: 'house_02', tier: 1, name: '市區單身套房', price: 500000, icon: '🏢', desc: '交通便捷', stat: { sta: 1 } },
+    { id: 'house_03', tier: 1, name: '近郊兩房公寓', price: 800000, icon: '🏘️', desc: '空間更寬敞', stat: { sta: 1, eye: 1 } },
 
-    { id: 'house_04', tier: 2, name: '市中心景觀電梯大樓', price: 3500000, icon: '🏢', desc: '生活機能完善' },
-    { id: 'house_05', tier: 2, name: '近郊獨棟別墅', price: 5000000, icon: '🏡', desc: '附庭院車庫' },
-    { id: 'house_06', tier: 2, name: '明星水岸豪宅公寓', price: 6000000, icon: '🏙️', desc: '高樓層河景' },
+    { id: 'house_04', tier: 2, name: '市中心景觀電梯大樓', price: 3500000, icon: '🏢', desc: '生活機能完善', stat: { eye: 1, sta: 1 } },
+    { id: 'house_05', tier: 2, name: '近郊獨棟別墅', price: 5000000, icon: '🏡', desc: '附庭院車庫', stat: { sta: 2 } },
+    { id: 'house_06', tier: 2, name: '明星水岸豪宅公寓', price: 6000000, icon: '🏙️', desc: '高樓層河景', stat: { sta: 2, eye: 1 } },
 
-    { id: 'house_07', tier: 3, name: '山景渡假別墅', price: 10000000, icon: '⛰️', desc: '私人渡假天堂' },
-    { id: 'house_08', tier: 3, name: '濱海景觀豪宅', price: 16000000, icon: '🌊', desc: '無敵海景第一排' },
-    { id: 'house_09', tier: 3, name: '都心頂樓複式豪宅', price: 22000000, icon: '🏙️', desc: '城市天際線美景' },
+    { id: 'house_07', tier: 3, name: '山景渡假別墅', price: 10000000, icon: '⛰️', desc: '私人渡假天堂', stat: { eye: 2 } },
+    { id: 'house_08', tier: 3, name: '濱海景觀豪宅', price: 16000000, icon: '🌊', desc: '無敵海景第一排', stat: { sta: 2, eye: 1 } },
+    { id: 'house_09', tier: 3, name: '都心頂樓複式豪宅', price: 22000000, icon: '🏙️', desc: '城市天際線美景', stat: { sta: 3 } },
 
-    { id: 'house_10', tier: 4, name: '私人島嶼度假莊園', price: 40000000, icon: '🏝️', desc: '專屬渡假天堂' },
-    { id: 'house_11', tier: 4, name: '古堡風格莊園別墅', price: 60000000, icon: '🏰', desc: '歐風城堡尊榮' },
-    { id: 'house_12', tier: 4, name: '頂級社區豪華別墅群', price: 85000000, icon: '🏛️', desc: '名流聚集地' },
+    { id: 'house_10', tier: 4, name: '私人島嶼度假莊園', price: 40000000, icon: '🏝️', desc: '專屬渡假天堂', stat: { sta: 3, eye: 2 } },
+    { id: 'house_11', tier: 4, name: '古堡風格莊園別墅', price: 60000000, icon: '🏰', desc: '歐風城堡尊榮', stat: { eye: 3 } },
+    { id: 'house_12', tier: 4, name: '頂級社區豪華別墅群', price: 85000000, icon: '🏛️', desc: '名流聚集地', stat: { sta: 3, eye: 2 } },
 
-    { id: 'house_13', tier: 5, name: '摩天大樓頂層天空別墅', price: 150000000, icon: '🌆', desc: '俯瞰整座城市' },
-    { id: 'house_14', tier: 5, name: '私人山頭度假王國', price: 280000000, icon: '🏔️', desc: '專屬領地莊園' },
-    { id: 'house_15', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極城堡' }
+    { id: 'house_13', tier: 5, name: '摩天大樓頂層天空別墅', price: 150000000, icon: '🌆', desc: '俯瞰整座城市', stat: { sta: 4, eye: 2 } },
+    { id: 'house_14', tier: 5, name: '私人山頭度假王國', price: 280000000, icon: '🏔️', desc: '專屬領地莊園', stat: { eye: 4 } },
+    { id: 'house_15', tier: 5, name: '傳奇名人堂極致莊園', price: 500000000, icon: '👑', desc: '終極城堡', stat: { sta: 5, eye: 3 } }
   ];
 
   let S = {};
@@ -732,13 +736,14 @@
 
     statContainer.innerHTML = config.map(c => {
       const assignedDice = (S.assignedDiceMap[c.key] || []);
-      const totalGain = assignedDice.reduce((a, b) => a + b, 0);
+      const totalPips = assignedDice.reduce((a, b) => a + b, 0);
       const curVal = S.ab[c.key] || 25;
       const ceiling = S.pot[c.key] || 75;
       const maxRange = c.key === 'vel' ? 165 : 99;
+      const previewGain = simulatePipGain(c.key, curVal, totalPips);
 
       const curWidth = Math.min(100, (curVal / maxRange) * 100);
-      const previewWidth = Math.min(100, ((curVal + totalGain) / maxRange) * 100);
+      const previewWidth = Math.min(100, ((curVal + previewGain) / maxRange) * 100);
       const ceilingWidth = Math.min(100, (ceiling / maxRange) * 100);
 
       return `
@@ -746,11 +751,11 @@
           <div class="ref-stat-label">${c.label}</div>
           <div class="ref-progress-track">
             <div class="ref-progress-fill" style="width: ${curWidth}%;"></div>
-            ${totalGain > 0 ? `<div class="ref-progress-preview" style="left: ${curWidth}%; width: ${previewWidth - curWidth}%;"></div>` : ''}
+            ${previewGain > 0 ? `<div class="ref-progress-preview" style="left: ${curWidth}%; width: ${previewWidth - curWidth}%;"></div>` : ''}
             <div class="ref-ceiling-line" style="left: ${ceilingWidth}%;" title="天賦上限: ${ceiling}"></div>
           </div>
           <div class="ref-stat-val">
-            <strong>${curVal + totalGain}</strong>/${ceiling}
+            <strong>${curVal + previewGain}</strong>/${ceiling}${totalPips > 0 ? `<span class="text-muted" style="font-size:10px;"> (耗${totalPips}點)</span>` : ''}
           </div>
         </div>
       `;
@@ -786,6 +791,43 @@
     renderRefAllocUI();
   }
 
+  // 瓶頸遞減：能力值越接近極限，每提升 1 點所需消耗的骰子點數越多 (vel 為 km/h 尺度不適用，維持 1:1)
+  function pipCostForStat(key, currentVal) {
+    if (key === 'vel') return 1;
+    if (currentVal < 60) return 1;
+    if (currentVal < 70) return 2;
+    if (currentVal < 75) return 3;
+    return 8;
+  }
+
+  function applyPipsToStat(key, pips) {
+    const ceiling = S.pot[key] || 99;
+    let remainingPips = pips;
+    let pointsGained = 0;
+    while (remainingPips > 0 && S.ab[key] < ceiling) {
+      const cost = pipCostForStat(key, S.ab[key]);
+      if (remainingPips < cost) break;
+      S.ab[key] += 1;
+      remainingPips -= cost;
+      pointsGained += 1;
+    }
+    return { pointsGained, pipsLeftover: remainingPips };
+  }
+
+  // 純模擬版本(不異動實際狀態)，供配點畫面即時預覽用
+  function simulatePipGain(key, currentVal, pips) {
+    const ceiling = S.pot[key] || 99;
+    let val = currentVal;
+    let remaining = pips;
+    while (remaining > 0 && val < ceiling) {
+      const cost = pipCostForStat(key, val);
+      if (remaining < cost) break;
+      val += 1;
+      remaining -= cost;
+    }
+    return val - currentVal;
+  }
+
   function confirmDiceAllocation() {
     let unassigned = S.currentDicePool.filter(d => !d.assignedTo);
     if (unassigned.length > 0) {
@@ -799,9 +841,10 @@
       const vals = S.assignedDiceMap[k];
       if (vals.length > 0) {
         const gainSum = vals.reduce((a, b) => a + b, 0);
-        const ceiling = S.pot[k] || 99;
-        S.ab[k] = Math.min(ceiling, S.ab[k] + gainSum);
-        logResults.push(`🎲 ${k.toUpperCase()}: 分配 [${vals.join(', ')}] 提升 +${gainSum} (現值:${S.ab[k]})`);
+        const label = STAT_LABELS[k] || k.toUpperCase();
+        const { pointsGained, pipsLeftover } = applyPipsToStat(k, gainSum);
+        const leftoverNote = pipsLeftover > 0 ? `　<span class="text-muted">(剩餘${pipsLeftover}點骰數不足以再提升1級，未使用)</span>` : '';
+        logResults.push(`🎲 ${label}: 分配骰子點數 [${vals.join(', ')}] 共${gainSum}點 → 實際提升 <strong>+${pointsGained}</strong> (現值:${S.ab[k]}/${S.pot[k] || 99})${leftoverNote}`);
       }
     }
 
@@ -1058,7 +1101,7 @@
       isBatter: S.position === 'BATTER' || S.position === 'TWOWAY',
       isPitcher: S.position === 'PITCHER' || S.position === 'TWOWAY',
 
-      G: 0, PA: 0, AB: 0, H: 0, HR: 0, RBI: 0, BB: 0, SB: 0, E: 0,
+      G: 0, PA: 0, AB: 0, H: 0, HR: 0, RBI: 0, BB: 0, SB: 0, E: 0, batSO: 0,
       AVG: 0, OBP: 0, SLG: 0, OPS: 0, batWAR: 0,
 
       pG: 0, W: 0, L: 0, ERA: 0, WHIP: 0, IP: 0, SO: 0, CG: 0, SHO: 0, pitWAR: 0,
@@ -1069,30 +1112,38 @@
 
     if (!isPro) {
       const totalTourneyGames = isCollege ? ri(14, 22) : ri(6, 14);
-      s.teamW = Math.round(totalTourneyGames * 0.65); s.teamL = totalTourneyGames - s.teamW;
-      s.isChampion = s.teamL <= 1;
+      s.teamW = Math.round(totalTourneyGames * (0.55 + R() * 0.25)); s.teamL = totalTourneyGames - s.teamW;
+      s.isChampion = s.teamL <= 1 && R() < 0.5;
 
       if (s.isBatter) {
-        s.G = totalTourneyGames; s.PA = Math.round(s.G * 4.0); s.AB = Math.round(s.PA * 0.88); s.BB = Math.round(s.PA * 0.10);
-        s.H = Math.round(s.AB * clamp(0.280 + diff * 0.005 + (a.con - 40) * 0.003, 0.200, 0.450));
+        s.G = totalTourneyGames; s.PA = Math.round(s.G * (3.8 + R() * 0.6)); s.AB = Math.round(s.PA * (0.85 + R() * 0.06)); s.BB = Math.round(s.PA * (0.07 + R() * 0.08));
+        const avgRate = clamp(0.260 + diff * 0.005 + (a.con - 40) * 0.003 + (R() - 0.5) * 0.08, 0.150, 0.480);
+        s.H = Math.round(s.AB * avgRate);
         s.AVG = +(s.H / Math.max(1, s.AB)).toFixed(3);
         s.OBP = +((s.H + s.BB) / Math.max(1, s.PA)).toFixed(3);
-        s.HR = Math.round(s.AB * clamp(0.03 + (a.pow - 30) * 0.003, 0.0, 0.15));
-        s.SLG = +(s.AVG + 0.18).toFixed(3); s.OPS = +(s.OBP + s.SLG).toFixed(3);
-        s.RBI = Math.round(s.HR * 1.6 + s.H * 0.3); s.SB = ri(1, 8); s.E = ri(0, 3);
-        s.batWAR = +((s.OPS - 0.700) * 1.5).toFixed(1);
+        const hrRate = clamp(0.02 + (a.pow - 40) * 0.003 + (R() - 0.5) * 0.03, 0.0, 0.18);
+        s.HR = Math.round(s.AB * hrRate);
+        s.SLG = +clamp(s.AVG + 0.15 + R() * 0.12, s.AVG, 0.900).toFixed(3); s.OPS = +(s.OBP + s.SLG).toFixed(3);
+        s.RBI = Math.round(s.HR * 1.6 + s.H * 0.3 + ri(0, 6)); s.SB = ri(0, 12); s.E = ri(0, 4);
+        s.batSO = Math.round(s.AB * clamp(0.12 + R() * 0.1, 0.05, 0.3));
+        s.batWAR = +((s.OPS - 0.700) * 1.5 + (R() - 0.5) * 0.5).toFixed(1);
       }
 
       if (s.isPitcher) {
-        s.pG = totalTourneyGames; s.IP = +(s.pG * 5.0).toFixed(1);
-        s.W = Math.round(s.pG * 0.6); s.L = Math.max(0, s.pG - s.W);
-        s.ERA = +clamp(3.20 - diff * 0.08, 0.80, 5.50).toFixed(2);
-        s.WHIP = +(1.15 - diff * 0.01).toFixed(2); s.SO = Math.round(s.IP * 1.1);
-        s.pitWAR = +((4.00 - s.ERA) * 0.8).toFixed(1);
+        s.pG = totalTourneyGames; s.IP = +(s.pG * (4.2 + R() * 1.6)).toFixed(1);
+        s.W = Math.round(s.pG * (0.45 + R() * 0.3)); s.L = Math.max(0, s.pG - s.W - ri(0, 2));
+        s.ERA = +clamp(3.40 - diff * 0.08 + (R() - 0.5) * 1.6, 0.50, 6.50).toFixed(2);
+        s.WHIP = +clamp(1.20 - diff * 0.01 + (R() - 0.5) * 0.3, 0.70, 2.00).toFixed(2);
+        s.SO = Math.round(s.IP * (0.9 + R() * 0.6));
+        s.pitWAR = +((4.00 - s.ERA) * 0.8 + (R() - 0.5) * 0.6).toFixed(1);
       }
 
-      s.honors = s.isChampion ? (isCollege ? '大專聯賽冠軍 🏆' : '甲子園全國制霸 🏆') : '八強複賽';
+      s.honors = s.isChampion ? (isCollege ? '大專聯賽冠軍 🏆' : '甲子園全國制霸 🏆') : (s.teamL <= 2 ? '八強複賽' : '早期出局');
     } else {
+      // 每季表現有獨立浮動(即使能力值不變，球季狀態仍會有起伏)，避免頂尖球員年年數據一模一樣
+      const form = (R() - 0.5) * 24;
+      const effDiff = diff + form;
+
       s.teamW = ri(65, 88); s.teamL = ri(50, 70);
       s.isChampion = s.rank === 1 && R() < 0.6;
       if (s.isChampion) {
@@ -1102,34 +1153,46 @@
       } else { s.honors = '-'; }
 
       if (s.isBatter) {
-        s.G = Math.round(clamp(120 * (0.75 + diff * 0.015 + R() * 0.1), 30, 125));
-        s.PA = Math.round(s.G * 3.8); s.AB = Math.round(s.PA * 0.88); s.BB = Math.round(s.PA * 0.10);
-        s.H = Math.round(s.AB * clamp(0.250 + diff * 0.004 + (a.con - 40) * 0.002, 0.180, 0.390));
+        s.G = Math.round(clamp(120 + effDiff * 0.3, 55, 150));
+        s.PA = Math.round(s.G * (3.6 + R() * 0.5)); s.AB = Math.round(s.PA * (0.85 + R() * 0.06));
+        const bbRate = clamp(0.07 + (a.eye - 40) * 0.0015 + (R() - 0.5) * 0.03, 0.04, 0.18);
+        s.BB = Math.round(s.PA * bbRate);
+
+        const avgRate = clamp(0.230 + effDiff * 0.004 + (a.con - 40) * 0.0022, 0.150, 0.420);
+        s.H = Math.round(s.AB * avgRate);
         s.AVG = +(s.H / Math.max(1, s.AB)).toFixed(3);
         s.OBP = +((s.H + s.BB) / Math.max(1, s.PA)).toFixed(3);
 
-        s.HR = Math.round(s.AB * clamp(0.02 + (a.pow - 30) * 0.0025, 0.005, 0.11));
-        const doubles = Math.round(s.H * 0.2); const triples = Math.round(s.H * 0.03);
+        const hrRate = clamp(0.018 + (a.pow - 40) * 0.0026 + (R() - 0.5) * 0.02, 0.002, 0.13);
+        s.HR = Math.round(s.AB * hrRate);
+        const doubles = Math.round(s.H * (0.16 + R() * 0.08));
+        const triples = Math.round(s.H * (0.01 + R() * 0.03));
         const singles = Math.max(0, s.H - s.HR - doubles - triples);
         const totalBases = singles + doubles * 2 + triples * 3 + s.HR * 4;
         s.SLG = +(totalBases / Math.max(1, s.AB)).toFixed(3);
         s.OPS = +(s.OBP + s.SLG).toFixed(3);
 
-        s.RBI = Math.round(s.HR * 1.8 + s.H * 0.25 + ri(0, 10));
-        s.SB = Math.round((a.spd / 100) * ri(5, 30)); s.E = Math.max(0, ri(1, 12) - Math.round(a.fld / 15));
-        s.batWAR = +((s.OPS - 0.700) * 8).toFixed(1);
+        s.RBI = Math.round(s.HR * (1.5 + R()) + s.H * (0.2 + R() * 0.15) + ri(0, 15));
+        s.SB = Math.round((a.spd / 100) * ri(3, 32)); s.E = Math.max(0, ri(1, 14) - Math.round(a.fld / 14));
+        s.batSO = Math.round(s.AB * clamp(0.14 - (a.con - 40) * 0.001 + R() * 0.08, 0.08, 0.32));
+        s.batWAR = +((s.OPS - 0.700) * 7.5 + (R() - 0.5) * 1.2).toFixed(1);
         S.careerHits += s.H; S.careerHR += s.HR;
       }
 
       if (s.isPitcher) {
-        s.pG = 25; s.IP = +(s.pG * clamp(5.5 + diff * 0.04, 4.5, 7.1)).toFixed(1);
-        s.W = Math.round(s.pG * 0.55); s.L = Math.max(0, s.pG - s.W);
-        s.ERA = +clamp(4.20 - diff * 0.08, 1.20, 7.50).toFixed(2);
-        s.WHIP = +(1.35 - diff * 0.012).toFixed(2);
-        s.SO = Math.round((s.IP / 9) * clamp(6.5 + (a.vel - 135) * 0.15, 4.0, 13.5));
-        s.CG = Math.round(s.pG * 0.15); s.SHO = Math.round(s.CG * 0.4);
+        s.pG = ri(20, 32);
+        s.IP = +(s.pG * clamp(5.2 + effDiff * 0.05 + R() * 1.2, 3.5, 7.5)).toFixed(1);
+        const winRate = clamp(0.45 + effDiff * 0.01, 0.25, 0.75);
+        s.W = Math.round(s.pG * winRate * (0.85 + R() * 0.3));
+        s.L = Math.max(0, s.pG - s.W - ri(0, 3));
 
-        s.pitWAR = +((4.50 - s.ERA) * (s.IP / 40)).toFixed(1);
+        s.ERA = +clamp(4.30 - effDiff * 0.075 + (R() - 0.5) * 1.4, 1.30, 7.80).toFixed(2);
+        s.WHIP = +clamp(1.38 - effDiff * 0.011 + (R() - 0.5) * 0.22, 0.85, 1.95).toFixed(2);
+        s.SO = Math.round((s.IP / 9) * clamp(6.2 + (a.vel - 135) * 0.16 + (R() - 0.5) * 3, 3.5, 15));
+        s.CG = Math.round(s.pG * (0.08 + R() * 0.15));
+        s.SHO = Math.round(s.CG * (0.2 + R() * 0.4));
+
+        s.pitWAR = +((4.50 - s.ERA) * (s.IP / 40) + (R() - 0.5) * 1.0).toFixed(1);
         S.careerWins += s.W; S.careerSO += s.SO;
       }
 
@@ -1177,7 +1240,7 @@
         <span class="settlement-team-badge">${s.team} (${s.league})</span>
         <div class="settlement-box-text">
           ${isBatter
-        ? `出賽 ${s.G} | 打席 ${s.PA} | 打擊率 .${(s.AVG * 1000).toFixed(0).padStart(3, '0')} | 上壘率 .${(s.OBP * 1000).toFixed(0).padStart(3, '0')} | 長打率 .${(s.SLG * 1000).toFixed(0).padStart(3, '0')} | OPS .${(s.OPS * 1000).toFixed(0).padStart(3, '0')} | 安打 ${s.H} | 全壘打 ${s.HR} | 打點 ${s.RBI} | 保送 ${s.BB} | 盜壘 ${s.SB} | 守備 ${s.E}`
+        ? `出賽 ${s.G} | 打席 ${s.PA} | 打擊率 ${formatAvg(s.AVG)} | 上壘率 ${formatAvg(s.OBP)} | 長打率 ${s.SLG.toFixed(3)} | OPS ${s.OPS.toFixed(3)} | 安打 ${s.H} | 全壘打 ${s.HR} | 打點 ${s.RBI} | 保送 ${s.BB} | 三振 ${s.batSO} | 盜壘 ${s.SB} | 守備失誤 ${s.E}`
         : `出賽 ${s.pG} | 勝 ${s.W} | 敗 ${s.L} | 防禦率 ${s.ERA.toFixed(2)} | WHIP ${s.WHIP.toFixed(2)} | 投球局數 ${s.IP} | 奪三振 ${s.SO} | 完投 ${s.CG} | 完封 ${s.SHO}`}
         </div>
       </div>
@@ -1195,12 +1258,17 @@
     `;
   }
 
+  // 打擊率固定小於 1，用傳統「.300」格式；OPS/防禦率等可能超過 1，需保留完整位數，避免顯示成 ".1093" 這種亂碼
+  function formatAvg(val) {
+    return '.' + (val * 1000).toFixed(0).padStart(3, '0');
+  }
+
   function renderCareerStatsTable() {
     const tbody = document.getElementById('career-stats-tbody');
     if (!tbody || !S.stats) return;
 
     if (S.stats.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-muted">尚無賽季數據。</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="text-muted">尚無賽季數據。</td></tr>`;
       return;
     }
 
@@ -1210,8 +1278,9 @@
         <td>${s.age}歲</td>
         <td>${s.team} (${s.league})</td>
         <td>${s.G || s.pG}</td>
-        <td>${s.isBatter ? '.' + (s.AVG * 1000).toFixed(0).padStart(3, '0') : `${s.W}勝${s.L}敗`}</td>
-        <td>${s.isBatter ? '.' + (s.OPS * 1000).toFixed(0).padStart(3, '0') : s.ERA.toFixed(2)}</td>
+        <td>${s.isBatter ? formatAvg(s.AVG) : `${s.W}勝${s.L}敗`}</td>
+        <td>${s.isBatter ? s.OPS.toFixed(3) : s.ERA.toFixed(2)}</td>
+        <td>${s.isBatter ? `${s.HR}轟` : `${s.SO}K`}</td>
         <td><strong class="hl-gold">${s.batWAR || s.pitWAR}</strong></td>
         <td>${s.teamW}勝${s.teamL}敗</td>
         <td>${s.honors || '-'}</td>
@@ -1380,6 +1449,22 @@
 
   const ASSET_TIER_LABELS = { 1: '新秀等級', 2: '小有成就', 3: '明星等級', 4: '巨星等級', 5: '傳奇殿堂' };
 
+  function formatStatBonus(stat) {
+    if (!stat) return '';
+    return Object.keys(stat).map(k => `${STAT_LABELS[k] || k}+${stat[k]}`).join(' ');
+  }
+
+  // 換車/換房只保留「目前擁有」那一件的加成：先扣掉舊資產的加成，再套用新資產的加成
+  function swapAssetStat(list, prevId, newItem) {
+    const prev = list.find(i => i.id === prevId);
+    if (prev && prev.stat) {
+      for (let k in prev.stat) S.ab[k] = clamp((S.ab[k] || 0) - prev.stat[k], 10, S.pot[k] || 99);
+    }
+    if (newItem.stat) {
+      for (let k in newItem.stat) S.ab[k] = clamp((S.ab[k] || 0) + newItem.stat[k], 10, S.pot[k] || 99);
+    }
+  }
+
   function renderAssetTierGroups(list, ownedId, buyFnName, ownedLabel) {
     const visible = list.filter(item => item.tier <= S.maxUnlockedAssetTier + 1);
     const tiers = [...new Set(visible.map(i => i.tier))];
@@ -1389,12 +1474,13 @@
         const owned = ownedId === item.id;
         const locked = item.tier > S.maxUnlockedAssetTier;
         const affordable = S.money >= item.price;
+        const bonusText = formatStatBonus(item.stat);
         return `
           <div class="asset-card ${locked ? 'locked' : ''} ${owned ? 'owned' : ''}">
             ${locked ? '<span class="asset-lock-badge">🔒</span>' : ''}
             <div class="asset-icon">${item.icon}</div>
             <div class="asset-name">${item.name}</div>
-            <div class="asset-desc">${item.desc}</div>
+            <div class="asset-desc">${item.desc}${bonusText ? ` ・ ${bonusText}` : ''}</div>
             <div class="asset-footer">
               <span class="asset-price">${item.price === 0 ? '免費' : `$${(item.price / 10000).toFixed(0)}萬`}</span>
               <button class="btn-buy" ${locked || owned || !affordable ? 'disabled' : ''} onclick="window.${buyFnName}('${item.id}', ${item.tier})">
@@ -1423,10 +1509,12 @@
     const car = CARS_LIST.find(c => c.id === id);
     if (car && S.money >= car.price) {
       S.money -= car.price;
+      swapAssetStat(CARS_LIST, S.ownedAssets.car, car);
       S.ownedAssets.car = car.id;
       if (tier >= S.maxUnlockedAssetTier) S.maxUnlockedAssetTier = tier + 1;
       if (tier === 5) unlockAchievement('ach_48');
-      addLogCard('🏎️ 豪車交車', `成功購買【${car.name}】！解鎖更佳跑車！`, 'gold', '資產解鎖');
+      const bonusText = formatStatBonus(car.stat);
+      addLogCard('🏎️ 豪車交車', `成功購買【${car.name}】！${bonusText ? `(${bonusText}) ` : ''}解鎖更佳跑車！`, 'gold', '資產解鎖');
       renderAll();
     }
   };
@@ -1435,10 +1523,12 @@
     const house = HOUSES_LIST.find(h => h.id === id);
     if (house && S.money >= house.price) {
       S.money -= house.price;
+      swapAssetStat(HOUSES_LIST, S.ownedAssets.house, house);
       S.ownedAssets.house = house.id;
       if (tier >= S.maxUnlockedAssetTier) S.maxUnlockedAssetTier = tier + 1;
       if (tier === 5) unlockAchievement('ach_47');
-      addLogCard('🏰 豪宅入住', `入住【${house.name}】！解鎖下一階極致莊園！`, 'gold', '資產解鎖');
+      const bonusText = formatStatBonus(house.stat);
+      addLogCard('🏰 豪宅入住', `入住【${house.name}】！${bonusText ? `(${bonusText}) ` : ''}解鎖下一階極致莊園！`, 'gold', '資產解鎖');
       renderAll();
     }
   };
@@ -1552,7 +1642,7 @@
       else if (S.stage === 'UNI3') S.stage = 'UNI4';
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       S.year += 1; S.age += 1;
-      if (!goingToDraft) resetSeasonUI();
+      if (!goingToDraft) showCollegeDraftDecision();
       renderAll();
     } else if (S.stage === 'PRO') {
       if (S.age >= 34) {
@@ -1608,11 +1698,12 @@
 
           S.qualifiedForNationals = result.success;
           S.ab.sta = clamp((S.ab.sta || 25) + result.mag, 10, S.pot.sta || 99);
+          const deltaText = result.mag === 0 ? '體力 持平' : `體力 ${result.mag > 0 ? '+' : ''}${result.mag}`;
 
           if (result.success) {
-            addLogCard(`◆ ${label}`, `🎉 成功晉級！你的球隊將踏上【${target}】的全國舞台！（🎲 擲出 ${result.roll} 點・${result.tag}）`, 'good', '資格賽');
+            addLogCard(`◆ ${label}`, `🎉 成功晉級！你的球隊將踏上【${target}】的全國舞台！<strong>${deltaText}</strong>（🎲 擲出 ${result.roll} 點・${result.tag}）`, 'good', '資格賽');
           } else {
-            addLogCard(`◆ ${label}`, `😢 資格賽失利，無緣挑戰【${target}】，但這段經歷成為你邁向下個舞台的養分。（🎲 擲出 ${result.roll} 點・${result.tag}）`, 'bad', '資格賽');
+            addLogCard(`◆ ${label}`, `😢 資格賽失利，無緣挑戰【${target}】，但這段經歷成為你邁向下個舞台的養分。<strong>${deltaText}</strong>（🎲 擲出 ${result.roll} 點・${result.tag}）`, 'bad', '資格賽');
           }
 
           S.stage = 'HS2'; S.year += 1; S.age += 1;
@@ -1624,9 +1715,53 @@
     });
   }
 
+  // 大學每學年結束後，詢問是否提前投入選秀市場，或繼續留隊磨練
+  function showCollegeDraftDecision() {
+    const choicesPanel = document.getElementById('container-choices');
+    choicesPanel.classList.remove('hidden');
+
+    const reveal = document.getElementById('dice-roll-reveal');
+    reveal.classList.add('hidden');
+    reveal.innerHTML = '';
+
+    document.getElementById('choices-title').textContent = '🎓 新學年開始：是否提前挑戰選秀？';
+    document.getElementById('choices-desc').textContent = `你已升上${getStageLabel()}，可以選擇繼續留隊磨練，或提前宣布投入選秀市場。`;
+
+    document.getElementById('choices-grid').innerHTML = `
+      <div class="btn-choice low-risk" data-choice="STAY">
+        <span class="btn-choice-title">📚 留在大學繼續磨練</span>
+        <span class="btn-choice-sub">按原計畫完成本學年訓練與比賽</span>
+      </div>
+      <div class="btn-choice high-risk" data-choice="DECLARE">
+        <span class="btn-choice-title">🚀 提前宣布挑戰選秀</span>
+        <span class="btn-choice-sub">立刻結束大學生涯，投入選秀市場</span>
+      </div>
+    `;
+
+    document.querySelectorAll('#choices-grid .btn-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const choice = btn.dataset.choice;
+        choicesPanel.classList.add('hidden');
+
+        if (choice === 'DECLARE') {
+          S.stage = 'DRAFT';
+          showDraftChoices();
+        } else {
+          resetSeasonUI();
+        }
+
+        renderAll();
+      });
+    });
+  }
+
   function showDraftChoices() {
     const choicesPanel = document.getElementById('container-choices');
     choicesPanel.classList.remove('hidden');
+
+    const reveal = document.getElementById('dice-roll-reveal');
+    reveal.classList.add('hidden');
+    reveal.innerHTML = '';
 
     const ovr = calcOVR();
     const canGoMLB = ovr >= 60 || S.isGeniusBirth;
@@ -1692,14 +1827,63 @@
         } else if (choice === 'CPBL') {
           S.leagueKey = 'CPBL2'; S.team = CPBL_TEAMS[ri(0, CPBL_TEAMS.length - 1)]; S.salary = 1800000;
           S.stage = 'PRO'; S.year += 1; S.age += 1;
+          addLogCard('🇹🇼 中職選秀指名', `由球團自動指名加盟【${S.team}】，簽下新人合約！`, 'gold', '本土選秀');
         } else if (choice === 'NPB') {
           S.leagueKey = 'NPB2'; S.team = NPB_TEAMS[ri(0, NPB_TEAMS.length - 1)]; S.salary = 6000000;
           S.stage = 'PRO'; S.year += 1; S.age += 1;
+          addLogCard('🇯🇵 日職選秀指名', `由球團自動指名加盟【${S.team}】，簽下新人合約！`, 'gold', '本土選秀');
         } else {
-          S.leagueKey = 'MiLB_1A'; S.team = MLB_30_TEAMS[ri(0, MLB_30_TEAMS.length - 1)]; S.salary = 3000000;
-          S.stage = 'PRO'; S.year += 1; S.age += 1;
+          showMLBContractOffers();
+          return;
         }
 
+        resetSeasonUI();
+        renderAll();
+      });
+    });
+  }
+
+  // 旅美簽約：提供多支大聯盟球隊的簽約報價，由玩家自行挑選(不同於本土選秀由系統自動指名)
+  function showMLBContractOffers() {
+    const choicesPanel = document.getElementById('container-choices');
+    choicesPanel.classList.remove('hidden');
+
+    const reveal = document.getElementById('dice-roll-reveal');
+    reveal.classList.add('hidden');
+    reveal.innerHTML = '';
+
+    document.getElementById('choices-title').textContent = '🇺🇸 大聯盟球隊簽約報價';
+    document.getElementById('choices-desc').textContent = '多支大聯盟球隊向你提出簽約邀請，不同的球隊開出的簽約金與起步層級各不相同，請選擇你要加盟的球隊：';
+
+    const ovr = calcOVR();
+    const baseSalary = 2000000 + Math.max(0, ovr - 55) * 60000;
+    const shuffledTeams = MLB_30_TEAMS.slice().sort(() => R() - 0.5).slice(0, 3);
+
+    const offers = shuffledTeams.map(team => {
+      const variance = 0.75 + R() * 0.6;
+      const salary = Math.round((baseSalary * variance) / 10000) * 10000;
+      const years = ri(1, 3);
+      const startLevel = salary >= baseSalary * 1.15 ? 'MiLB_A_Plus' : (salary <= baseSalary * 0.85 ? 'MiLB_Rook' : 'MiLB_1A');
+      return { team, salary, years, startLevel };
+    });
+
+    document.getElementById('choices-grid').innerHTML = offers.map((o, idx) => `
+      <div class="btn-choice med-risk" data-idx="${idx}">
+        <span class="btn-choice-title">🏟️ ${o.team}</span>
+        <span class="btn-choice-sub">簽約金 $${(o.salary / 10000).toFixed(0)}萬/年・${o.years} 年合約・${LEAGUES[o.startLevel].n}起步</span>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('#choices-grid .btn-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.idx, 10);
+        const o = offers[idx];
+        choicesPanel.classList.add('hidden');
+
+        S.leagueKey = o.startLevel; S.team = o.team; S.salary = o.salary; S.contractYears = o.years;
+        S.stage = 'PRO'; S.year += 1; S.age += 1;
+
+        addLogCard('🇺🇸 登陸大聯盟', `與【${o.team}】簽下 ${o.years} 年合約，簽約金 $${(o.salary / 10000).toFixed(0)}萬/年，從【${LEAGUES[o.startLevel].n}】展開旅美之路！`, 'gold', '海外簽約');
         resetSeasonUI();
         renderAll();
       });
