@@ -301,11 +301,24 @@
     const count = Math.min(list.length, ri(2, 3));
     S.pendingEvents = list.slice(0, count).map(ev => ({ ev, resolved: false, resultGood: null, resultText: '' }));
     S.chanceCardDrawnThisPhase = false;
+    S.seasonReady = true;
+  }
+
+  // 完成本季春訓後才「進入賽季」：模擬本季數據並排入本季事件，此時才能前進下一階段
+  function enterSeason() {
+    simSeason();
+    queueMandatoryEvents();
+    renderAll();
   }
 
   function renderMandatoryEvents() {
     const container = document.getElementById('mandatory-events-list');
     if (!container) return;
+
+    if (!S.seasonReady) {
+      container.innerHTML = `<span class="text-muted text-sm">🏋️ 請先到「春訓自主訓練」分頁完成本季配點，本季事件才會出現。</span>`;
+      return;
+    }
 
     if (!S.pendingEvents || !S.pendingEvents.length) {
       container.innerHTML = `<span class="text-muted text-sm">本季暫無事件。</span>`;
@@ -794,12 +807,11 @@
 
     checkDiceComboAwakening(allRolls);
 
-    document.getElementById('btn-trigger-roll-dice').classList.remove('hidden');
+    document.getElementById('btn-trigger-roll-dice').classList.add('hidden');
     document.getElementById('ref-alloc-box').classList.add('hidden');
 
     addLogCard('🏋️ 春訓自主訓練完成！', logResults.length > 0 ? logResults.join('<br>') : '未進行屬性分配。', 'good', '春訓結果');
-    renderAll();
-    nextPhase();
+    enterSeason();
   }
 
   function addAwakenedTrait(traitName, logMsg) {
@@ -908,6 +920,7 @@
       activeBuffs: [],
       daikichiCount: 0,
       qualifiedForNationals: false,
+      seasonReady: false,
 
       money: 100000,
       pocket: 20000,
@@ -933,7 +946,6 @@
     applyArchetypeBonus();
     applyInheritedItemBonus();
     initRunShopPool();
-    queueMandatoryEvents();
     checkAchievements();
   }
 
@@ -1224,8 +1236,12 @@
     document.getElementById('current-stage-display').textContent = `【${getStageLabel()}】`;
 
     const chanceBtn = document.getElementById('btn-draw-chance-card');
-    chanceBtn.disabled = S.chanceCardDrawnThisPhase;
+    chanceBtn.disabled = !S.seasonReady || S.chanceCardDrawnThisPhase;
     chanceBtn.textContent = S.chanceCardDrawnThisPhase ? '🃏 本季機會卡已抽取' : '🃏 抽機會卡（可自由選擇）';
+
+    const nextBtn = document.getElementById('btn-next-phase');
+    nextBtn.disabled = !S.seasonReady;
+    nextBtn.textContent = S.seasonReady ? '⏩ 進行下個階段' : '⏳ 請先完成本季春訓';
 
     renderTraits();
     renderMandatoryEvents();
@@ -1500,35 +1516,45 @@
     feed.insertBefore(card, feed.firstChild);
   }
 
+  // 重新武裝「擲出本季訓練骰子」按鈕，僅在真正進入一個全新、可訓練的賽季時呼叫
+  function resetSeasonUI() {
+    document.getElementById('season-settlement-display-box').classList.add('hidden');
+    document.getElementById('btn-trigger-roll-dice').classList.remove('hidden');
+    document.getElementById('ref-alloc-box').classList.add('hidden');
+  }
+
   function nextPhase() {
     if (S.stage === 'RETIRED') { showRetirementScreen(); return; }
+
+    if (!S.seasonReady) {
+      alert('請先完成本季春訓（擲骰分配訓練成果），才能進行下一階段！');
+      return;
+    }
 
     const unresolvedCount = (S.pendingEvents || []).filter(pe => !pe.resolved).length;
     if (unresolvedCount > 0 && !confirm(`本季還有 ${unresolvedCount} 件事件尚未處理，確定要跳過並前進下一階段嗎？`)) return;
 
     document.getElementById('container-choices').classList.add('hidden');
     S.chanceCardDrawnThisPhase = false;
+    S.seasonReady = false;
+    S.pendingEvents = [];
     tickBuffs();
 
     if (S.stage.startsWith('HS')) {
-      const stat = simSeason();
       if (S.stage === 'HS1') { showRegionalQualifierEvent(); }
-      else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; queueMandatoryEvents(); }
+      else if (S.stage === 'HS2') { S.stage = 'HS3'; S.year += 1; S.age += 1; resetSeasonUI(); }
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       renderAll();
     } else if (S.stage.startsWith('UNI')) {
-      const stat = simSeason();
       const goingToDraft = (S.stage === 'UNI4');
       if (S.stage === 'UNI1') S.stage = 'UNI2';
       else if (S.stage === 'UNI2') S.stage = 'UNI3';
       else if (S.stage === 'UNI3') S.stage = 'UNI4';
       else { S.stage = 'DRAFT'; showDraftChoices(); }
       S.year += 1; S.age += 1;
-      if (!goingToDraft) queueMandatoryEvents();
+      if (!goingToDraft) resetSeasonUI();
       renderAll();
     } else if (S.stage === 'PRO') {
-      const stat = simSeason();
-
       if (S.age >= 34) {
         if (confirm(`【老將退役抉擇】您今年已 ${S.age} 歲，身體素質逐漸下滑，是否決定宣佈正式引退，脫下戰袍開啟第二人生？`)) {
           S.stage = 'RETIRED';
@@ -1546,7 +1572,7 @@
       }
 
       S.year += 1; S.age += 1;
-      queueMandatoryEvents();
+      resetSeasonUI();
       renderAll();
     }
   }
@@ -1590,7 +1616,7 @@
           }
 
           S.stage = 'HS2'; S.year += 1; S.age += 1;
-          queueMandatoryEvents();
+          resetSeasonUI();
           checkAchievements();
           renderAll();
         });
@@ -1674,7 +1700,7 @@
           S.stage = 'PRO'; S.year += 1; S.age += 1;
         }
 
-        queueMandatoryEvents();
+        resetSeasonUI();
         renderAll();
       });
     });
